@@ -347,7 +347,7 @@ func seekable(key string, r io.Reader, size int64) (io.ReadSeeker, int64, func()
 		return rs, end - cur, noop, nil
 	}
 
-	tmp, err := os.CreateTemp("", "obsync-s3-put-*")
+	tmp, err := os.CreateTemp("", "stele-pull-s3-put-*")
 	if err != nil {
 		return nil, 0, noop, err
 	}

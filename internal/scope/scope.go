@@ -1,6 +1,6 @@
 // Package scope restricts a manual pull to specific directories and files.
 //
-// A pattern is matched against the vault path, the path `obsync ls` prints,
+// A pattern is matched against the vault path, the path `stele-pull ls` prints,
 // case-insensitively. Vaults commonly live on case-insensitive filesystems,
 // and the planner already guarantees paths are unique under case folding, so
 // folding here cannot make one pattern select two different files by accident.
@@ -23,7 +23,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/leifsen/obsync/internal/portable"
+	"github.com/leifsen/stele-pull/internal/portable"
 )
 
 // Scope is a set of patterns. The zero value selects everything.

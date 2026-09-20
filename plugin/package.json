@@ -1,7 +1,7 @@
 {
-  "name": "obsync",
+  "name": "stele-pull",
   "version": "0.1.0",
-  "description": "Obsidian consumer for obsync",
+  "description": "Obsidian consumer for stele-pull",
   "main": "main.js",
   "type": "module",
   "scripts": {

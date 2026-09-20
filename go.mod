@@ -1,4 +1,4 @@
-module github.com/leifsen/obsync
+module github.com/leifsen/stele-pull
 
 go 1.26.0
 

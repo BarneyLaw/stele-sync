@@ -52,7 +52,7 @@ type Presigner interface {
 }
 
 // Stater is optional: an object's size and modification time without reading
-// it. `obsync serve` needs it to answer Range and conditional requests.
+// it. `stele-pull serve` needs it to answer Range and conditional requests.
 // Returns ErrNotFound for a missing key.
 type Stater interface {
 	Stat(ctx context.Context, key string) (ObjectInfo, error)

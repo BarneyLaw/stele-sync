@@ -1,4 +1,4 @@
-# The obsync worker: one pull pass over every active Canvas course into the
+# The stele-pull worker: one pull pass over every active Canvas course into the
 # garage-obsync store, daily at 18:17 Singapore time.
 #
 # To run it now instead of waiting (see README.md for a scoped pull):
@@ -68,7 +68,7 @@ spec:
                 # longer resolves, e.g. after its semester ends, fails the run
                 # once the other courses have synced, and
                 # ObsyncWorkerLastRunFailed fires until the list is edited.
-                # `obsync-worker courses` prints what the token can see.
+                # `stele-pull-worker courses` prints what the token can see.
                 # - -course=CS3103,LAG1201
                 - -course=93794,94846,93610
                 - -rules=/etc/obsync/rules.json

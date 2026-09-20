@@ -1,6 +1,6 @@
-# obsync-man: design
+# stele-pull: design
 
-Phase 1 of obsync. Pulls Canvas LMS course files into an object store on a
+Phase 1 of stele-pull. Pulls Canvas LMS course files into an object store on a
 schedule; an Obsidian plugin mirrors that store into a vault, read-only, with
 per-device exclusion rules.
 
@@ -111,7 +111,7 @@ so two concurrent workers clobber each other. Phase 1 is safe because
 `concurrencyPolicy: Forbid` guarantees one writer. **This is one of the
 assumptions that breaks in phase 2.** Write it down.
 
-It already bends in phase 1: manual pulls (`obsync-worker pull`, or
+It already bends in phase 1: manual pulls (`stele-pull-worker pull`, or
 `kubectl create job --from=cronjob/...`) are not counted by Forbid. So every
 writer also takes a lease, `locks/worker.json`, created with an exclusive put
 and re-verified immediately before each `latest` publish. A crashed run's lease
@@ -169,7 +169,7 @@ first.
 - *Default: GitOps.* Rules are a ConfigMap in the Argo repo. Changing them is a
   commit: reviewable, revertible, consistent with how the rest of the cluster
   runs. Not a UI, so fine for you and useless for a friend.
-- *When you want it in the UI: a request bucket.* `obsync-requests`, consumer
+- *When you want it in the UI: a request bucket.* `stele-pull-requests`, consumer
   writes, worker reads and deletes. The worker drains the prefix at the start of
   each run, folds requests into an overrides file it owns, acts, deletes.
   Asynchronous by one cron period, which is fine for "fetch me that recording".
@@ -184,8 +184,8 @@ actually annoys you.
 ## 5. Go worker
 
 ```
-cmd/obsync-worker/     run (cron) / pull (manual, scoped) / courses; one pass, exits
-cmd/obsync/            ls / preview / log / diff / cat / gc / serve
+cmd/stele-pull-worker/     run (cron) / pull (manual, scoped) / courses; one pass, exits
+cmd/stele-pull/            ls / preview / log / diff / cat / gc / serve
 internal/portable/     path sanitisation            [pure]
 internal/policy/       rule engine                  [pure]
 internal/manifest/     schema, encode/decode, diff  [pure]
@@ -261,7 +261,7 @@ Hardening that follows from "nothing is silently withheld":
 
 ### Manual pulls and scope
 
-`obsync-worker pull -course CS3103 -path "Week 1" -path "**/*.pdf"` pulls on
+`stele-pull-worker pull -course CS3103 -path "Week 1" -path "**/*.pdf"` pulls on
 demand. Scope limits **downloads, never the catalogue**: listing is cheap, so
 skips, locks and tombstones stay complete. A file outside the scope keeps its
 previous entry unchanged if it had been fetched before; otherwise it is
@@ -299,7 +299,7 @@ synthetic root or every vault gets a `course files` directory.
 
 ## 6. Deployment
 
-Namespace `obsync`, everything through Argo.
+Namespace `stele-pull`, everything through Argo.
 
 **Garage.** StatefulSet, 3 replicas, `podAntiAffinity` by hostname (co-locating
 two pods defeats replication), headless service for RPC on 3901, ClusterIP for
@@ -347,7 +347,7 @@ The alert that matters, with a daily schedule plus slack:
 
 ```yaml
 alert: ObsyncWorkerStale
-expr: time() - max(kube_cronjob_status_last_successful_time{namespace="obsync", cronjob="obsync-worker"}) > 26 * 3600
+expr: time() - max(kube_cronjob_status_last_successful_time{namespace="stele-pull", cronjob="stele-pull-worker"}) > 26 * 3600
 for: 30m
 ```
 
@@ -396,7 +396,7 @@ their half changes, and both run when any contract path changes.
 
 ### The credentials problem, and how to avoid it
 
-Plugin settings persist to `.obsidian/plugins/obsync/data.json`, **inside the
+Plugin settings persist to `.obsidian/plugins/stele-pull/data.json`, **inside the
 vault**, synced by whatever else syncs the vault. An S3 secret there travels
 everywhere the vault does.
 
@@ -465,14 +465,14 @@ Each step is useful on its own.
    terminate?
 3. **`store` filesystem backend.** Run the whole pipeline into a local directory.
    `make run-dev`. *Done.*
-4. **`cmd/obsync ls` and `preview`.** You cannot debug the differ without them,
+4. **`cmd/stele-pull ls` and `preview`.** You cannot debug the differ without them,
    so do not defer them. Your blob keys are hashes: no generic S3 browser will
    ever show you anything meaningful, the manifest is the only human-readable
    index, and reading it is this tool's job.
 5. **Swap in S3 against Garage.** Nothing above changes. **Make Range GET your
    first integration test**: the entire mobile story rests on it. *Done: Range
    GET, store conformance, presign and a full worker pass run against Garage
-   v2.3.0 locally (`scripts/garage-dev.sh`) and in CI. `obsync serve` fronts any
+   v2.3.0 locally (`scripts/garage-dev.sh`) and in CI. `stele-pull serve` fronts any
    backend, so the plugin reads Garage without credentials.*
 6. **CronJob, staleness alert.** *Manifests, image and GitOps pipeline ready
    in `deploy/`; alerts use kube-state-metrics, not a Pushgateway.*

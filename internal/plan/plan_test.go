@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/leifsen/obsync/internal/manifest"
-	"github.com/leifsen/obsync/internal/policy"
-	"github.com/leifsen/obsync/internal/scope"
+	"github.com/leifsen/stele-pull/internal/manifest"
+	"github.com/leifsen/stele-pull/internal/policy"
+	"github.com/leifsen/stele-pull/internal/scope"
 )
 
 var (

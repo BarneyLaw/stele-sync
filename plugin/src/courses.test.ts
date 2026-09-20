@@ -34,13 +34,13 @@ describe("checkCourses", () => {
     const results = await checkCourses([93794, 12345, 55555], (id) => {
       if (id === 93794) return Promise.resolve(manifest(id));
       if (id === 12345) return Promise.resolve(null);
-      return Promise.reject(new Error("obsync: GET manifests/55555/latest -> 500"));
+      return Promise.reject(new Error("stele-pull: GET manifests/55555/latest -> 500"));
     });
 
     expect(results).toEqual([
       { id: 93794, status: "found", name: "CS3103 Computer Networks Practice [2610]" },
       { id: 12345, status: "missing" },
-      { id: 55555, status: "error", message: "obsync: GET manifests/55555/latest -> 500" },
+      { id: 55555, status: "error", message: "stele-pull: GET manifests/55555/latest -> 500" },
     ]);
   });
 

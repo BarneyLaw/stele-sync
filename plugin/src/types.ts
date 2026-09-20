@@ -20,7 +20,7 @@ export const ENTRY_STATES: readonly EntryState[] = ["stored", "skipped", "locked
 
 /**
  * rule_name on a skipped entry that a scoped manual pull deferred
- * (`obsync-worker pull -path ...`). Not a rule anyone wrote: the worker's next
+ * (`stele-pull-worker pull -path ...`). Not a rule anyone wrote: the worker's next
  * full pull fetches the file. Mirrors plan.ScopeRule in Go.
  */
 export const SCOPE_RULE = "obsync:pull-scope";
@@ -73,28 +73,28 @@ export const manifestKey = (courseId: number, runId: string) =>
 export function parseManifest(raw: string): Manifest {
   const doc: unknown = JSON.parse(raw);
   if (typeof doc !== "object" || doc === null || Array.isArray(doc)) {
-    throw new Error("obsync: manifest is not a JSON object");
+    throw new Error("stele-pull: manifest is not a JSON object");
   }
   const m = doc as Manifest;
   if (typeof m.schema_version !== "number") {
-    throw new Error("obsync: manifest has no schema_version");
+    throw new Error("stele-pull: manifest has no schema_version");
   }
   if (m.schema_version > SCHEMA_VERSION) {
     throw new Error(
-      `obsync: manifest schema v${m.schema_version} is newer than this plugin understands (v${SCHEMA_VERSION}). Update the plugin.`,
+      `stele-pull: manifest schema v${m.schema_version} is newer than this plugin understands (v${SCHEMA_VERSION}). Update the plugin.`,
     );
   }
   if (m.schema_version < SCHEMA_VERSION) {
     throw new Error(
-      `obsync: manifest schema v${m.schema_version} is older than this plugin supports (v${SCHEMA_VERSION}). Re-run the worker.`,
+      `stele-pull: manifest schema v${m.schema_version} is older than this plugin supports (v${SCHEMA_VERSION}). Re-run the worker.`,
     );
   }
   if (typeof m.run_id !== "string" || m.run_id === "") {
-    throw new Error("obsync: manifest has an empty run id");
+    throw new Error("stele-pull: manifest has an empty run id");
   }
   // An empty course is [], never absent: absent would read as "Canvas has
   // nothing" and tombstone every file in the vault.
-  if (!Array.isArray(m.entries)) throw new Error("obsync: manifest has no entries");
+  if (!Array.isArray(m.entries)) throw new Error("stele-pull: manifest has no entries");
 
   const seen = new Set<string>();
   m.entries.forEach((e, i) => checkEntry(e, i, seen));
@@ -103,21 +103,21 @@ export function parseManifest(raw: string): Manifest {
 
 function checkEntry(raw: unknown, i: number, seen: Set<string>) {
   if (typeof raw !== "object" || raw === null) {
-    throw new Error(`obsync: manifest entry ${i} is not an object`);
+    throw new Error(`stele-pull: manifest entry ${i} is not an object`);
   }
   const e = raw as Entry;
   if (typeof e.path !== "string" || e.path === "") {
-    throw new Error(`obsync: manifest entry ${i} has an empty path`);
+    throw new Error(`stele-pull: manifest entry ${i} has an empty path`);
   }
-  if (seen.has(e.path)) throw new Error(`obsync: manifest has duplicate path ${e.path}`);
+  if (seen.has(e.path)) throw new Error(`stele-pull: manifest has duplicate path ${e.path}`);
   seen.add(e.path);
   if (!ENTRY_STATES.includes(e.state)) {
-    throw new Error(`obsync: ${e.path} has unknown state ${String(e.state)}`);
+    throw new Error(`stele-pull: ${e.path} has unknown state ${String(e.state)}`);
   }
-  if (e.state === "stored" && !e.sha256) throw new Error(`obsync: ${e.path} is stored but has no hash`);
-  if (e.state !== "stored" && e.sha256) throw new Error(`obsync: ${e.path} is ${e.state} but carries a hash`);
+  if (e.state === "stored" && !e.sha256) throw new Error(`stele-pull: ${e.path} is stored but has no hash`);
+  if (e.state !== "stored" && e.sha256) throw new Error(`stele-pull: ${e.path} is ${e.state} but carries a hash`);
   if ((e.state === "skipped" || e.state === "failed") && !e.reason) {
-    throw new Error(`obsync: ${e.path} is ${e.state} with no reason`);
+    throw new Error(`stele-pull: ${e.path} is ${e.state} with no reason`);
   }
 }
 

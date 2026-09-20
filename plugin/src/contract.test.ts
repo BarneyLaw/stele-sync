@@ -96,7 +96,7 @@ describe("manifests the Go worker also rejects", () => {
 
   for (const [i, c] of f.cases.entries()) {
     it(`rejects ${i}: ${c._why}`, () => {
-      expect(() => parseManifest(JSON.stringify(c.manifest))).toThrow(/obsync:/);
+      expect(() => parseManifest(JSON.stringify(c.manifest))).toThrow(/stele-pull:/);
     });
   }
 });

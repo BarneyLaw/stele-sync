@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/leifsen/obsync/internal/manifest"
-	"github.com/leifsen/obsync/internal/plan"
+	"github.com/leifsen/stele-pull/internal/manifest"
+	"github.com/leifsen/stele-pull/internal/plan"
 )
 
 // The worker and the plugin ship as a pair. These fixtures are the contract

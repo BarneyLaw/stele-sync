@@ -1,9 +1,9 @@
-# obsync
+# stele-pull
 
 Mirrors Canvas LMS course files into an Obsidian vault, read-only, with
 per-device exclusion rules.
 
-This is the **consumer** half of obsync. A Go worker (a Kubernetes CronJob)
+This is the **consumer** half of stele-pull. A Go worker (a Kubernetes CronJob)
 pulls files out of Canvas into an object store and publishes a manifest; this
 plugin mirrors that store into your vault. The plugin never talks to Canvas.
 
@@ -42,13 +42,13 @@ surfaces cannot drift apart. Use whichever you prefer.
 
 ## Setup
 
-1. Set **Store URL** to the read-only endpoint for your obsync bucket. For
-   local development, run `obsync serve` in the repo root and use
-   `http://127.0.0.1:8765`; leave **Bucket** as `obsync` or empty, it accepts
+1. Set **Store URL** to the read-only endpoint for your stele-pull bucket. For
+   local development, run `stele-pull serve` in the repo root and use
+   `http://127.0.0.1:8765`; leave **Bucket** as `stele-pull` or empty, it accepts
    both.
 2. Set **Course IDs** to a comma-separated list of numeric Canvas course IDs.
-   The store is keyed by ID, not course code: `obsync ls` or
-   `obsync-worker courses` lists them.
+   The store is keyed by ID, not course code: `stele-pull ls` or
+   `stele-pull-worker courses` lists them.
 3. Pick a **Target folder**. Keep it to itself; see the warning below.
 
 The panel starts fetching as soon as those are filled in.
@@ -56,7 +56,7 @@ The panel starts fetching as soon as those are filled in.
 ### Credentials
 
 There are none, by design. Plugin settings persist to
-`.obsidian/plugins/obsync/data.json` **inside the vault**, which is synced by
+`.obsidian/plugins/stele-pull/data.json` **inside the vault**, which is synced by
 whatever else syncs the vault — an S3 secret there travels everywhere the vault
 does. Since phase 1 consumers are read-only, expose the bucket behind Tailscale
 or an auth proxy and do plain GETs.
@@ -95,7 +95,7 @@ A rule with an empty `match` is rejected — that is what `default` is for.
 The panel's **"not included"** section lists everything withheld and why, so a
 rule can never quietly cost you a file without saying so. Files tagged
 **pending** were left for later by a scoped manual pull on the worker
-(`obsync-worker pull -path ...`) and arrive with its next full pull; there is
+(`stele-pull-worker pull -path ...`) and arrive with its next full pull; there is
 nothing to change on your side.
 
 ## Folders

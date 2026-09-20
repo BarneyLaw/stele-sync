@@ -1,12 +1,12 @@
 # obsync-worker
 
-The obsync worker as a CronJob in the `obsync` namespace. Once a day at 18:17
+The stele-pull worker as a CronJob in the `obsync` namespace. Once a day at 18:17
 Singapore time it pulls every active Canvas course's files into the
 garage-obsync store. Source, image and CI:
-[BarneyLaw/obsync-man-worker](https://github.com/BarneyLaw/obsync-man-worker).
+[BarneyLaw/stele-pull](https://github.com/BarneyLaw/stele-pull).
 
 CI owns one line of this directory: `newTag` in `kustomization.yaml`, which
-every release on obsync-man-worker's `main` sets to the tested commit. The
+every release on stele-pull's `main` sets to the tested commit. The
 rest was copied in once, on the first deploy, and is edited here from then on.
 
 Depends on `apps/garage-obsync`, which owns the `obsync` namespace and must
@@ -84,13 +84,13 @@ args:
 ```
 
 Entries are course codes (case-insensitive, or one half of a cross-listed
-code like `CS2103T`) or numeric ids. `obsync-worker courses` lists what the
+code like `CS2103T`) or numeric ids. `stele-pull-worker courses` lists what the
 token can see. Remove the line to go back to every active course.
 
 A code that no longer matches an active course, typically because its semester
 ended, is logged as `run.course_selector_unresolved`. The other courses still
 sync, but the run exits 1 and `ObsyncWorkerLastRunFailed` fires until the list
-is edited. Needs an image built from obsync-man-worker with `run -course`;
+is edited. Needs an image built from stele-pull with `run -course`;
 older images exit 2 on the flag.
 
 ### One course, or part of one
@@ -111,12 +111,12 @@ Add `"-dry-run"` to log every decision without downloading or writing.
 
 ### Inspect the store
 
-The image also carries the `obsync` CLI:
+The image also carries the `stele-pull` CLI:
 
 ```bash
 kubectl -n obsync create job --from=cronjob/obsync-worker obsync-ls \
   --dry-run=client -o json \
-| jq '.spec.template.spec.containers[0].command = ["/usr/local/bin/obsync"]
+| jq '.spec.template.spec.containers[0].command = ["/usr/local/bin/stele-pull"]
     | .spec.template.spec.containers[0].args = ["ls"]' \
 | kubectl apply -f - \
 && kubectl -n obsync wait --for=condition=complete job/obsync-ls \

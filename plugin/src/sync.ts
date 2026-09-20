@@ -79,7 +79,7 @@ export class Syncer {
     // course or run is a mis-served or hand-copied object, and syncing it
     // would tombstone the wrong course's files.
     if (m.course_id !== courseId || m.run_id !== runId) {
-      throw new Error(`obsync: ${key} claims course ${m.course_id} run ${m.run_id}`);
+      throw new Error(`stele-pull: ${key} claims course ${m.course_id} run ${m.run_id}`);
     }
     return m;
   }
@@ -479,5 +479,5 @@ export function notifyResult(r: SyncResult) {
   if (r.adopted) parts.push(`${r.adopted} already present`);
   if (r.conflicts.length) parts.push(`${r.conflicts.length} conflicts`);
   if (r.errors.length) parts.push(`${r.errors.length} errors`);
-  new Notice(`obsync: ${parts.join(", ")}`);
+  new Notice(`stele-pull: ${parts.join(", ")}`);
 }

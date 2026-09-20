@@ -1,10 +1,10 @@
-// Command obsync-worker pulls Canvas course files into the store.
+// Command stele-pull-worker pulls Canvas course files into the store.
 //
-//	obsync-worker run      scheduled pass over every active course, or only those
+//	stele-pull-worker run      scheduled pass over every active course, or only those
 //	                       -course names (what the CronJob runs)
-//	obsync-worker pull     manual pull outside the schedule, optionally scoped to
+//	stele-pull-worker pull     manual pull outside the schedule, optionally scoped to
 //	                       courses, directories and files
-//	obsync-worker courses  list active Canvas courses and whether their files are reachable
+//	stele-pull-worker courses  list active Canvas courses and whether their files are reachable
 //
 // With no command, run is assumed, so existing CronJob args keep working.
 //
@@ -36,13 +36,13 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/leifsen/obsync/internal/canvas"
-	"github.com/leifsen/obsync/internal/lease"
-	"github.com/leifsen/obsync/internal/obs"
-	"github.com/leifsen/obsync/internal/policy"
-	"github.com/leifsen/obsync/internal/run"
-	"github.com/leifsen/obsync/internal/scope"
-	"github.com/leifsen/obsync/internal/store"
+	"github.com/leifsen/stele-pull/internal/canvas"
+	"github.com/leifsen/stele-pull/internal/lease"
+	"github.com/leifsen/stele-pull/internal/obs"
+	"github.com/leifsen/stele-pull/internal/policy"
+	"github.com/leifsen/stele-pull/internal/run"
+	"github.com/leifsen/stele-pull/internal/scope"
+	"github.com/leifsen/stele-pull/internal/store"
 )
 
 const (
@@ -75,7 +75,7 @@ func realMain(args []string) int {
 }
 
 func usage() {
-	fmt.Fprint(os.Stderr, `usage: obsync-worker <command> [flags]
+	fmt.Fprint(os.Stderr, `usage: stele-pull-worker <command> [flags]
 
 commands:
   run       scheduled pass over every active course (what the CronJob runs)
@@ -89,7 +89,7 @@ commands:
               -wait 10m               wait for a running pass instead of exiting 3
   courses   list active courses; -probe checks whether their files are reachable
 
-Run "obsync-worker <command> -h" for all flags.
+Run "stele-pull-worker <command> -h" for all flags.
 Exit codes: 0 ok, 1 failed, 2 usage, 3 lease held by another run, 4 token rejected.
 `)
 }
@@ -104,7 +104,7 @@ type commonFlags struct {
 }
 
 func (c *commonFlags) register(fs *flag.FlagSet) {
-	fs.StringVar(&c.rules, "rules", "/etc/obsync/rules.json", "path to worker rules")
+	fs.StringVar(&c.rules, "rules", "/etc/stele-pull/rules.json", "path to worker rules")
 	fs.StringVar(&c.fsStore, "fs-store", "", "use a local directory as the store; without it GARAGE_* selects S3")
 	fs.StringVar(&c.gateway, "pushgateway", "", "prometheus pushgateway url")
 	fs.StringVar(&c.logLevel, "log-level", "info", "debug, info, warn or error")
@@ -134,7 +134,7 @@ func (l *listFlag) Set(v string) error {
 }
 
 func cmdPass(cmd string, args []string) int {
-	fs := flag.NewFlagSet("obsync-worker "+cmd, flag.ContinueOnError)
+	fs := flag.NewFlagSet("stele-pull-worker "+cmd, flag.ContinueOnError)
 	var c commonFlags
 	c.register(fs)
 	courses := &listFlag{split: true}
@@ -163,7 +163,7 @@ func cmdPass(cmd string, args []string) int {
 		trigger = "manual"
 	}
 	runID := newRunID()
-	base, err := obs.NewLogger(os.Stderr, c.logLevel, "obsync-worker")
+	base, err := obs.NewLogger(os.Stderr, c.logLevel, "stele-pull-worker")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		return exitUsage
@@ -358,7 +358,7 @@ func cmdPass(cmd string, args []string) int {
 		if planned > 0 && n == planned {
 			failed = true
 			log.Error("scope.pattern_matched_nothing", "pattern", pattern,
-				"hint", "check the path with a -dry-run or `obsync ls <course>`")
+				"hint", "check the path with a -dry-run or `stele-pull ls <course>`")
 		}
 	}
 
@@ -454,7 +454,7 @@ func (p *pass) finish(outcome string, code int, err error) int {
 }
 
 func cmdCourses(args []string) int {
-	fs := flag.NewFlagSet("obsync-worker courses", flag.ContinueOnError)
+	fs := flag.NewFlagSet("stele-pull-worker courses", flag.ContinueOnError)
 	logLevel := fs.String("log-level", "info", "debug, info, warn or error")
 	probe := fs.Bool("probe", false, "check whether each course's files are readable (one request per course)")
 	if err := fs.Parse(args); err != nil {
@@ -463,7 +463,7 @@ func cmdCourses(args []string) int {
 		}
 		return exitUsage
 	}
-	log, err := obs.NewLogger(os.Stderr, *logLevel, "obsync-worker")
+	log, err := obs.NewLogger(os.Stderr, *logLevel, "stele-pull-worker")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		return exitUsage

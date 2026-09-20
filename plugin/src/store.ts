@@ -27,7 +27,7 @@ import { requestUrl, RequestUrlParam, Platform } from "obsidian";
  *     Test on a real phone before committing to this path.
  */
 export interface StoreConfig {
-  baseUrl: string;      // e.g. https://obsync.tailnet.ts.net or the S3 endpoint
+  baseUrl: string;      // e.g. https://stele-pull.tailnet.ts.net or the S3 endpoint
   bucket?: string;
   accessKey?: string;   // mode 2 only
   secretKey?: string;   // mode 2 only
@@ -50,7 +50,7 @@ export class RemoteStore {
   async getText(key: string): Promise<string | null> {
     const r = await this.request({ url: this.url(key), method: "GET" });
     if (r.status === 404) return null;
-    if (r.status >= 400) throw new Error(`obsync: GET ${key} -> ${r.status}`);
+    if (r.status >= 400) throw new Error(`stele-pull: GET ${key} -> ${r.status}`);
     return r.text;
   }
 
@@ -61,7 +61,7 @@ export class RemoteStore {
    */
   async getBinary(key: string): Promise<ArrayBuffer> {
     const r = await this.request({ url: this.url(key), method: "GET" });
-    if (r.status >= 400) throw new Error(`obsync: GET ${key} -> ${r.status}`);
+    if (r.status >= 400) throw new Error(`stele-pull: GET ${key} -> ${r.status}`);
     return r.arrayBuffer;
   }
 
@@ -92,15 +92,15 @@ export class RemoteStore {
     if (r.status !== 206) {
       if (r.status === 200) {
         throw new Error(
-          `obsync: range GET ${key} was answered with 200, not 206: the endpoint ` +
+          `stele-pull: range GET ${key} was answered with 200, not 206: the endpoint ` +
           `is ignoring the Range header. Check for a proxy in front of the bucket.`,
         );
       }
-      throw new Error(`obsync: range GET ${key} -> ${r.status}`);
+      throw new Error(`stele-pull: range GET ${key} -> ${r.status}`);
     }
     if (r.arrayBuffer.byteLength !== length) {
       throw new Error(
-        `obsync: range GET ${key} returned ${r.arrayBuffer.byteLength} bytes, expected ${length}`,
+        `stele-pull: range GET ${key} returned ${r.arrayBuffer.byteLength} bytes, expected ${length}`,
       );
     }
     return r.arrayBuffer;

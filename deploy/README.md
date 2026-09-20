@@ -32,7 +32,7 @@ affects a future bootstrap into an empty repo.
 ## One-time setup
 
 1. **Token.** Add `CONFIG_REPO_TOKEN` as an Actions secret on
-   obsync-man-worker: a fine-grained token with Contents read/write on
+   stele-pull: a fine-grained token with Contents read/write on
    homelab-cicd-config. The one lag-app uses has exactly that access.
 2. **First deploy.** Push to `main` (or run the workflow by hand). The GitOps
    commit adds all four paths.

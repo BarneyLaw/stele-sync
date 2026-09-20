@@ -21,13 +21,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/leifsen/obsync/internal/canvas"
-	"github.com/leifsen/obsync/internal/manifest"
-	"github.com/leifsen/obsync/internal/plan"
-	"github.com/leifsen/obsync/internal/policy"
-	"github.com/leifsen/obsync/internal/portable"
-	"github.com/leifsen/obsync/internal/scope"
-	"github.com/leifsen/obsync/internal/store"
+	"github.com/leifsen/stele-pull/internal/canvas"
+	"github.com/leifsen/stele-pull/internal/manifest"
+	"github.com/leifsen/stele-pull/internal/plan"
+	"github.com/leifsen/stele-pull/internal/policy"
+	"github.com/leifsen/stele-pull/internal/portable"
+	"github.com/leifsen/stele-pull/internal/scope"
+	"github.com/leifsen/stele-pull/internal/store"
 )
 
 type Source interface {
@@ -264,7 +264,7 @@ func (r *Runner) fetch(ctx context.Context, log *slog.Logger, cf canvas.File, f 
 	}
 	defer rc.Close()
 
-	tmp, err := os.CreateTemp(r.TempDir, "obsync-download-*")
+	tmp, err := os.CreateTemp(r.TempDir, "stele-pull-download-*")
 	if err != nil {
 		return manifest.Entry{}, 0, false, fmt.Errorf("create temp file: %w", err)
 	}

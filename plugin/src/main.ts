@@ -1,14 +1,14 @@
 import { Plugin, Notice, WorkspaceLeaf } from "obsidian";
-import { ObsyncSettings, DEFAULT_SETTINGS, ObsyncSettingTab } from "./settings";
+import { StelePullSettings, DEFAULT_SETTINGS, StelePullSettingTab } from "./settings";
 import { LocalState, loadState, saveState, emptyState } from "./state";
 import { RemoteStore } from "./store";
 import { Syncer, notifyResult } from "./sync";
-import { ObsyncView, VIEW_TYPE_OBSYNC } from "./ui/ObsyncView";
+import { StelePullView, VIEW_TYPE_STELE_PULL } from "./ui/StelePullView";
 import { widenRightSidebar } from "./ui/layout";
 import { CourseCheck, checkCourses } from "./courses";
 
-export default class ObsyncPlugin extends Plugin {
-  settings: ObsyncSettings = DEFAULT_SETTINGS;
+export default class StelePullPlugin extends Plugin {
+  settings: StelePullSettings = DEFAULT_SETTINGS;
   state: LocalState = emptyState();
   private statusEl?: HTMLElement;
   private intervalId?: number;
@@ -20,20 +20,20 @@ export default class ObsyncPlugin extends Plugin {
   courseCheck?: { ids: number[]; results: CourseCheck[] };
 
   async onload() {
-    const data = (await this.loadData()) as { settings?: ObsyncSettings } | null;
+    const data = (await this.loadData()) as { settings?: StelePullSettings } | null;
     this.settings = { ...DEFAULT_SETTINGS, ...(data?.settings ?? {}) };
     this.state = await loadState(this);
 
-    this.addSettingTab(new ObsyncSettingTab(this.app, this));
+    this.addSettingTab(new StelePullSettingTab(this.app, this));
 
-    this.registerView(VIEW_TYPE_OBSYNC, (leaf: WorkspaceLeaf) => new ObsyncView(leaf, this));
+    this.registerView(VIEW_TYPE_STELE_PULL, (leaf: WorkspaceLeaf) => new StelePullView(leaf, this));
 
     this.statusEl = this.addStatusBarItem();
     this.setStatus("idle");
     this.statusEl?.addEventListener("click", () => void this.activateView());
 
     // The panel is the plugin's main surface, so the ribbon icon opens it.
-    this.addRibbonIcon("cloud-download", "obsync", () => void this.activateView());
+    this.addRibbonIcon("cloud-download", "stele-pull", () => void this.activateView());
 
     this.addCommand({
       id: "open-panel", name: "Open panel",
@@ -53,10 +53,10 @@ export default class ObsyncPlugin extends Plugin {
   /** Reveal the panel, creating it in the right sidebar if it is not open. */
   async activateView() {
     const { workspace } = this.app;
-    let leaf: WorkspaceLeaf | null = workspace.getLeavesOfType(VIEW_TYPE_OBSYNC)[0] ?? null;
+    let leaf: WorkspaceLeaf | null = workspace.getLeavesOfType(VIEW_TYPE_STELE_PULL)[0] ?? null;
     if (!leaf) {
       leaf = workspace.getRightLeaf(false);
-      await leaf?.setViewState({ type: VIEW_TYPE_OBSYNC, active: true });
+      await leaf?.setViewState({ type: VIEW_TYPE_STELE_PULL, active: true });
       // Only when the panel is first created, so a sidebar the user resizes
       // afterwards stays the size they chose.
       widenRightSidebar(this.app);
@@ -85,11 +85,11 @@ export default class ObsyncPlugin extends Plugin {
    */
   makeSyncer(opts: { quiet?: boolean } = {}): Syncer | null {
     if (!this.settings.baseUrl) {
-      if (!opts.quiet) new Notice("obsync: set the store URL in the panel's Setup section first");
+      if (!opts.quiet) new Notice("stele-pull: set the store URL in the panel's Setup section first");
       return null;
     }
     if (this.settings.courses.length === 0) {
-      if (!opts.quiet) new Notice("obsync: add at least one course ID in the panel's Setup section");
+      if (!opts.quiet) new Notice("stele-pull: add at least one course ID in the panel's Setup section");
       return null;
     }
     const store = new RemoteStore({ baseUrl: this.settings.baseUrl, bucket: this.settings.bucket });
@@ -122,12 +122,12 @@ export default class ObsyncPlugin extends Plugin {
           notifyResult(await s.syncCourse(m, { mode }));
         } catch (e) {
           failed.push(courseId);
-          console.error(`obsync: course ${courseId} failed`, e);
+          console.error(`stele-pull: course ${courseId} failed`, e);
         }
       }
       if (failed.length > 0) {
         this.setStatus(`sync failed: ${failed.join(", ")}`);
-        new Notice(`obsync: ${failed.length} course(s) failed. See the console.`);
+        new Notice(`stele-pull: ${failed.length} course(s) failed. See the console.`);
       } else {
         this.setStatus(`synced ${new Date().toLocaleTimeString()}`);
       }
@@ -158,7 +158,7 @@ export default class ObsyncPlugin extends Plugin {
 
   private setStatus(text: string) {
     this.status = text;
-    this.statusEl?.setText(`obsync: ${text}`);
+    this.statusEl?.setText(`stele-pull: ${text}`);
     for (const cb of this.statusListeners) cb(text);
   }
 }

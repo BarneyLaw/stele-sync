@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/leifsen/obsync/internal/store"
+	"github.com/leifsen/stele-pull/internal/store"
 )
 
 func serveFixture(t *testing.T) *httptest.Server {
