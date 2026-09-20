@@ -2,7 +2,7 @@
 //
 // Phase 1 relied on the CronJob's concurrencyPolicy: Forbid alone, because
 // manifests/<course>/latest is read-modify-write with no compare-and-swap.
-// Manual pulls bypass Forbid: `obsync-worker pull` on a laptop, or
+// Manual pulls bypass Forbid: `stele-pull-worker pull` on a laptop, or
 // `kubectl create job --from=cronjob/obsync-worker`, which the CronJob
 // controller does not count. So every writer also takes a lease in the store
 // itself before writing anything.
@@ -33,7 +33,7 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/leifsen/obsync/internal/store"
+	"github.com/leifsen/stele-pull/internal/store"
 )
 
 // Key is the lease object. It is the second, and last, mutable key.

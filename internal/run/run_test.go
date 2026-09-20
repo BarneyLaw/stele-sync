@@ -11,12 +11,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/leifsen/obsync/internal/canvas"
-	"github.com/leifsen/obsync/internal/manifest"
-	"github.com/leifsen/obsync/internal/plan"
-	"github.com/leifsen/obsync/internal/policy"
-	"github.com/leifsen/obsync/internal/scope"
-	"github.com/leifsen/obsync/internal/store"
+	"github.com/leifsen/stele-pull/internal/canvas"
+	"github.com/leifsen/stele-pull/internal/manifest"
+	"github.com/leifsen/stele-pull/internal/plan"
+	"github.com/leifsen/stele-pull/internal/policy"
+	"github.com/leifsen/stele-pull/internal/scope"
+	"github.com/leifsen/stele-pull/internal/store"
 )
 
 var (

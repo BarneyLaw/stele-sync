@@ -1,7 +1,7 @@
 // Package gc deletes blobs no manifest references.
 //
 // Separate from the worker, always. It reads every manifest (not only the
-// latest ones, so `obsync log` and `diff` keep working over history), lists
+// latest ones, so `stele-pull log` and `diff` keep working over history), lists
 // blobs/, and deletes the difference, skipping anything younger than MinAge so
 // it cannot race a run that has written blobs but not yet its manifest.
 //
@@ -18,8 +18,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/leifsen/obsync/internal/manifest"
-	"github.com/leifsen/obsync/internal/store"
+	"github.com/leifsen/stele-pull/internal/manifest"
+	"github.com/leifsen/stele-pull/internal/store"
 )
 
 type Options struct {

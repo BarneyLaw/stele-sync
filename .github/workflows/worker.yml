@@ -1,4 +1,4 @@
-# Validates the Go half of obsync, builds the worker image, and on main
+# Validates the Go half of stele-pull, builds the worker image, and on main
 # publishes it and updates BarneyLaw/homelab-cicd-config, the same GitOps
 # contract as lag-app.
 #
@@ -28,7 +28,7 @@ on:
       - 'internal/manifest/**'
       - 'internal/policy/**'
       - 'internal/plan/**'
-      - 'cmd/obsync/**'
+      - 'cmd/stele-pull/**'
       - 'plugin/src/types.ts'
       - 'plugin/src/policy.ts'
       - 'plugin/src/preview.ts'
@@ -53,7 +53,7 @@ on:
       - 'internal/manifest/**'
       - 'internal/policy/**'
       - 'internal/plan/**'
-      - 'cmd/obsync/**'
+      - 'cmd/stele-pull/**'
       - 'plugin/src/types.ts'
       - 'plugin/src/policy.ts'
       - 'plugin/src/preview.ts'
@@ -111,8 +111,8 @@ jobs:
 
       - name: Build
         run: |
-          go build -trimpath -o bin/obsync-worker ./cmd/obsync-worker
-          go build -trimpath -o bin/obsync ./cmd/obsync
+          go build -trimpath -o bin/stele-pull-worker ./cmd/stele-pull-worker
+          go build -trimpath -o bin/stele-pull ./cmd/stele-pull
 
       - name: Cross-compile for developer machines
         run: |
@@ -121,9 +121,9 @@ jobs:
 
       - name: Smoke test the binaries
         run: |
-          ./bin/obsync-worker help
+          ./bin/stele-pull-worker help
           mkdir -p "$RUNNER_TEMP/store"
-          ./bin/obsync -fs-store "$RUNNER_TEMP/store" ls
+          ./bin/stele-pull -fs-store "$RUNNER_TEMP/store" ls
 
       - name: Render deployment manifests
         env:
@@ -152,16 +152,16 @@ jobs:
 
       - name: S3 integration tests
         env:
-          OBSYNC_REQUIRE_S3: "1"
+          STELE_PULL_REQUIRE_S3: "1"
         run: go test -count=1 -v -run 'S3' ./internal/store ./internal/run
 
-      # obsync serve in front of Garage is the credential-free path for the
+      # stele-pull serve in front of Garage is the credential-free path for the
       # plugin. Check it starts against S3 and answers like the plugin expects.
       - name: Serve Garage to a plugin-shaped client
         run: |
-          go build -o bin/obsync ./cmd/obsync
-          ./bin/obsync ls
-          ./bin/obsync serve -addr 127.0.0.1:8765 &
+          go build -o bin/stele-pull ./cmd/stele-pull
+          ./bin/stele-pull ls
+          ./bin/stele-pull serve -addr 127.0.0.1:8765 &
           code=$(curl -s -o /dev/null -w '%{http_code}' --retry 30 --retry-connrefused --retry-delay 1 \
             http://127.0.0.1:8765/obsync/manifests/0/latest)
           if [ "$code" != 404 ]; then
@@ -186,19 +186,19 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Build image
-        run: docker build -t obsync-worker:ci .
+        run: docker build -t stele-pull-worker:ci .
 
       # The CronJob runs as 65532 with a read-only root filesystem and an
       # emptyDir on /tmp. Smoke-test under the same constraints.
       - name: Smoke-test the image
         run: |
           set -euo pipefail
-          docker run --rm --read-only obsync-worker:ci help
+          docker run --rm --read-only stele-pull-worker:ci help
 
           # No Canvas or Garage configuration: must refuse with exit 2 rather
           # than start and do something half-configured.
           set +e
-          docker run --rm --read-only --tmpfs /tmp obsync-worker:ci run -rules=/nonexistent
+          docker run --rm --read-only --tmpfs /tmp stele-pull-worker:ci run -rules=/nonexistent
           code=$?
           set -e
           if [ "$code" != 2 ]; then
@@ -206,8 +206,8 @@ jobs:
             exit 1
           fi
 
-          docker run --rm --read-only --tmpfs /tmp --entrypoint /usr/local/bin/obsync \
-            obsync-worker:ci -fs-store /tmp ls
+          docker run --rm --read-only --tmpfs /tmp --entrypoint /usr/local/bin/stele-pull \
+            stele-pull-worker:ci -fs-store /tmp ls
 
   deploy:
     name: Publish image and update GitOps
@@ -243,7 +243,7 @@ jobs:
         shell: bash
         run: |
           owner=$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')
-          echo "name=ghcr.io/${owner}/obsync-worker" >> "$GITHUB_OUTPUT"
+          echo "name=ghcr.io/${owner}/stele-pull-worker" >> "$GITHUB_OUTPUT"
           echo "tag=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
 
       - name: Set up Docker Buildx
@@ -287,7 +287,7 @@ jobs:
       # homelab-cicd-config is the deployment source of truth: releases change
       # only the image tag, and sealed secrets, schedule or rules edits made
       # there are never overwritten from here.
-      - name: Bootstrap obsync GitOps files when absent
+      - name: Bootstrap stele-pull GitOps files when absent
         shell: bash
         run: |
           set -euo pipefail
@@ -328,7 +328,7 @@ jobs:
           sudo install -m 0755 kustomize /usr/local/bin/kustomize
           rm -f kustomize kustomize.tar.gz
 
-      - name: Update obsync-worker image tag
+      - name: Update stele-pull-worker image tag
         working-directory: config/apps/obsync-worker
         shell: bash
         env:
@@ -346,7 +346,7 @@ jobs:
           set -euo pipefail
           scripts/render-deploy.sh config/apps/garage-obsync config/apps/obsync-worker
           if ! grep -q "image: ${IMAGE_NAME}:${IMAGE_TAG}" "$RENDER_OUT/obsync-worker.yaml"; then
-            echo "::error::rendered obsync-worker does not use ${IMAGE_NAME}:${IMAGE_TAG}"
+            echo "::error::rendered stele-pull-worker does not use ${IMAGE_NAME}:${IMAGE_TAG}"
             exit 1
           fi
 

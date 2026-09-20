@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/leifsen/obsync/internal/store"
+	"github.com/leifsen/stele-pull/internal/store"
 )
 
 type clock struct{ t time.Time }

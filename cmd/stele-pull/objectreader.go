@@ -5,7 +5,7 @@ import (
 	"errors"
 	"io"
 
-	"github.com/leifsen/obsync/internal/store"
+	"github.com/leifsen/stele-pull/internal/store"
 )
 
 // objectReader is an io.ReadSeeker over a stored object, so http.ServeContent

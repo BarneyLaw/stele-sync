@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/leifsen/obsync/internal/store"
+	"github.com/leifsen/stele-pull/internal/store"
 )
 
 // Summary is runs/<run_id>.json: the durable record of one worker invocation,

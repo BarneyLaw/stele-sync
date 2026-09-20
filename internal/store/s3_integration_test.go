@@ -23,14 +23,14 @@ import (
 //	eval "$(scripts/garage-dev.sh up)"
 //	go test ./internal/store -run S3 -v
 //
-// Without it they skip, unless OBSYNC_REQUIRE_S3=1 (CI), where skipping would
+// Without it they skip, unless STELE_PULL_REQUIRE_S3=1 (CI), where skipping would
 // hide a broken setup, so they fail instead.
 func s3ForTest(t *testing.T) (*S3, Store) {
 	t.Helper()
 	cfg := S3ConfigFromEnv(os.Getenv)
 	if cfg.Endpoint == "" {
-		if os.Getenv("OBSYNC_REQUIRE_S3") == "1" {
-			t.Fatal("OBSYNC_REQUIRE_S3=1 but GARAGE_ENDPOINT is not set")
+		if os.Getenv("STELE_PULL_REQUIRE_S3") == "1" {
+			t.Fatal("STELE_PULL_REQUIRE_S3=1 but GARAGE_ENDPOINT is not set")
 		}
 		t.Skip("set GARAGE_* to run S3 integration tests (scripts/garage-dev.sh up)")
 	}
@@ -148,7 +148,7 @@ func TestS3ConditionalWrites(t *testing.T) {
 func TestS3MissingBucketIsNotNotFound(t *testing.T) {
 	s3ForTest(t)
 	cfg := S3ConfigFromEnv(os.Getenv)
-	cfg.Bucket = "obsync-does-not-exist-" + fmt.Sprint(time.Now().UnixNano())
+	cfg.Bucket = "stele-pull-does-not-exist-" + fmt.Sprint(time.Now().UnixNano())
 	s, err := NewS3(cfg)
 	if err != nil {
 		t.Fatal(err)

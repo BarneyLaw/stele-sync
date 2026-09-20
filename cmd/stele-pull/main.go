@@ -1,4 +1,4 @@
-// Command obsync inspects the store.
+// Command stele-pull inspects the store.
 //
 // This exists because your blob keys are HASHES. No generic S3 browser will
 // ever show you anything meaningful, because there are no filenames in the
@@ -6,14 +6,14 @@
 // tool's job. Build it at the same time as the worker, not after: you cannot
 // debug the differ without it.
 //
-//	obsync ls                      courses, counts, sizes
-//	obsync ls <course>             logical tree with real filenames
-//	obsync preview <course>        what a consumer gets, and everything withheld with its reason
-//	obsync log <course>            runs, with added/changed/removed counts
-//	obsync diff <course> <a> <b>   what changed between two runs ("latest" works as a run)
-//	obsync cat <course> <path>     resolve path to hash, stream the blob, verify the hash
-//	obsync gc [-apply]             delete unreachable blobs (SEPARATE, never in the worker)
-//	obsync serve [-addr]           read-only HTTP view of the store for the plugin (dev)
+//	stele-pull ls                      courses, counts, sizes
+//	stele-pull ls <course>             logical tree with real filenames
+//	stele-pull preview <course>        what a consumer gets, and everything withheld with its reason
+//	stele-pull log <course>            runs, with added/changed/removed counts
+//	stele-pull diff <course> <a> <b>   what changed between two runs ("latest" works as a run)
+//	stele-pull cat <course> <path>     resolve path to hash, stream the blob, verify the hash
+//	stele-pull gc [-apply]             delete unreachable blobs (SEPARATE, never in the worker)
+//	stele-pull serve [-addr]           read-only HTTP view of the store for the plugin (dev)
 //
 // Reads print to stdout. Logs are JSON on stderr; gc and serve log every
 // deletion and every request.
@@ -40,17 +40,17 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/leifsen/obsync/internal/gc"
-	"github.com/leifsen/obsync/internal/lease"
-	"github.com/leifsen/obsync/internal/manifest"
-	"github.com/leifsen/obsync/internal/obs"
-	"github.com/leifsen/obsync/internal/store"
+	"github.com/leifsen/stele-pull/internal/gc"
+	"github.com/leifsen/stele-pull/internal/lease"
+	"github.com/leifsen/stele-pull/internal/manifest"
+	"github.com/leifsen/stele-pull/internal/obs"
+	"github.com/leifsen/stele-pull/internal/store"
 )
 
 func main() { os.Exit(realMain()) }
 
 func realMain() int {
-	root := flag.String("fs-store", "", "store root directory (default ./.obsync-store, or S3 when GARAGE_ENDPOINT is set)")
+	root := flag.String("fs-store", "", "store root directory (default ./.stele-pull-store, or S3 when GARAGE_ENDPOINT is set)")
 	level := flag.String("log-level", "info", "debug, info, warn or error")
 	flag.Usage = usage
 	flag.Parse()
@@ -60,7 +60,7 @@ func realMain() int {
 		usage()
 		return 2
 	}
-	log, err := obs.NewLogger(os.Stderr, *level, "obsync")
+	log, err := obs.NewLogger(os.Stderr, *level, "stele-pull")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		return 2
@@ -69,7 +69,7 @@ func realMain() int {
 
 	fsRoot := *root
 	if fsRoot == "" && os.Getenv(store.S3Env.Endpoint) == "" {
-		fsRoot = "./.obsync-store"
+		fsRoot = "./.stele-pull-store"
 	}
 	raw, desc, err := store.Open(fsRoot, os.Getenv)
 	if err != nil {
@@ -115,7 +115,7 @@ func realMain() int {
 }
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "usage: obsync [-fs-store DIR] [-log-level LEVEL] <ls|preview|log|diff|cat|gc|serve> [args]")
+	fmt.Fprintln(os.Stderr, "usage: stele-pull [-fs-store DIR] [-log-level LEVEL] <ls|preview|log|diff|cat|gc|serve> [args]")
 }
 
 func cmdLS(ctx context.Context, st store.Store, args []string) error {
@@ -179,7 +179,7 @@ func listCourses(ctx context.Context, st store.Store) error {
 // instead of dropping them. Nothing withheld is left out of this output.
 func cmdPreview(ctx context.Context, st store.Store, args []string) error {
 	if len(args) == 0 {
-		return fmt.Errorf("usage: obsync preview <course-id>")
+		return fmt.Errorf("usage: stele-pull preview <course-id>")
 	}
 	id, err := courseID(args[0])
 	if err != nil {
@@ -216,7 +216,7 @@ func cmdPreview(ctx context.Context, st store.Store, args []string) error {
 
 func cmdLog(ctx context.Context, st store.Store, args []string) error {
 	if len(args) == 0 {
-		return fmt.Errorf("usage: obsync log <course-id>")
+		return fmt.Errorf("usage: stele-pull log <course-id>")
 	}
 	id, err := courseID(args[0])
 	if err != nil {
@@ -263,7 +263,7 @@ func cmdLog(ctx context.Context, st store.Store, args []string) error {
 
 func cmdDiff(ctx context.Context, st store.Store, args []string) error {
 	if len(args) < 3 {
-		return fmt.Errorf("usage: obsync diff <course-id> <run-a> <run-b>")
+		return fmt.Errorf("usage: stele-pull diff <course-id> <run-a> <run-b>")
 	}
 	id, err := courseID(args[0])
 	if err != nil {
@@ -296,7 +296,7 @@ func cmdDiff(ctx context.Context, st store.Store, args []string) error {
 
 func cmdCat(ctx context.Context, st store.Store, args []string) error {
 	if len(args) < 2 {
-		return fmt.Errorf("usage: obsync cat <course-id> <path>")
+		return fmt.Errorf("usage: stele-pull cat <course-id> <path>")
 	}
 	id, err := courseID(args[0])
 	if err != nil {
@@ -329,7 +329,7 @@ func cmdCat(ctx context.Context, st store.Store, args []string) error {
 }
 
 func cmdGC(ctx context.Context, st store.Store, log *slog.Logger, args []string) error {
-	fs := flag.NewFlagSet("obsync gc", flag.ContinueOnError)
+	fs := flag.NewFlagSet("stele-pull gc", flag.ContinueOnError)
 	apply := fs.Bool("apply", false, "actually delete; without it gc only reports")
 	minAge := fs.Duration("min-age", 24*time.Hour, "never delete blobs younger than this")
 	lockTTL := fs.Duration("lock-ttl", time.Hour, "lease lifetime while deleting")
@@ -370,7 +370,7 @@ func cmdGC(ctx context.Context, st store.Store, log *slog.Logger, args []string)
 }
 
 func cmdServe(ctx context.Context, raw store.Store, desc store.Description, log *slog.Logger, args []string) error {
-	fs := flag.NewFlagSet("obsync serve", flag.ContinueOnError)
+	fs := flag.NewFlagSet("stele-pull serve", flag.ContinueOnError)
 	addr := fs.String("addr", "127.0.0.1:8765", "listen address")
 	bucket := fs.String("bucket", "obsync", "also serve keys under /<bucket>/, as the plugin's Bucket setting requests them; empty to disable")
 	if err := fs.Parse(args); err != nil {
@@ -506,7 +506,7 @@ func (s *statusRecorder) Write(b []byte) (int, error) {
 func courseID(arg string) (int64, error) {
 	id, err := strconv.ParseInt(arg, 10, 64)
 	if err != nil {
-		return 0, fmt.Errorf("course must be a numeric id (see `obsync ls`): %q", arg)
+		return 0, fmt.Errorf("course must be a numeric id (see `stele-pull ls`): %q", arg)
 	}
 	return id, nil
 }
@@ -515,7 +515,7 @@ func readLatest(ctx context.Context, st store.Store, id int64) (string, error) {
 	rc, err := st.Get(ctx, manifest.LatestKey(id))
 	if err != nil {
 		if errors.Is(err, store.ErrNotFound) {
-			return "", fmt.Errorf("course %d has no published manifest (see `obsync ls`)", id)
+			return "", fmt.Errorf("course %d has no published manifest (see `stele-pull ls`)", id)
 		}
 		return "", err
 	}
@@ -536,7 +536,7 @@ func loadRun(ctx context.Context, st store.Store, id int64, runID string) (*mani
 	rc, err := st.Get(ctx, manifest.ManifestKey(id, runID))
 	if err != nil {
 		if errors.Is(err, store.ErrNotFound) {
-			return nil, fmt.Errorf("course %d has no manifest for run %s (see `obsync log %d`)", id, runID, id)
+			return nil, fmt.Errorf("course %d has no manifest for run %s (see `stele-pull log %d`)", id, runID, id)
 		}
 		return nil, err
 	}

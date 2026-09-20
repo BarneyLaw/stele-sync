@@ -31,7 +31,7 @@ go.work.sum
 # .idea/
 # .vscode/
 
-# --- obsync ---
+# --- stele-pull ---
 
 # Secrets. .env holds a live Canvas token; so could any variant of it.
 .env.*
@@ -46,8 +46,8 @@ go.work.sum
 /bin/
 
 # Local dev store (worker -fs-store) and downloads staged by the worker
-/.obsync-store/
-obsync-download-*
+/.stele-pull-store/
+stele-pull-download-*
 
 # Plugin: dependencies, build output, and settings Obsidian writes into the
 # plugin folder when it is symlinked into a vault. Released builds go to

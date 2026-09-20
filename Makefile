@@ -7,21 +7,21 @@ lint:
 	gofmt -l cmd internal
 	go vet ./...
 build:
-	go build -o bin/obsync-worker ./cmd/obsync-worker
-	go build -o bin/obsync         ./cmd/obsync
+	go build -o bin/stele-pull-worker ./cmd/stele-pull-worker
+	go build -o bin/stele-pull         ./cmd/stele-pull
 # Which course codes and ids exist, and whether their files are reachable.
 courses: build
-	./bin/obsync-worker courses -probe
+	./bin/stele-pull-worker courses -probe
 # Full pipeline into a local directory. No Garage, no cluster.
 run-dev: build
-	./bin/obsync-worker run -rules=deploy/apps/obsync-worker/rules.json -fs-store=./.obsync-store
-	./bin/obsync -fs-store=./.obsync-store ls
+	./bin/stele-pull-worker run -rules=deploy/apps/obsync-worker/rules.json -fs-store=./.stele-pull-store
+	./bin/stele-pull -fs-store=./.stele-pull-store ls
 # Manual pull of one course: make pull-dev COURSE=CS3103 [DRY=1]
 pull-dev: build
-	./bin/obsync-worker pull -rules=deploy/apps/obsync-worker/rules.json -fs-store=./.obsync-store -course=$(COURSE) $(if $(DRY),-dry-run)
+	./bin/stele-pull-worker pull -rules=deploy/apps/obsync-worker/rules.json -fs-store=./.stele-pull-store -course=$(COURSE) $(if $(DRY),-dry-run)
 # Read-only HTTP view of the dev store; point the plugin's base URL at it.
 serve-dev: build
-	./bin/obsync -fs-store=./.obsync-store serve
+	./bin/stele-pull -fs-store=./.stele-pull-store serve
 plugin:
 	cd plugin && npm run build
 plugin-test:
@@ -41,6 +41,6 @@ garage-up:
 garage-down:
 	scripts/garage-dev.sh down
 s3-test:
-	OBSYNC_REQUIRE_S3=1 go test -count=1 -v -run S3 ./internal/store ./internal/run
+	STELE_PULL_REQUIRE_S3=1 go test -count=1 -v -run S3 ./internal/store ./internal/run
 # Everything both CI workflows run.
 ci: lint test plugin-lint plugin-test plugin

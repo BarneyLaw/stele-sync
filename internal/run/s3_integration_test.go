@@ -11,20 +11,20 @@ import (
 	"testing"
 	"time"
 
-	"github.com/leifsen/obsync/internal/lease"
-	"github.com/leifsen/obsync/internal/manifest"
-	"github.com/leifsen/obsync/internal/store"
+	"github.com/leifsen/stele-pull/internal/lease"
+	"github.com/leifsen/stele-pull/internal/manifest"
+	"github.com/leifsen/stele-pull/internal/store"
 )
 
 // A full worker pass against a real S3-compatible server: the commit sequence,
 // write-once manifests, the lease and tombstones, over the wire. Runs when
 // GARAGE_* is set (scripts/garage-dev.sh up); fails instead of skipping under
-// OBSYNC_REQUIRE_S3=1.
+// STELE_PULL_REQUIRE_S3=1.
 func TestS3CourseEndToEnd(t *testing.T) {
 	cfg := store.S3ConfigFromEnv(os.Getenv)
 	if cfg.Endpoint == "" {
-		if os.Getenv("OBSYNC_REQUIRE_S3") == "1" {
-			t.Fatal("OBSYNC_REQUIRE_S3=1 but GARAGE_ENDPOINT is not set")
+		if os.Getenv("STELE_PULL_REQUIRE_S3") == "1" {
+			t.Fatal("STELE_PULL_REQUIRE_S3=1 but GARAGE_ENDPOINT is not set")
 		}
 		t.Skip("set GARAGE_* to run S3 integration tests (scripts/garage-dev.sh up)")
 	}

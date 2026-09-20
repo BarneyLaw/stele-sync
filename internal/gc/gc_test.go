@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/leifsen/obsync/internal/manifest"
-	"github.com/leifsen/obsync/internal/store"
+	"github.com/leifsen/stele-pull/internal/manifest"
+	"github.com/leifsen/stele-pull/internal/store"
 )
 
 var (

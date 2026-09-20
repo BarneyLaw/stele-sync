@@ -16,7 +16,7 @@
 //
 // A CronJob's pod exits, so Prometheus will never scrape it. Metrics go to a
 // Pushgateway instead. Batch jobs are the one case Pushgateway is genuinely
-// designed for, and obsync_last_success_timestamp_seconds persisting between
+// designed for, and stele-pull_last_success_timestamp_seconds persisting between
 // runs is exactly what a staleness alert needs.
 //
 // The alternative is flipping the worker to a Deployment with an internal
@@ -65,13 +65,13 @@ func NewLogger(w io.Writer, level, app string) (*slog.Logger, error) {
 // Push writes to a Prometheus Pushgateway.
 //
 // STUB, step 6. Use github.com/prometheus/client_golang/prometheus/push with
-// job="obsync-worker". The only metric that really matters is:
+// job="stele-pull-worker". The only metric that really matters is:
 //
-//	obsync_last_success_timestamp_seconds
+//	stele-pull_last_success_timestamp_seconds
 //
 // and the only alert that really matters is:
 //
-//	expr: time() - obsync_last_success_timestamp_seconds > 86400
+//	expr: time() - stele-pull_last_success_timestamp_seconds > 86400
 //	for:  1h
 //
 // Everything else is a counter you look at once that fires. Until then the

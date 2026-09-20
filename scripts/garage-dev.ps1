@@ -5,7 +5,7 @@ PowerShell front end for scripts/garage-dev.sh.
 .DESCRIPTION
 Runs the bash script inside Git Bash, in this session, and waits for it. For
 up and env it also sets GARAGE_* in this PowerShell session, so the worker and
-obsync pick Garage up straight away.
+stele-pull pick Garage up straight away.
 
 Invoking scripts/garage-dev.sh directly from PowerShell does not do this:
 Windows hands the .sh file to its associated program in a separate window and

@@ -13,10 +13,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/leifsen/obsync/internal/manifest"
-	"github.com/leifsen/obsync/internal/policy"
-	"github.com/leifsen/obsync/internal/portable"
-	"github.com/leifsen/obsync/internal/scope"
+	"github.com/leifsen/stele-pull/internal/manifest"
+	"github.com/leifsen/stele-pull/internal/policy"
+	"github.com/leifsen/stele-pull/internal/portable"
+	"github.com/leifsen/stele-pull/internal/scope"
 )
 
 // ScopeRule is the RuleName on entries a scoped manual pull deferred. The
