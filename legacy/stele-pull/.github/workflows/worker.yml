@@ -1,0 +1,377 @@
+# Validates the Go half of stele-pull, builds the worker image, and on main
+# publishes it and updates BarneyLaw/homelab-cicd-config, the same GitOps
+# contract as lag-app.
+#
+# Triggers on worker changes, and on any change to the worker<->plugin
+# contract from EITHER side, because the two ship as a pair. The contract block
+# below is identical in plugin.yml: when it matches, both workflows run and
+# each half is checked against the same fixtures. Keep the two blocks in sync.
+name: worker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      # worker
+      - 'cmd/**'
+      - 'internal/**'
+      - 'go.mod'
+      - 'go.sum'
+      - 'Dockerfile'
+      - '.dockerignore'
+      - 'deploy/**'
+      - 'scripts/garage-dev.sh'
+      - 'scripts/render-deploy.sh'
+      - '.github/workflows/worker.yml'
+      # contract (identical in plugin.yml)
+      - 'schema/**'
+      - 'internal/manifest/**'
+      - 'internal/policy/**'
+      - 'internal/plan/**'
+      - 'cmd/stele-pull/**'
+      - 'plugin/src/types.ts'
+      - 'plugin/src/policy.ts'
+      - 'plugin/src/preview.ts'
+      - 'plugin/src/store.ts'
+      - 'plugin/src/sync.ts'
+      - 'plugin/src/*.test.ts'
+  pull_request:
+    paths:
+      # worker
+      - 'cmd/**'
+      - 'internal/**'
+      - 'go.mod'
+      - 'go.sum'
+      - 'Dockerfile'
+      - '.dockerignore'
+      - 'deploy/**'
+      - 'scripts/garage-dev.sh'
+      - 'scripts/render-deploy.sh'
+      - '.github/workflows/worker.yml'
+      # contract (identical in plugin.yml)
+      - 'schema/**'
+      - 'internal/manifest/**'
+      - 'internal/policy/**'
+      - 'internal/plan/**'
+      - 'cmd/stele-pull/**'
+      - 'plugin/src/types.ts'
+      - 'plugin/src/policy.ts'
+      - 'plugin/src/preview.ts'
+      - 'plugin/src/store.ts'
+      - 'plugin/src/sync.ts'
+      - 'plugin/src/*.test.ts'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: worker-${{ github.ref }}
+  # Cancel superseded pull request runs only. A push to main may be mid-way
+  # through pushing to homelab-cicd-config and must finish.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  validate:
+    name: Vet, test, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: go.mod and go.sum are tidy
+        run: go mod tidy -diff
+
+      - name: gofmt
+        run: |
+          unformatted="$(gofmt -l cmd internal)"
+          if [ -n "$unformatted" ]; then
+            echo "::error::these files need gofmt:"
+            echo "$unformatted"
+            exit 1
+          fi
+
+      - name: go vet
+        run: go vet ./...
+
+      - name: Test with the race detector
+        run: go test -race -count=1 ./...
+
+      # The test above already fails on a stale fixture. Regenerating and
+      # diffing shows exactly which contract bytes the change moved, so a
+      # reviewer can see what the plugin will now receive.
+      - name: Contract fixtures are generated from the Go types
+        run: |
+          go test ./internal/manifest -run TestContractFixtures -count=1 -update
+          git diff --exit-code -- schema/
+
+      - name: Build
+        run: |
+          go build -trimpath -o bin/stele-pull-worker ./cmd/stele-pull-worker
+          go build -trimpath -o bin/stele-pull ./cmd/stele-pull
+
+      - name: Cross-compile for developer machines
+        run: |
+          GOOS=windows GOARCH=amd64 go build ./cmd/...
+          GOOS=darwin GOARCH=arm64 go build ./cmd/...
+
+      - name: Smoke test the binaries
+        run: |
+          ./bin/stele-pull-worker help
+          mkdir -p "$RUNNER_TEMP/store"
+          ./bin/stele-pull -fs-store "$RUNNER_TEMP/store" ls
+
+      - name: Render deployment manifests
+        env:
+          RENDER_OUT: ${{ runner.temp }}/rendered
+        run: |
+          scripts/render-deploy.sh deploy/apps/garage-obsync deploy/apps/obsync-worker
+          cronjob="$RENDER_OUT/obsync-worker.yaml"
+          grep -q 'schedule: 17 18 \* \* \*' "$cronjob"
+          grep -q 'timeZone: Asia/Singapore' "$cronjob"
+          grep -q 'concurrencyPolicy: Forbid' "$cronjob"
+
+  garage:
+    name: S3 integration against Garage
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      # The same script developers run; it prints GARAGE_* for the tests.
+      - name: Start a single-node Garage
+        run: scripts/garage-dev.sh up --plain >> "$GITHUB_ENV"
+
+      - name: S3 integration tests
+        env:
+          STELE_PULL_REQUIRE_S3: "1"
+        run: go test -count=1 -v -run 'S3' ./internal/store ./internal/run
+
+      # stele-pull serve in front of Garage is the credential-free path for the
+      # plugin. Check it starts against S3 and answers like the plugin expects.
+      - name: Serve Garage to a plugin-shaped client
+        run: |
+          go build -o bin/stele-pull ./cmd/stele-pull
+          ./bin/stele-pull ls
+          ./bin/stele-pull serve -addr 127.0.0.1:8765 &
+          code=$(curl -s -o /dev/null -w '%{http_code}' --retry 30 --retry-connrefused --retry-delay 1 \
+            http://127.0.0.1:8765/obsync/manifests/0/latest)
+          if [ "$code" != 404 ]; then
+            echo "::error::serve over S3 answered $code for a missing manifest, want 404"
+            exit 1
+          fi
+          code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8765/locks/worker.json)
+          if [ "$code" != 404 ]; then
+            echo "::error::serve exposed locks/ (status $code)"
+            exit 1
+          fi
+
+      - name: Garage logs
+        if: failure()
+        run: docker logs --tail 200 obsync-garage
+
+  container:
+    name: Build and smoke-test image
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Build image
+        run: docker build -t stele-pull-worker:ci .
+
+      # The CronJob runs as 65532 with a read-only root filesystem and an
+      # emptyDir on /tmp. Smoke-test under the same constraints.
+      - name: Smoke-test the image
+        run: |
+          set -euo pipefail
+          docker run --rm --read-only stele-pull-worker:ci help
+
+          # No Canvas or Garage configuration: must refuse with exit 2 rather
+          # than start and do something half-configured.
+          set +e
+          docker run --rm --read-only --tmpfs /tmp stele-pull-worker:ci run -rules=/nonexistent
+          code=$?
+          set -e
+          if [ "$code" != 2 ]; then
+            echo "::error::worker without configuration exited $code, want 2"
+            exit 1
+          fi
+
+          docker run --rm --read-only --tmpfs /tmp --entrypoint /usr/local/bin/stele-pull \
+            stele-pull-worker:ci -fs-store /tmp ls
+
+  deploy:
+    name: Publish image and update GitOps
+    needs:
+      - validate
+      - garage
+      - container
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' ||
+      github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Require GitOps repository token
+        shell: bash
+        env:
+          CONFIG_REPO_TOKEN: ${{ secrets.CONFIG_REPO_TOKEN }}
+        run: |
+          if [ -z "$CONFIG_REPO_TOKEN" ]; then
+            echo "::error::Add CONFIG_REPO_TOKEN with Contents: read/write access to homelab-cicd-config."
+            exit 1
+          fi
+
+      - name: Check out tested commit
+        uses: actions/checkout@v6
+
+      - name: Compute image coordinates
+        id: image
+        shell: bash
+        run: |
+          owner=$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')
+          # obsync-worker, not stele-pull-worker: the image name is a live
+          # identifier. The cluster pulls it, and homelab's kustomization pins
+          # it by name, so `kustomize edit set image` below only matches while
+          # the two agree. It is renamed with the namespace and the bucket, in
+          # one step, at the Longhorn redeploy.
+          echo "name=ghcr.io/${owner}/obsync-worker" >> "$GITHUB_OUTPUT"
+          echo "tag=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract image metadata
+        id: metadata
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ steps.image.outputs.name }}
+          tags: |
+            type=sha,prefix=,format=short
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64
+          tags: ${{ steps.metadata.outputs.tags }}
+          labels: ${{ steps.metadata.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Check out GitOps repository
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ github.repository_owner }}/homelab-cicd-config
+          token: ${{ secrets.CONFIG_REPO_TOKEN }}
+          path: config
+
+      # Files are copied only where absent. Once bootstrapped,
+      # homelab-cicd-config is the deployment source of truth: releases change
+      # only the image tag, and sealed secrets, schedule or rules edits made
+      # there are never overwritten from here.
+      - name: Bootstrap stele-pull GitOps files when absent
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p config/apps config/argocd
+          for app in garage-obsync obsync-worker; do
+            while IFS= read -r file; do
+              dst="config/apps/$app/$file"
+              if [ ! -f "$dst" ]; then
+                mkdir -p "$(dirname "$dst")"
+                cp "deploy/apps/$app/$file" "$dst"
+                echo "bootstrapped apps/$app/$file"
+              fi
+            done < <(cd "deploy/apps/$app" && find . -type f | sed 's|^\./||')
+
+            if [ ! -f "config/argocd/$app.yaml" ]; then
+              cp "deploy/argocd/$app.yaml" "config/argocd/$app.yaml"
+              echo "bootstrapped argocd/$app.yaml"
+            fi
+          done
+
+      - name: Install Kustomize
+        shell: bash
+        env:
+          KUSTOMIZE_VERSION: v5.7.1
+          KUSTOMIZE_SHA256: ea375e7372f9aa029129d4b2d16c66b7750b7f1213c4f66f910d981c895818d8
+        run: |
+          set -euo pipefail
+
+          url="https://github.com/kubernetes-sigs/kustomize/releases/download"
+          url="${url}/kustomize%2F${KUSTOMIZE_VERSION}"
+          url="${url}/kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz"
+
+          curl -fsSL --retry 3 --retry-delay 5 --retry-all-errors \
+            -o kustomize.tar.gz "$url"
+          echo "${KUSTOMIZE_SHA256}  kustomize.tar.gz" | sha256sum -c -
+          tar -xzf kustomize.tar.gz kustomize
+          sudo install -m 0755 kustomize /usr/local/bin/kustomize
+          rm -f kustomize kustomize.tar.gz
+
+      - name: Update stele-pull-worker image tag
+        working-directory: config/apps/obsync-worker
+        shell: bash
+        env:
+          IMAGE_NAME: ${{ steps.image.outputs.name }}
+          IMAGE_TAG: ${{ steps.image.outputs.tag }}
+        run: kustomize edit set image "${IMAGE_NAME}=${IMAGE_NAME}:${IMAGE_TAG}"
+
+      - name: Validate GitOps deployment
+        shell: bash
+        env:
+          RENDER_OUT: ${{ runner.temp }}/gitops
+          IMAGE_NAME: ${{ steps.image.outputs.name }}
+          IMAGE_TAG: ${{ steps.image.outputs.tag }}
+        run: |
+          set -euo pipefail
+          scripts/render-deploy.sh config/apps/garage-obsync config/apps/obsync-worker
+          if ! grep -q "image: ${IMAGE_NAME}:${IMAGE_TAG}" "$RENDER_OUT/obsync-worker.yaml"; then
+            echo "::error::rendered obsync-worker does not use ${IMAGE_NAME}:${IMAGE_TAG}"
+            exit 1
+          fi
+
+      - name: Commit and push GitOps update
+        working-directory: config
+        shell: bash
+        env:
+          IMAGE_TAG: ${{ steps.image.outputs.tag }}
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add apps/garage-obsync apps/obsync-worker argocd/garage-obsync.yaml argocd/obsync-worker.yaml
+
+          if git diff --cached --quiet; then
+            echo "GitOps is already up to date"
+            exit 0
+          fi
+
+          git commit -m "deploy: obsync-worker ${IMAGE_TAG}"
+          git pull --rebase origin main
+          git push origin HEAD:main

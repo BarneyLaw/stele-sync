@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "lib": ["ES2021"]
+  },
+  "include": ["src/core/**/*.ts"]
+}

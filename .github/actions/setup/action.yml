@@ -1,0 +1,29 @@
+name: Set up M0 tooling
+description: Install the pinned Go/Node toolchain and locked plugin dependencies
+inputs:
+  go-tools:
+    description: Install pinned Go lint and vulnerability tools
+    default: "false"
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-go@v6
+      with:
+        go-version-file: go.mod
+        cache: true
+    - uses: actions/setup-node@v6
+      with:
+        node-version: "24"
+        cache: npm
+        cache-dependency-path: plugin/package-lock.json
+    - run: npm ci --prefix plugin
+      shell: bash
+    - uses: actions/cache@v4
+      if: inputs.go-tools == 'true'
+      id: tools
+      with:
+        path: .tools
+        key: tools-${{ runner.os }}-${{ hashFiles('go.mod', 'tools/versions.json') }}
+    - run: node tools/tasks.mjs tools
+      if: inputs.go-tools == 'true' && steps.tools.outputs.cache-hit != 'true'
+      shell: bash

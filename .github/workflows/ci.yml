@@ -1,0 +1,71 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+jobs:
+  gates:
+    name: M0 / ${{ matrix.gate }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        gate: [lint, test, contract, plugin, audit, test-integration, verification]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup
+        with:
+          go-tools: ${{ matrix.gate == 'lint' || matrix.gate == 'audit' }}
+      - name: Run gate
+        if: matrix.gate != 'verification'
+        run: node tools/tasks.mjs ${{ matrix.gate }}
+      - name: Generated fixtures have no drift
+        if: matrix.gate == 'verification'
+        run: node tools/tasks.mjs fixtures-check
+      - name: Decoder fuzzing (60 seconds per target)
+        if: matrix.gate == 'verification'
+        run: node tools/tasks.mjs fuzz-short
+      - name: Deterministic simulation (500 runs)
+        if: matrix.gate == 'verification'
+        run: node tools/tasks.mjs sim
+      - name: Integration diagnostics
+        if: failure() && matrix.gate == 'test-integration'
+        run: docker compose logs --tail=100
+      - name: Stop development services, retain no CI volumes
+        if: always() && matrix.gate == 'test-integration'
+        run: docker compose down --volumes
+  worker:
+    name: M0 / worker
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: Build and smoke-test phase 1 worker
+        run: |
+          docker build -t stele-pull-worker:ci .
+          docker run --rm --read-only stele-pull-worker:ci help
+          docker run --rm --read-only --tmpfs /tmp --entrypoint /usr/local/bin/stele-pull stele-pull-worker:ci -fs-store /tmp ls
+      - name: Cross-compile phase 1 commands for Windows
+        env:
+          GOOS: windows
+          GOARCH: amd64
+          CGO_ENABLED: "0"
+        run: go build ./cmd/stele-pull ./cmd/stele-pull-worker
+      - name: Cross-compile phase 1 commands for macOS
+        env:
+          GOOS: darwin
+          GOARCH: arm64
+          CGO_ENABLED: "0"
+        run: go build ./cmd/stele-pull ./cmd/stele-pull-worker
+      - name: Render phase 1 deployments
+        run: bash scripts/render-deploy.sh deploy/apps/garage-obsync deploy/apps/obsync-worker

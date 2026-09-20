@@ -31,22 +31,37 @@ go.work.sum
 # .idea/
 # .vscode/
 
-# legacy files (phase 1 of this project)
-legacy/*
+# --- stele-pull ---
 
-# Local build/tool caches, dependencies, and development data.
+# Secrets. .env holds a live Canvas token; so could any variant of it.
+.env.*
+!.env.example
+*.pem
+*.key
+# Unsealed Kubernetes secrets. Only SealedSecret manifests belong in git.
+*-secret.yaml
+!*sealed*-secret.yaml
+
+# Build output (make build)
 /bin/
-/.tools/
-/.cache/
-/.dev/
-/node_modules/
+
+# Local dev store (worker -fs-store) and downloads staged by the worker
+/.stele-pull-store/
+stele-pull-download-*
+
+# Plugin: dependencies, build output, and settings Obsidian writes into the
+# plugin folder when it is symlinked into a vault. Released builds go to
+# GitHub releases, never into git.
 plugin/node_modules/
 plugin/main.js
 plugin/**/*.map
 plugin/data.json
 plugin/.parts/
 plugin/coverage/
-.env.*
-!.env.example
-/.stele-pull-store/
-stele-pull-download-*
+
+# Editors and OS
+.vscode/
+.idea/
+*.iml
+.DS_Store
+Thumbs.db

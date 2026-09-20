@@ -1,0 +1,36 @@
+name: stele-sync-dev
+services:
+  postgres:
+    image: postgres:17.9-alpine
+    environment:
+      POSTGRES_DB: obsync
+      POSTGRES_USER: obsync
+      POSTGRES_PASSWORD: obsync-local-only
+    ports:
+      - "127.0.0.1:${POSTGRES_DEV_PORT:-55432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U obsync -d obsync"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+  garage:
+    build:
+      context: .
+      dockerfile: deploy/dev/garage.Dockerfile
+    ports:
+      - "127.0.0.1:${GARAGE_DEV_S3_PORT:-3900}:3900"
+      - "127.0.0.1:${GARAGE_DEV_WEB_PORT:-3902}:3902"
+    volumes:
+      - garage-meta:/var/lib/garage/meta
+      - garage-data:/var/lib/garage/data
+    healthcheck:
+      test: ["CMD", "/bin/busybox", "sh", "-c", "test -f /tmp/garage-ready && /garage status"]
+      interval: 2s
+      timeout: 5s
+      retries: 45
+volumes:
+  postgres-data:
+  garage-meta:
+  garage-data:

@@ -1,0 +1,26 @@
+name: Nightly
+on:
+  schedule:
+    - cron: "17 18 * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: nightly
+  cancel-in-progress: false
+jobs:
+  soak:
+    name: Nightly / ${{ matrix.gate }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        gate: [fuzz-short, sim, e2e]
+    env:
+      FUZZ_TIME: 1h
+      SIM_RUNS: "10000"
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup
+      - run: node tools/tasks.mjs ${{ matrix.gate }}
