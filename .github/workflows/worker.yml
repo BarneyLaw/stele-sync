@@ -243,7 +243,12 @@ jobs:
         shell: bash
         run: |
           owner=$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')
-          echo "name=ghcr.io/${owner}/stele-pull-worker" >> "$GITHUB_OUTPUT"
+          # obsync-worker, not stele-pull-worker: the image name is a live
+          # identifier. The cluster pulls it, and homelab's kustomization pins
+          # it by name, so `kustomize edit set image` below only matches while
+          # the two agree. It is renamed with the namespace and the bucket, in
+          # one step, at the Longhorn redeploy.
+          echo "name=ghcr.io/${owner}/obsync-worker" >> "$GITHUB_OUTPUT"
           echo "tag=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
 
       - name: Set up Docker Buildx
@@ -346,7 +351,7 @@ jobs:
           set -euo pipefail
           scripts/render-deploy.sh config/apps/garage-obsync config/apps/obsync-worker
           if ! grep -q "image: ${IMAGE_NAME}:${IMAGE_TAG}" "$RENDER_OUT/obsync-worker.yaml"; then
-            echo "::error::rendered stele-pull-worker does not use ${IMAGE_NAME}:${IMAGE_TAG}"
+            echo "::error::rendered obsync-worker does not use ${IMAGE_NAME}:${IMAGE_TAG}"
             exit 1
           fi
 
