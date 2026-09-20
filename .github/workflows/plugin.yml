@@ -21,7 +21,7 @@ on:
       - 'internal/manifest/**'
       - 'internal/policy/**'
       - 'internal/plan/**'
-      - 'cmd/obsync/**'
+      - 'cmd/stele-pull/**'
       - 'plugin/src/types.ts'
       - 'plugin/src/policy.ts'
       - 'plugin/src/preview.ts'
@@ -39,7 +39,7 @@ on:
       - 'internal/manifest/**'
       - 'internal/policy/**'
       - 'internal/plan/**'
-      - 'cmd/obsync/**'
+      - 'cmd/stele-pull/**'
       - 'plugin/src/types.ts'
       - 'plugin/src/policy.ts'
       - 'plugin/src/preview.ts'
@@ -106,14 +106,14 @@ jobs:
             }
             for (const e of errors) console.log(`::error::${e}`);
             if (errors.length > 0) process.exit(1);
-            console.log(`obsync ${manifest.version}, Obsidian >= ${manifest.minAppVersion}`);
+            console.log(`stele-pull ${manifest.version}, Obsidian >= ${manifest.minAppVersion}`);
           '
 
       - name: Upload the plugin bundle
         if: matrix.node == '24.x'
         uses: actions/upload-artifact@v4
         with:
-          name: obsync-plugin
+          name: stele-pull-plugin
           path: |
             plugin/main.js
             plugin/manifest.json

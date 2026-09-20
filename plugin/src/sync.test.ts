@@ -127,7 +127,7 @@ class FakeAdapter {
 class FakePlugin {
   saved: unknown = null;
   loaded: unknown = null;
-  manifest = { id: "obsync", dir: ".myconfig/plugins/obsync" };
+  manifest = { id: "stele-pull", dir: ".myconfig/plugins/stele-pull" };
   constructor(public adapter: FakeAdapter) {}
   get app() { return { vault: { adapter: this.adapter, configDir: ".myconfig" } }; }
   saveData(d: unknown) { this.saved = d; return Promise.resolve(); }
@@ -193,7 +193,7 @@ function build(contents: string[]) {
   adapter.dirs.add("Canvas");
   adapter.dirs.add(".myconfig");
   adapter.dirs.add(".myconfig/plugins");
-  adapter.dirs.add(".myconfig/plugins/obsync");
+  adapter.dirs.add(".myconfig/plugins/stele-pull");
   const blobs = new Map<string, Uint8Array>();
   for (const c of contents) blobs.set(blobKey(hashOf(c)), enc(c));
   const plugin = new FakePlugin(adapter);

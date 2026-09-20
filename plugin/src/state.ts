@@ -4,7 +4,7 @@ import { Plugin } from "obsidian";
  * Local record of what this device wrote. Lives in the plugin's data.json via
  * saveData(), NOT in the vault body.
  *
- * IMPORTANT: data.json sits inside .obsidian/plugins/obsync/ and is synced by
+ * IMPORTANT: data.json sits inside .obsidian/plugins/stele-pull/ and is synced by
  * whatever else syncs your vault. Never put credentials here. See store.ts for
  * why the recommended transport needs none.
  *

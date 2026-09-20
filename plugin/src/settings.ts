@@ -2,7 +2,7 @@ import { App, PluginSettingTab, Setting, Plugin, setIcon } from "obsidian";
 import { Policy, validate } from "./policy";
 import { CourseCheck, parseCourseIds, sameIds } from "./courses";
 
-export interface ObsyncSettings {
+export interface StelePullSettings {
   baseUrl: string;
   bucket: string;
   courses: number[];
@@ -14,9 +14,9 @@ export interface ObsyncSettings {
   policy: Policy;
 }
 
-export const DEFAULT_SETTINGS: ObsyncSettings = {
+export const DEFAULT_SETTINGS: StelePullSettings = {
   baseUrl: "",
-  bucket: "obsync",
+  bucket: "stele-pull",
   courses: [],
   targetFolder: "Canvas",
   trashFolder: "Canvas/_trash",
@@ -33,8 +33,8 @@ export const DEFAULT_SETTINGS: ObsyncSettings = {
   },
 };
 
-export type ObsyncPluginLike = Plugin & {
-  settings: ObsyncSettings;
+export type StelePullPluginLike = Plugin & {
+  settings: StelePullSettings;
   save(): Promise<void>;
   rescheduleSync(): void;
   /** Look each course ID up in the store. */
@@ -45,7 +45,7 @@ export type ObsyncPluginLike = Plugin & {
 
 const COURSES_DESC =
   "Comma-separated numeric Canvas course IDs, e.g. 93794. The store is keyed by ID, " +
-  "not course code: run obsync ls or obsync-worker courses to list them.";
+  "not course code: run stele-pull ls or stele-pull-worker courses to list them.";
 const RULES_DESC =
   "Applied to the manifest locally. Reversible: changing these never needs a refetch.";
 
@@ -60,7 +60,7 @@ const RULES_DESC =
  */
 export function renderSettings(
   containerEl: HTMLElement,
-  plugin: ObsyncPluginLike,
+  plugin: StelePullPluginLike,
   onCoursesChanged?: () => void,
 ) {
   new Setting(containerEl).setName("Store").setHeading();
@@ -68,14 +68,14 @@ export function renderSettings(
   new Setting(containerEl)
     .setName("Store URL")
     .setDesc(
-      "Read-only endpoint for the obsync bucket. Prefer an endpoint already " +
+      "Read-only endpoint for the stele-pull bucket. Prefer an endpoint already " +
       "protected at the network layer (Tailscale, auth proxy) so no credentials " +
-      "are stored in the vault. For local development, run obsync serve and " +
+      "are stored in the vault. For local development, run stele-pull serve and " +
       "use http://127.0.0.1:8765.",
     )
     .addText((t) =>
       t
-        .setPlaceholder("https://obsync.tailnet.ts.net")
+        .setPlaceholder("https://stele-pull.tailnet.ts.net")
         .setValue(plugin.settings.baseUrl)
         .onChange(async (v) => {
           plugin.settings.baseUrl = v.trim();
@@ -87,7 +87,7 @@ export function renderSettings(
     .setName("Bucket")
     .setDesc(
       "Path segment between the URL and the store keys. Leave empty if the URL " +
-      "already points at the bucket root; obsync serve accepts either.",
+      "already points at the bucket root; stele-pull serve accepts either.",
     )
     .addText((t) =>
       t.setValue(plugin.settings.bucket).onChange(async (v) => {
@@ -104,7 +104,7 @@ export function renderSettings(
   // closed this form and raised "add a course ID" while the field was empty.
   // Enter, or leaving the field, saves the list and looks each ID up.
   const courses = new Setting(containerEl).setName("Course IDs").setDesc(COURSES_DESC);
-  const report = containerEl.createDiv({ cls: "obsync-course-report" });
+  const report = containerEl.createDiv({ cls: "stele-pull-course-report" });
   const cached = plugin.courseCheck;
   if (cached && sameIds(cached.ids, plugin.settings.courses)) {
     renderCourseReport(report, cached.results, []);
@@ -117,7 +117,7 @@ export function renderSettings(
       courses.setDesc(
         bad.length > 0 ? `Not a course ID: ${bad.join(", ")}. Use numbers separated by commas.` : COURSES_DESC,
       );
-      courses.descEl.toggleClass("obsync-error", bad.length > 0);
+      courses.descEl.toggleClass("stele-pull-error", bad.length > 0);
     });
     t.inputEl.addEventListener("change", () => {
       void (async () => {
@@ -132,7 +132,7 @@ export function renderSettings(
           plugin.courseCheck = undefined;
           renderCourseReport(report, [], bad);
         } else {
-          report.createDiv({ cls: "obsync-muted", text: "Checking the store..." });
+          report.createDiv({ cls: "stele-pull-muted", text: "Checking the store..." });
           const results = await plugin.checkCourses(ids);
           plugin.courseCheck = { ids, results };
           renderCourseReport(report, results, bad);
@@ -216,7 +216,7 @@ export function renderSettings(
         parsed = JSON.parse(v) as Policy;
       } catch {
         rules.setDesc("Invalid JSON. The previous rules are still in effect.");
-        rules.descEl.addClass("obsync-error");
+        rules.descEl.addClass("stele-pull-error");
         return;
       }
       // Parsing is not enough: an empty match silently swallows everything,
@@ -224,11 +224,11 @@ export function renderSettings(
       const err = validate(parsed);
       if (err) {
         rules.setDesc(`Invalid rules: ${err}. The previous rules are still in effect.`);
-        rules.descEl.addClass("obsync-error");
+        rules.descEl.addClass("stele-pull-error");
         return;
       }
       rules.setDesc(RULES_DESC);
-      rules.descEl.removeClass("obsync-error");
+      rules.descEl.removeClass("stele-pull-error");
       plugin.settings.policy = parsed;
       await plugin.save();
       rulesChanged = true;
@@ -240,29 +240,29 @@ export function renderSettings(
 function renderCourseReport(el: HTMLElement, results: CourseCheck[], bad: string[]) {
   el.empty();
   const line = (icon: string, cls: string, text: string) => {
-    const row = el.createDiv({ cls: `obsync-course-report-row ${cls}` });
-    setIcon(row.createSpan({ cls: "obsync-course-report-icon" }), icon);
+    const row = el.createDiv({ cls: `stele-pull-course-report-row ${cls}` });
+    setIcon(row.createSpan({ cls: "stele-pull-course-report-icon" }), icon);
     row.createSpan({ text });
   };
   for (const r of results) {
     switch (r.status) {
       case "found":
-        line("check", "obsync-ok", `${r.id}: ${r.name}`);
+        line("check", "stele-pull-ok", `${r.id}: ${r.name}`);
         break;
       case "missing":
-        line("x", "obsync-error",
+        line("x", "stele-pull-error",
           `${r.id}: not in the store. Check the ID, or run the worker for this course first.`);
         break;
       case "error":
-        line("alert-triangle", "obsync-warning", `${r.id}: could not check (${r.message})`);
+        line("alert-triangle", "stele-pull-warning", `${r.id}: could not check (${r.message})`);
         break;
     }
   }
-  for (const b of bad) line("x", "obsync-error", `"${b}" is not a course ID`);
+  for (const b of bad) line("x", "stele-pull-error", `"${b}" is not a course ID`);
 }
 
-export class ObsyncSettingTab extends PluginSettingTab {
-  constructor(app: App, private plugin: ObsyncPluginLike) {
+export class StelePullSettingTab extends PluginSettingTab {
+  constructor(app: App, private plugin: StelePullPluginLike) {
     super(app, plugin);
   }
 

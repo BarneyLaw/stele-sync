@@ -1,6 +1,6 @@
-/* obsync — sidebar panel and settings validation. */
+/* stele-pull — sidebar panel and settings validation. */
 
-.obsync-view {
+.stele-pull-view {
   padding: var(--size-4-3);
   display: flex;
   flex-direction: column;
@@ -8,7 +8,7 @@
 }
 
 /* Status and the two global actions, pinned above the course list. */
-.obsync-view .obsync-head {
+.stele-pull-view .stele-pull-head {
   display: flex;
   flex-direction: column;
   gap: var(--size-2-2);
@@ -16,75 +16,75 @@
   border-bottom: 1px solid var(--background-modifier-border);
 }
 
-.obsync-view .obsync-status {
+.stele-pull-view .stele-pull-status {
   font-size: var(--font-ui-small);
   color: var(--text-muted);
 }
 
-.obsync-view .obsync-actions {
+.stele-pull-view .stele-pull-actions {
   display: flex;
   align-items: center;
   gap: var(--size-2-2);
   flex-wrap: wrap;
 }
 
-.obsync-view .obsync-actions .obsync-count {
+.stele-pull-view .stele-pull-actions .stele-pull-count {
   margin-right: auto;
 }
 
-.obsync-view details {
+.stele-pull-view details {
   border: 1px solid var(--background-modifier-border);
   border-radius: var(--radius-s);
   padding: var(--size-2-2) var(--size-2-3);
 }
 
 /* Nested sections (withheld inside a course) should not stack borders. */
-.obsync-view details details {
+.stele-pull-view details details {
   border: none;
   padding: var(--size-2-2) 0 0 0;
 }
 
-.obsync-view summary {
+.stele-pull-view summary {
   cursor: pointer;
   font-weight: var(--font-semibold);
   padding: var(--size-2-1) 0;
 }
 
-.obsync-view p {
+.stele-pull-view p {
   margin: var(--size-2-2) 0;
 }
 
 /* Bounded so a semester of entries cannot run away with the panel. */
-.obsync-view .obsync-list {
+.stele-pull-view .stele-pull-list {
   max-height: 45vh;
   overflow-y: auto;
   margin: var(--size-2-2) 0;
 }
 
-.obsync-view .obsync-row {
+.stele-pull-view .stele-pull-row {
   display: flex;
   align-items: baseline;
   gap: var(--size-2-2);
   padding: var(--size-2-1) 0;
 }
 
-.obsync-view .obsync-label {
+.stele-pull-view .stele-pull-label {
   min-width: 0;
   flex: 1;
 }
 
-.obsync-view .obsync-path {
+.stele-pull-view .stele-pull-path {
   word-break: break-word;
   font-size: var(--font-ui-small);
 }
 
-.obsync-view .obsync-muted {
+.stele-pull-view .stele-pull-muted {
   color: var(--text-muted);
   font-size: var(--font-ui-smaller);
 }
 
 /* Why a file was withheld, at a glance. */
-.obsync-view .obsync-tag {
+.stele-pull-view .stele-pull-tag {
   flex: 0 0 auto;
   font-size: var(--font-ui-smaller);
   color: var(--text-muted);
@@ -94,31 +94,31 @@
   white-space: nowrap;
 }
 
-.obsync-view .obsync-conflicts .obsync-row button {
+.stele-pull-view .stele-pull-conflicts .stele-pull-row button {
   flex: 0 0 auto;
   font-size: var(--font-ui-smaller);
   padding: var(--size-2-1) var(--size-2-2);
 }
 
 /* The panel is narrow; let the settings form stack instead of overflowing. */
-.obsync-view .obsync-setup .setting-item {
+.stele-pull-view .stele-pull-setup .setting-item {
   display: block;
   padding: var(--size-2-3) 0;
   border: none;
 }
 
-.obsync-view .obsync-setup .setting-item-control {
+.stele-pull-view .stele-pull-setup .setting-item-control {
   justify-content: flex-start;
   padding-top: var(--size-2-2);
 }
 
-.obsync-view .obsync-setup .setting-item-control input[type="text"],
-.obsync-view .obsync-setup .setting-item-control textarea {
+.stele-pull-view .stele-pull-setup .setting-item-control input[type="text"],
+.stele-pull-view .stele-pull-setup .setting-item-control textarea {
   width: 100%;
 }
 
 /* File trees: folders first, collapsible, one indent guide per level. */
-.obsync-view .obsync-tree-row {
+.stele-pull-view .stele-pull-tree-row {
   display: flex;
   align-items: center;
   gap: var(--size-2-2);
@@ -126,13 +126,13 @@
   min-width: 0;
 }
 
-.obsync-view .obsync-tree-row input[type="checkbox"] {
+.stele-pull-view .stele-pull-tree-row input[type="checkbox"] {
   flex: 0 0 auto;
   margin: 0;
 }
 
-.obsync-view .obsync-tree-caret,
-.obsync-view .obsync-tree-icon {
+.stele-pull-view .stele-pull-tree-caret,
+.stele-pull-view .stele-pull-tree-icon {
   flex: 0 0 auto;
   display: inline-flex;
   width: var(--icon-xs);
@@ -140,47 +140,47 @@
   color: var(--text-muted);
 }
 
-.obsync-view .obsync-tree-row svg {
+.stele-pull-view .stele-pull-tree-row svg {
   width: var(--icon-xs);
   height: var(--icon-xs);
 }
 
-.obsync-view .obsync-tree-caret,
-.obsync-view .obsync-tree-toggle {
+.stele-pull-view .stele-pull-tree-caret,
+.stele-pull-view .stele-pull-tree-toggle {
   cursor: pointer;
 }
 
-.obsync-view .obsync-tree-name {
+.stele-pull-view .stele-pull-tree-name {
   font-weight: var(--font-medium);
 }
 
-.obsync-view .obsync-tree-all {
+.stele-pull-view .stele-pull-tree-all {
   padding-bottom: var(--size-2-2);
   border-bottom: 1px solid var(--background-modifier-border);
   margin-bottom: var(--size-2-1);
 }
 
 /* What a pull would do to each file, readable at a glance. */
-.obsync-view .obsync-tag-new {
+.stele-pull-view .stele-pull-tag-new {
   color: var(--text-accent);
 }
 
-.obsync-view .obsync-tag-changed {
+.stele-pull-view .stele-pull-tag-changed {
   color: var(--text-warning);
 }
 
-.obsync-view .obsync-tag-missing {
+.stele-pull-view .stele-pull-tag-missing {
   color: var(--text-error);
 }
 
-.obsync-view .obsync-tree-children {
+.stele-pull-view .stele-pull-tree-children {
   margin-left: calc(var(--icon-xs) / 2);
   padding-left: var(--size-4-2);
   border-left: 1px solid var(--background-modifier-border);
 }
 
 /* Setup: one line per course ID after it is checked against the store. */
-.obsync-course-report {
+.stele-pull-course-report {
   display: flex;
   flex-direction: column;
   gap: var(--size-2-1);
@@ -188,30 +188,30 @@
   font-size: var(--font-ui-small);
 }
 
-.obsync-course-report-row {
+.stele-pull-course-report-row {
   display: flex;
   align-items: center;
   gap: var(--size-2-2);
 }
 
-.obsync-course-report-icon {
+.stele-pull-course-report-icon {
   display: inline-flex;
   flex: 0 0 auto;
 }
 
-.obsync-course-report-icon svg {
+.stele-pull-course-report-icon svg {
   width: var(--icon-xs);
   height: var(--icon-xs);
 }
 
-.obsync-ok {
+.stele-pull-ok {
   color: var(--text-success);
 }
 
-.obsync-warning {
+.stele-pull-warning {
   color: var(--text-warning);
 }
 
-.obsync-error {
+.stele-pull-error {
   color: var(--text-error);
 }

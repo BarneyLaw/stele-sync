@@ -2,11 +2,11 @@ import { ItemView, WorkspaceLeaf, Notice, normalizePath, setIcon } from "obsidia
 import { Manifest } from "../types";
 import { Preview, PreviewItem, isPullable } from "../preview";
 import { humanBytes } from "../policy";
-import { renderSettings, ObsyncPluginLike } from "../settings";
+import { renderSettings, StelePullPluginLike } from "../settings";
 import { Syncer, notifyResult } from "../sync";
 import { buildTree, filesUnder, TreeFolder } from "../tree";
 
-export const VIEW_TYPE_OBSYNC = "obsync-panel";
+export const VIEW_TYPE_STELE_PULL = "stele-pull-panel";
 
 /** Long lists get truncated: a semester is ~2000 entries and the DOM notices. */
 const MAX_ROWS = 300;
@@ -18,7 +18,7 @@ const MAX_ROWS = 300;
 const AUTO_EXPAND_FILES = 12;
 
 /** What the plugin has to expose for the panel to drive it. */
-export type ObsyncHost = ObsyncPluginLike & {
+export type StelePullHost = StelePullPluginLike & {
   makeSyncer(opts?: { quiet?: boolean }): Syncer | null;
   pullAll(opts?: { manual?: boolean }): Promise<void>;
   onStatus(cb: (text: string) => void): () => void;
@@ -47,7 +47,7 @@ interface Box {
  * is actually used. The settings tab renders the same form via renderSettings()
  * so the two cannot drift.
  */
-export class ObsyncView extends ItemView {
+export class StelePullView extends ItemView {
   private courses = new Map<number, CourseState>();
   private syncer: Syncer | null = null;
   private loading = false;
@@ -58,12 +58,12 @@ export class ObsyncView extends ItemView {
   private collapsedCourses = new Set<number>();
   private openWithheld = new Set<number>();
 
-  constructor(leaf: WorkspaceLeaf, private plugin: ObsyncHost) {
+  constructor(leaf: WorkspaceLeaf, private plugin: StelePullHost) {
     super(leaf);
   }
 
-  getViewType() { return VIEW_TYPE_OBSYNC; }
-  getDisplayText() { return "obsync"; }
+  getViewType() { return VIEW_TYPE_STELE_PULL; }
+  getDisplayText() { return "stele-pull"; }
   getIcon() { return "cloud-download"; }
 
   async onOpen() {
@@ -122,7 +122,7 @@ export class ObsyncView extends ItemView {
     const root = this.containerEl.children[1] as HTMLElement | undefined;
     if (!root) return;
     root.empty();
-    root.addClass("obsync-view");
+    root.addClass("stele-pull-view");
 
     this.renderHeader(root);
     this.renderBody(root.createDiv());
@@ -131,10 +131,10 @@ export class ObsyncView extends ItemView {
   }
 
   private renderHeader(root: HTMLElement) {
-    const head = root.createDiv({ cls: "obsync-head" });
-    this.statusEl = head.createDiv({ cls: "obsync-status", text: this.plugin.currentStatus() });
+    const head = root.createDiv({ cls: "stele-pull-head" });
+    this.statusEl = head.createDiv({ cls: "stele-pull-status", text: this.plugin.currentStatus() });
 
-    const bar = head.createDiv({ cls: "obsync-actions" });
+    const bar = head.createDiv({ cls: "stele-pull-actions" });
     const pull = bar.createEl("button", { text: "Pull now", cls: "mod-cta" });
     pull.setAttr("aria-label", "Pull everything ticked, in every course");
     pull.addEventListener("click", () => {
@@ -150,24 +150,24 @@ export class ObsyncView extends ItemView {
   private renderBody(body: HTMLElement) {
     if (!this.plugin.settings.baseUrl || this.plugin.settings.courses.length === 0) {
       body.createEl("p", {
-        cls: "obsync-muted",
+        cls: "stele-pull-muted",
         text: "Set a store URL and at least one course ID in Setup below to get started.",
       });
       return;
     }
     if (this.loading) {
-      body.createEl("p", { cls: "obsync-muted", text: "Loading manifests..." });
+      body.createEl("p", { cls: "stele-pull-muted", text: "Loading manifests..." });
       return;
     }
     if (this.courses.size === 0) {
-      body.createEl("p", { cls: "obsync-muted", text: "Nothing loaded. Press Refresh." });
+      body.createEl("p", { cls: "stele-pull-muted", text: "Nothing loaded. Press Refresh." });
       return;
     }
     for (const [id, st] of this.courses) this.renderCourse(body, id, st);
   }
 
   private renderCourse(parent: HTMLElement, id: number, st: CourseState) {
-    const details = parent.createEl("details", { cls: "obsync-course" });
+    const details = parent.createEl("details", { cls: "stele-pull-course" });
     details.open = !this.collapsedCourses.has(id);
     details.addEventListener("toggle", () => {
       if (details.open) this.collapsedCourses.delete(id);
@@ -177,7 +177,7 @@ export class ObsyncView extends ItemView {
     details.createEl("summary", { text: name });
 
     if (st.error) {
-      details.createEl("p", { cls: "obsync-error", text: st.error });
+      details.createEl("p", { cls: "stele-pull-error", text: st.error });
       return;
     }
     const p = st.preview;
@@ -194,23 +194,23 @@ export class ObsyncView extends ItemView {
     const parts = [`${counts.new} new`, `${counts.changed} changed`];
     if (counts.missing > 0) parts.push(`${counts.missing} missing from the vault`);
     details.createEl("p", {
-      cls: "obsync-muted",
+      cls: "stele-pull-muted",
       text: `${parts.join(" · ")} · ${p.alreadyHave} up to date`,
     });
 
     if (items.length === 0) {
-      details.createEl("p", { cls: "obsync-muted", text: "Everything here is current." });
+      details.createEl("p", { cls: "stele-pull-muted", text: "Everything here is current." });
     } else {
       details.createEl("p", {
-        cls: "obsync-muted",
+        cls: "stele-pull-muted",
         text:
           "Only ticked files are pulled, and only when you press a pull button. " +
           "Automatic pulls just refresh files already in your vault.",
       });
       this.renderTree(details, items, { id, st, manifest: m });
 
-      const foot = details.createDiv({ cls: "obsync-actions" });
-      const count = foot.createSpan({ cls: "obsync-muted obsync-count" });
+      const foot = details.createDiv({ cls: "stele-pull-actions" });
+      const count = foot.createSpan({ cls: "stele-pull-muted stele-pull-count" });
       count.dataset.course = String(id);
       const go = foot.createEl("button", { text: "Pull selected", cls: "mod-cta" });
       go.addEventListener("click", () => void this.pullCourse(st));
@@ -224,7 +224,7 @@ export class ObsyncView extends ItemView {
     const withheld = p.items.filter((i) => !isPullable(i) && i.action !== "have");
     if (withheld.length === 0) return;
 
-    const details = parent.createEl("details", { cls: "obsync-withheld" });
+    const details = parent.createEl("details", { cls: "stele-pull-withheld" });
     details.open = this.openWithheld.has(id);
     details.addEventListener("toggle", () => {
       if (details.open) this.openWithheld.add(id);
@@ -232,7 +232,7 @@ export class ObsyncView extends ItemView {
     });
     details.createEl("summary", { text: `Not included (${withheld.length})` });
     details.createEl("p", {
-      cls: "obsync-muted",
+      cls: "stele-pull-muted",
       text:
         "Canvas has these and they were deliberately not pulled. Local rules are " +
         "reversible in Setup; worker rules need a change on the server. Pending " +
@@ -257,7 +257,7 @@ export class ObsyncView extends ItemView {
     items: PreviewItem[],
     selection?: { id: number; st: CourseState; manifest: Manifest },
   ) {
-    const list = parent.createDiv({ cls: "obsync-list obsync-tree" });
+    const list = parent.createDiv({ cls: "stele-pull-list stele-pull-tree" });
     const boxes: Box[] = [];
 
     const redraw = () => {
@@ -287,10 +287,10 @@ export class ObsyncView extends ItemView {
     };
 
     if (selection) {
-      const all = list.createDiv({ cls: "obsync-tree-row obsync-tree-all" });
-      all.createSpan({ cls: "obsync-tree-caret" });
+      const all = list.createDiv({ cls: "stele-pull-tree-row stele-pull-tree-all" });
+      all.createSpan({ cls: "stele-pull-tree-caret" });
       checkbox(all, items.map((i) => i.entry.path));
-      all.createSpan({ cls: "obsync-tree-name", text: "All files" });
+      all.createSpan({ cls: "stele-pull-tree-name", text: "All files" });
     }
 
     let rendered = 0;
@@ -298,21 +298,21 @@ export class ObsyncView extends ItemView {
       for (const sub of folder.folders) {
         if (rendered >= MAX_ROWS) return;
         const files = filesUnder(sub);
-        const node = el.createDiv({ cls: "obsync-tree-folder" });
-        const row = node.createDiv({ cls: "obsync-tree-row" });
-        const caret = row.createSpan({ cls: "obsync-tree-caret" });
+        const node = el.createDiv({ cls: "stele-pull-tree-folder" });
+        const row = node.createDiv({ cls: "stele-pull-tree-row" });
+        const caret = row.createSpan({ cls: "stele-pull-tree-caret" });
 
         if (selection) checkbox(row, files.map((f) => f.path));
-        setIcon(row.createSpan({ cls: "obsync-tree-icon" }), "folder");
-        const label = row.createDiv({ cls: "obsync-label obsync-tree-toggle" });
-        label.createSpan({ cls: "obsync-path obsync-tree-name", text: sub.name });
+        setIcon(row.createSpan({ cls: "stele-pull-tree-icon" }), "folder");
+        const label = row.createDiv({ cls: "stele-pull-label stele-pull-tree-toggle" });
+        label.createSpan({ cls: "stele-pull-path stele-pull-tree-name", text: sub.name });
         const bytes = files.reduce((n, f) => n + f.value.entry.size, 0);
         label.createSpan({
-          cls: "obsync-muted",
+          cls: "stele-pull-muted",
           text: ` ${files.length} ${files.length === 1 ? "file" : "files"}, ${humanBytes(bytes)}`,
         });
 
-        const children = node.createDiv({ cls: "obsync-tree-children" });
+        const children = node.createDiv({ cls: "stele-pull-tree-children" });
         let open = depth === 0 || files.length <= AUTO_EXPAND_FILES;
         const apply = () => {
           setIcon(caret, open ? "chevron-down" : "chevron-right");
@@ -334,17 +334,17 @@ export class ObsyncView extends ItemView {
         if (rendered >= MAX_ROWS) return;
         rendered++;
         const item = file.value;
-        const row = el.createDiv({ cls: "obsync-tree-row obsync-tree-file" });
+        const row = el.createDiv({ cls: "stele-pull-tree-row stele-pull-tree-file" });
         // An empty caret keeps files aligned with their sibling folders.
-        row.createSpan({ cls: "obsync-tree-caret" });
+        row.createSpan({ cls: "stele-pull-tree-caret" });
         if (selection) checkbox(row, [file.path]);
-        setIcon(row.createSpan({ cls: "obsync-tree-icon" }), "file");
-        const label = row.createDiv({ cls: "obsync-label" });
-        label.createSpan({ cls: "obsync-path", text: file.name });
-        label.createSpan({ cls: "obsync-muted", text: ` ${detailFor(item, selection !== undefined)}` });
+        setIcon(row.createSpan({ cls: "stele-pull-tree-icon" }), "file");
+        const label = row.createDiv({ cls: "stele-pull-label" });
+        label.createSpan({ cls: "stele-pull-path", text: file.name });
+        label.createSpan({ cls: "stele-pull-muted", text: ` ${detailFor(item, selection !== undefined)}` });
         const tag = tagFor(item);
         if (tag) {
-          row.createSpan({ cls: `obsync-tag obsync-tag-${tag.kind}`, text: tag.text })
+          row.createSpan({ cls: `stele-pull-tag stele-pull-tag-${tag.kind}`, text: tag.text })
             .setAttr("aria-label", tag.hint);
         }
       }
@@ -362,7 +362,7 @@ export class ObsyncView extends ItemView {
       .filter((i) => isPullable(i) && st.selected.has(i.entry.path))
       .reduce((n, i) => n + i.entry.size, 0);
     const el = this.containerEl.querySelector<HTMLElement>(
-      `.obsync-count[data-course="${id}"]`,
+      `.stele-pull-count[data-course="${id}"]`,
     );
     el?.setText(`${st.selected.size} ticked, ${humanBytes(bytes)}`);
   }
@@ -375,16 +375,16 @@ export class ObsyncView extends ItemView {
     try {
       notifyResult(await s.syncCourse(st.manifest, { mode: "manual" }));
     } catch (e) {
-      new Notice(`obsync: ${String(e)}`);
+      new Notice(`stele-pull: ${String(e)}`);
     }
     await this.refresh();
   }
 
   /** Files quarantined because they were edited locally. */
   private renderConflicts(root: HTMLElement) {
-    const details = root.createEl("details", { cls: "obsync-conflicts" });
+    const details = root.createEl("details", { cls: "stele-pull-conflicts" });
     const summary = details.createEl("summary", { text: "Conflicts" });
-    const list = details.createDiv({ cls: "obsync-list" });
+    const list = details.createDiv({ cls: "stele-pull-list" });
 
     void (async () => {
       const dir = normalizePath(this.plugin.settings.conflictFolder);
@@ -392,14 +392,14 @@ export class ObsyncView extends ItemView {
       summary.setText(`Conflicts (${found.length})`);
       list.empty();
       if (found.length === 0) {
-        list.createEl("p", { cls: "obsync-muted", text: "None. Your edits are safe." });
+        list.createEl("p", { cls: "stele-pull-muted", text: "None. Your edits are safe." });
         return;
       }
       details.setAttr("open", "");
       for (const path of found.slice(0, MAX_ROWS)) {
-        const row = list.createDiv({ cls: "obsync-row" });
-        const label = row.createDiv({ cls: "obsync-label" });
-        label.createSpan({ cls: "obsync-path", text: path.slice(dir.length + 1) });
+        const row = list.createDiv({ cls: "stele-pull-row" });
+        const label = row.createDiv({ cls: "stele-pull-label" });
+        label.createSpan({ cls: "stele-pull-path", text: path.slice(dir.length + 1) });
         const open = row.createEl("button", { text: "Open" });
         open.addEventListener("click", () => {
           void this.app.workspace.openLinkText(path, "", true);
@@ -408,7 +408,7 @@ export class ObsyncView extends ItemView {
         discard.addEventListener("click", () => {
           void (async () => {
             await this.app.vault.adapter.remove(path);
-            new Notice("obsync: discarded your copy; the mirrored version stands");
+            new Notice("stele-pull: discarded your copy; the mirrored version stands");
             this.render();
           })();
         });
@@ -418,7 +418,7 @@ export class ObsyncView extends ItemView {
   }
 
   private renderSetup(root: HTMLElement) {
-    const details = root.createEl("details", { cls: "obsync-setup" });
+    const details = root.createEl("details", { cls: "stele-pull-setup" });
     details.open = this.setupOpen;
     details.addEventListener("toggle", () => {
       this.setupOpen = details.open;
@@ -434,7 +434,7 @@ export class ObsyncView extends ItemView {
 
 function overflow(parent: HTMLElement, total: number) {
   if (total > MAX_ROWS) {
-    parent.createEl("p", { cls: "obsync-muted", text: `... and ${total - MAX_ROWS} more.` });
+    parent.createEl("p", { cls: "stele-pull-muted", text: `... and ${total - MAX_ROWS} more.` });
   }
 }
 
@@ -463,7 +463,7 @@ function tagFor(i: PreviewItem): { kind: string; text: string; hint: string } | 
 }
 
 /** Every file under a folder, recursively. Returns [] if the folder is absent. */
-async function walk(plugin: ObsyncHost, dir: string): Promise<string[]> {
+async function walk(plugin: StelePullHost, dir: string): Promise<string[]> {
   const adapter = plugin.app.vault.adapter;
   if (!dir || !(await adapter.exists(dir))) return [];
   const out: string[] = [];
