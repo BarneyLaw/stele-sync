@@ -1,0 +1,67 @@
+# If you prefer the allow list template instead of the deny list, see community template:
+# https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
+#
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Code coverage profiles and other test artifacts
+*.out
+coverage.*
+*.coverprofile
+profile.cov
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
+# Go workspace file
+go.work
+go.work.sum
+
+# env file
+.env
+
+# Editor/IDE
+# .idea/
+# .vscode/
+
+# --- stele-pull ---
+
+# Secrets. .env holds a live Canvas token; so could any variant of it.
+.env.*
+!.env.example
+*.pem
+*.key
+# Unsealed Kubernetes secrets. Only SealedSecret manifests belong in git.
+*-secret.yaml
+!*sealed*-secret.yaml
+
+# Build output (make build)
+/bin/
+
+# Local dev store (worker -fs-store) and downloads staged by the worker
+/.stele-pull-store/
+stele-pull-download-*
+
+# Plugin: dependencies, build output, and settings Obsidian writes into the
+# plugin folder when it is symlinked into a vault. Released builds go to
+# GitHub releases, never into git.
+plugin/node_modules/
+plugin/main.js
+plugin/**/*.map
+plugin/data.json
+plugin/.parts/
+plugin/coverage/
+
+# Editors and OS
+.vscode/
+.idea/
+*.iml
+.DS_Store
+Thumbs.db
