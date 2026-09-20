@@ -1,6 +1,6 @@
-# obsync
+# stele-pull
 
-Phase 1 (`obsync-man`): mirror Canvas LMS course files into an object store, and
+Phase 1 (`stele-pull`): mirror Canvas LMS course files into an object store, and
 from there into an Obsidian vault. One-way. See [DESIGN.md](DESIGN.md).
 
 ## Status
@@ -14,8 +14,8 @@ from there into an Obsidian vault. One-way. See [DESIGN.md](DESIGN.md).
 | `internal/lease` | done; exclusive on FS/Memory; best-effort on Garage, which ignores `If-None-Match` |
 | `internal/run` | hardened, audit-logged; downloads still serial |
 | `internal/gc` | done |
-| `cmd/obsync-worker` run / pull / courses | done |
-| `cmd/obsync` ls / preview / log / diff / cat / gc / serve | done |
+| `cmd/stele-pull-worker` run / pull / courses | done |
+| `cmd/stele-pull` ls / preview / log / diff / cat / gc / serve | done |
 | `internal/obs` | JSON audit log; Pushgateway not wired |
 | plugin: types/policy/preview | done, contract-tested against the Go fixtures in `schema/` |
 | plugin: sync/store/UI | sync unit-tested against an in-memory adapter; untested in a real vault |
@@ -25,28 +25,28 @@ from there into an Obsidian vault. One-way. See [DESIGN.md](DESIGN.md).
 ## Worker commands
 
 ```sh
-obsync-worker run      # scheduled pass over every active course (the CronJob)
-obsync-worker pull     # manual pull, outside the schedule
-obsync-worker courses  # list active courses; -probe checks their files are reachable
+stele-pull-worker run      # scheduled pass over every active course (the CronJob)
+stele-pull-worker pull     # manual pull, outside the schedule
+stele-pull-worker courses  # list active courses; -probe checks their files are reachable
 ```
 
 `pull` targets exactly what you ask for:
 
 ```sh
 # one course, everything
-obsync-worker pull -course CS3103 -rules deploy/apps/obsync-worker/rules.json -fs-store .obsync-store
+stele-pull-worker pull -course CS3103 -rules deploy/apps/obsync-worker/rules.json -fs-store .stele-pull-store
 
-# only some directories and files (paths as `obsync ls <course>` prints them)
-obsync-worker pull -course CS3103 -path "Week 1" -path "Tutorials/T3.pdf" ...
+# only some directories and files (paths as `stele-pull ls <course>` prints them)
+stele-pull-worker pull -course CS3103 -path "Week 1" -path "Tutorials/T3.pdf" ...
 
 # globs: * is one path segment, ** spans any number
-obsync-worker pull -course CS3103 -path "**/*.pdf" ...
+stele-pull-worker pull -course CS3103 -path "**/*.pdf" ...
 
 # see every decision without downloading or writing anything
-obsync-worker pull -course CS3103 -path "Week 1" -dry-run ...
+stele-pull-worker pull -course CS3103 -path "Week 1" -dry-run ...
 
 # a scheduled run is in progress: wait for it instead of exiting 3
-obsync-worker pull -course CS3103 -wait 15m ...
+stele-pull-worker pull -course CS3103 -wait 15m ...
 ```
 
 Scope limits what is downloaded, never what is catalogued. Files outside it keep
@@ -64,14 +64,14 @@ schedule: the store lease makes one of them exit 3.
 ## Store inspection
 
 ```sh
-obsync ls                        # every course: last run, counts, size
-obsync ls <course-id>            # the file tree with real names
-obsync preview <course-id>       # what a vault gets, and everything withheld with why
-obsync log <course-id>           # run history with added/removed/changed counts
-obsync diff <course-id> <a> latest
-obsync cat <course-id> <path>    # stream a file, verifying its hash
-obsync gc                        # report unreferenced blobs; -apply deletes
-obsync serve                     # read-only HTTP on 127.0.0.1:8765 for the plugin
+stele-pull ls                        # every course: last run, counts, size
+stele-pull ls <course-id>            # the file tree with real names
+stele-pull preview <course-id>       # what a vault gets, and everything withheld with why
+stele-pull log <course-id>           # run history with added/removed/changed counts
+stele-pull diff <course-id> <a> latest
+stele-pull cat <course-id> <path>    # stream a file, verifying its hash
+stele-pull gc                        # report unreferenced blobs; -apply deletes
+stele-pull serve                     # read-only HTTP on 127.0.0.1:8765 for the plugin
 ```
 
 ## Audit log
@@ -80,7 +80,7 @@ Every non-trivial action is one JSON line on stderr: a stable event name in
 `msg`, plus `run_id`, `course_id` and the details. For example:
 
 ```sh
-obsync-worker pull ... 2> pull.log
+stele-pull-worker pull ... 2> pull.log
 jq 'select(.msg=="latest.published")' pull.log                 # every commit
 jq 'select(.msg=="plan.skip") | {path, rule, reason}' pull.log  # what was withheld, why
 jq 'select(.level=="WARN" or .level=="ERROR")' pull.log
@@ -99,7 +99,7 @@ set -a; . ./.env; set +a
 make test
 make courses                         # find the course code
 make pull-dev COURSE=CS3103 DRY=1    # plan only
-make pull-dev COURSE=CS3103          # full pipeline into ./.obsync-store
+make pull-dev COURSE=CS3103          # full pipeline into ./.stele-pull-store
 make serve-dev                       # plugin base URL: http://127.0.0.1:8765
 ```
 
@@ -109,9 +109,9 @@ PowerShell (no make):
 Get-Content .env | ForEach-Object {
   if ($_ -match '^\s*(?:export\s+)?(\w+)=(.*)$') { Set-Item "env:$($Matches[1])" $Matches[2].Trim('"', "'") }
 }
-go build -o bin/obsync-worker.exe ./cmd/obsync-worker; go build -o bin/obsync.exe ./cmd/obsync
-./bin/obsync-worker.exe pull -course CS3103 -rules deploy/apps/obsync-worker/rules.json -fs-store .obsync-store
-./bin/obsync.exe serve
+go build -o bin/stele-pull-worker.exe ./cmd/stele-pull-worker; go build -o bin/stele-pull.exe ./cmd/stele-pull
+./bin/stele-pull-worker.exe pull -course CS3103 -rules deploy/apps/obsync-worker/rules.json -fs-store .stele-pull-store
+./bin/stele-pull.exe serve
 ```
 
 ## Garage (S3) store
@@ -127,9 +127,9 @@ A single-node Garage in Docker for development, the same one CI uses:
 scripts/garage-dev.sh up             # container obsync-garage: bucket obsync, key obsync-dev
 eval "$(scripts/garage-dev.sh env)"
 make s3-test                         # Range GET, conformance, presign, a full worker pass
-./bin/obsync-worker pull -course CS3103 -path Labs -rules deploy/apps/obsync-worker/rules.json
-./bin/obsync ls
-./bin/obsync serve                   # read-only proxy in front of Garage
+./bin/stele-pull-worker pull -course CS3103 -path Labs -rules deploy/apps/obsync-worker/rules.json
+./bin/stele-pull ls
+./bin/stele-pull serve                   # read-only proxy in front of Garage
 scripts/garage-dev.sh down           # removes the container and its data
 ```
 
@@ -148,10 +148,10 @@ Do not run `scripts/garage-dev.sh` directly from PowerShell: Windows opens the
 **Pointing the plugin at Garage.** The S3 API needs signed requests and the
 plugin holds no credentials, so it reads through one of two unsigned doors:
 
-| | `obsync serve` in front of Garage | Garage's website endpoint |
+| | `stele-pull serve` in front of Garage | Garage's website endpoint |
 |---|---|---|
-| Store URL | `http://127.0.0.1:8765` | `http://obsync.web.garage.localhost:3902` in dev, a Tailscale name in the cluster |
-| Bucket setting | `obsync` or empty | empty (the host name selects the bucket) |
+| Store URL | `http://127.0.0.1:8765` | `http://stele-pull.web.garage.localhost:3902` in dev, a Tailscale name in the cluster |
+| Bucket setting | `stele-pull` or empty | empty (the host name selects the bucket) |
 | Credentials | on the machine running `serve`; a read-only key is enough | none |
 | Exposes | only `manifests/` and `blobs/` | every key, including `locks/` and `runs/` |
 | Range | yes (206) | yes (206) |
@@ -173,15 +173,15 @@ npm ci
 npm test                     # vitest, including the contract fixtures in ../schema
 npm run lint
 npm run dev                  # esbuild watch into main.js
-ln -s $PWD ~/ObsidianDev/.obsidian/plugins/obsync
+ln -s $PWD ~/ObsidianDev/.obsidian/plugins/stele-pull
 ```
 
 On Windows, link with a junction instead:
-`cmd /c mklink /J "%USERPROFILE%\ObsidianDev\.obsidian\plugins\obsync" "%CD%"`.
+`cmd /c mklink /J "%USERPROFILE%\ObsidianDev\.obsidian\plugins\stele-pull" "%CD%"`.
 
-Point it at a dev store: run `obsync serve`, then in the plugin's Setup set
-**Store URL** to `http://127.0.0.1:8765`, leave **Bucket** as `obsync` (or
-empty; `serve` accepts both), and put the numeric id from `obsync ls` in
+Point it at a dev store: run `stele-pull serve`, then in the plugin's Setup set
+**Store URL** to `http://127.0.0.1:8765`, leave **Bucket** as `stele-pull` (or
+empty; `serve` accepts both), and put the numeric id from `stele-pull ls` in
 **Course IDs**.
 
 Requires Obsidian >= 1.12.3 for `appendBinary`.
@@ -206,7 +206,7 @@ CI is two workflows in `.github/workflows/`:
 |---|---|---|
 | `worker.yml` | `cmd/`, `internal/`, `go.mod`, `go.sum`, `Dockerfile`, `deploy/`, the Garage and render scripts | tidy, gofmt, vet, race tests, fixture regeneration diff, build, cross-compile, smoke, manifest render, Garage S3 integration, image smoke; on `main`, publish the image and update homelab-cicd-config (see [deploy/README.md](deploy/README.md)) |
 | `plugin.yml` | `plugin/` (not Markdown) | `npm ci`, lint, tests, type-check and bundle on Node 22 and 24, release metadata, bundle artifact |
-| **both** | `schema/`, `internal/manifest`, `internal/policy`, `internal/plan`, `cmd/obsync`, and the plugin's `types`, `policy`, `preview`, `store`, `sync` and tests | cross-check each half against the same contract |
+| **both** | `schema/`, `internal/manifest`, `internal/policy`, `internal/plan`, `cmd/stele-pull`, and the plugin's `types`, `policy`, `preview`, `store`, `sync` and tests | cross-check each half against the same contract |
 
 The contract path list is identical in both files; change them together. Each
 runs on pushes to `main`, on pull requests, and manually. Because of the path

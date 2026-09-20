@@ -35,7 +35,7 @@ spec:
           labels:
             severity: warning
           annotations:
-            summary: "obsync worker has not completed a successful run in over 26h"
+            summary: "stele-pull worker has not completed a successful run in over 26h"
             description: >-
               Canvas files are not reaching the store. Find the latest Job with
               `kubectl -n obsync get jobs --sort-by=.metadata.creationTimestamp`
@@ -58,7 +58,7 @@ spec:
           labels:
             severity: warning
           annotations:
-            summary: "The latest scheduled obsync worker run did not succeed"
+            summary: "The latest scheduled stele-pull worker run did not succeed"
             description: >-
               Read the failed Job's logs (JSON, one event per line):
               `kubectl -n obsync logs job/<name> | grep -E '"level":"(WARN|ERROR)"'`.

@@ -1,7 +1,7 @@
 # garage-obsync
 
 A 3-node Garage cluster in the `obsync` namespace, serving as the S3 store for
-obsync phase 1. Independent of the Garage on nebula that backs CNPG/etcd
+stele-pull phase 1. Independent of the Garage on nebula that backs CNPG/etcd
 backups — separate cluster, separate RPC secret, separate failure domain.
 
 The manifests get you running pods. Forming the cluster takes the steps below,
