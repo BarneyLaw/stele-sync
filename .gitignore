@@ -33,3 +33,20 @@ go.work.sum
 
 # legacy files (phase 1 of this project)
 legacy/*
+
+# Local build/tool caches, dependencies, and development data.
+/bin/
+/.tools/
+/.cache/
+/.dev/
+/node_modules/
+plugin/node_modules/
+plugin/main.js
+plugin/**/*.map
+plugin/data.json
+plugin/.parts/
+plugin/coverage/
+.env.*
+!.env.example
+/.stele-pull-store/
+stele-pull-download-*

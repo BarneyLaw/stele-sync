@@ -1,0 +1,12 @@
+# Allow-list: only what the build needs enters the context. Everything else,
+# .env with the Canvas token above all, never reaches the Docker daemon.
+*
+!go.mod
+!go.sum
+!cmd/
+!internal/
+!deploy/
+deploy/*
+!deploy/dev/
+!deploy/dev/**
+**/*_test.go

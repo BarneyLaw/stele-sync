@@ -1,0 +1,5 @@
+{
+  "golangci-lint": "v2.11.3",
+  "govulncheck": "v1.1.4",
+  "node": "24"
+}

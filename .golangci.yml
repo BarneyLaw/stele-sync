@@ -1,0 +1,98 @@
+version: "2"
+run:
+  timeout: 5m
+  relative-path-mode: gomod
+linters:
+  default: none
+  enable:
+    - errcheck
+    - staticcheck
+    - govet
+    - revive
+    - errorlint
+    - wrapcheck
+    - contextcheck
+    - noctx
+    - bodyclose
+    - gosec
+    - exhaustive
+    - depguard
+    - forbidigo
+    - gocritic
+    - unparam
+  settings:
+    depguard:
+      rules:
+        core:
+          list-mode: strict
+          files: ["**/internal/core/**"]
+          allow: ["$gostd", "golang.org/x/text", "github.com/BarneyLaw/stele-sync/internal/core/"]
+        core-pure:
+          files: ["**/internal/core/**", "!$test"]
+          deny:
+            - pkg: os
+              desc: core must not perform I/O
+            - pkg: net
+              desc: core must not perform I/O
+            - pkg: database/sql
+              desc: core must not perform I/O
+            - pkg: log
+              desc: core returns values; the shell logs
+        proto:
+          list-mode: strict
+          files: ["**/internal/proto/**"]
+          allow: ["$gostd", "github.com/BarneyLaw/stele-sync/internal/core/"]
+        engine:
+          list-mode: strict
+          files: ["**/internal/engine/**"]
+          allow: ["$gostd", "github.com/BarneyLaw/stele-sync/internal/core/", "github.com/BarneyLaw/stele-sync/internal/proto$", "github.com/BarneyLaw/stele-sync/internal/obs$"]
+        adapters:
+          list-mode: strict
+          files:
+            - "**/internal/{storage,blob,compact,gc,canvasbridge}/**"
+            # Phase 1 GC predates the engine ports; see ADR 014.
+            - "!**/internal/gc/gc.go"
+            - "!**/internal/gc/gc_test.go"
+          allow:
+            - "$gostd"
+            - github.com/BarneyLaw/stele-sync/internal/core/
+            - github.com/BarneyLaw/stele-sync/internal/engine$
+            - github.com/BarneyLaw/stele-sync/internal/obs$
+            - github.com/BarneyLaw/stele-sync/internal/config$
+            - github.com/aws/aws-sdk-go-v2
+            - github.com/aws/smithy-go
+            - github.com/jackc/pgx/v5
+        transport:
+          list-mode: strict
+          files: ["**/internal/{session,httpapi}/**"]
+          allow: ["$gostd", "github.com/BarneyLaw/stele-sync/internal/engine$", "github.com/BarneyLaw/stele-sync/internal/proto$", "github.com/BarneyLaw/stele-sync/internal/auth$", "github.com/BarneyLaw/stele-sync/internal/obs$", "github.com/coder/websocket"]
+        support:
+          list-mode: strict
+          files: ["**/internal/{auth,config,obs}/**"]
+          allow: ["$gostd", "github.com/BarneyLaw/stele-sync/internal/core/"]
+    forbidigo:
+      analyze-types: true
+      forbid:
+        - pattern: '^fmt\.Print.*$'
+          msg: use an injected structured logger
+        - pattern: '^log\..*$'
+          msg: use an injected log/slog logger
+        - pattern: '^time\.Now$'
+          msg: inject time from command wiring or obs
+  exclusions:
+    presets: []
+    rules:
+      # Mechanical phase 1 promotion only: exact inherited filenames, ADR 014.
+      # New files (including new files in these packages) get every lint rule.
+      - path: '^(cmd/stele-pull/(main|main_test|objectreader)|cmd/stele-pull-worker/main|internal/canvas/(client|client_test|limiter|types)|internal/core/policy/(policy|policy_test)|internal/core/vpath/(portable|portable_test)|internal/gc/(gc|gc_test)|internal/lease/(lease|lease_test)|internal/manifest/(manifest|manifest_test|contract_test)|internal/obs/metrics|internal/plan/(plan|plan_test)|internal/run/(run|run_test|summary|s3_integration_test)|internal/scope/(scope|scope_test)|internal/storage/objects/(fs|logged|memory|open|s3|s3_integration_test|store|store_test))\.go$'
+        linters: [errcheck, revive, errorlint, wrapcheck, bodyclose, gosec, noctx, forbidigo, contextcheck]
+      - path: '^internal/storage/objects/s3\.go$'
+        text: 'QF1001:'
+        linters: [staticcheck]
+      - path: '(^cmd/|^internal/obs/|_test\.go$)'
+        linters: [forbidigo]
+      # wrapcheck applies at I/O boundaries, not pure value transformations.
+      - path: '^internal/(core|proto|engine)/'
+        linters: [wrapcheck]
+formatters:
+  enable: [gofmt, goimports]
