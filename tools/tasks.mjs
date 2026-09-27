@@ -2,7 +2,7 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
-import { tmpdir } from 'node:os';
+import { tmpdir, cpus } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { compose, integrationEnv, up } from './dev.mjs';
 
@@ -84,6 +84,35 @@ const tasks = {
     // Keep unit tests independent of a developer's ambient Garage credentials.
     const env = { ...process.env, GARAGE_ENDPOINT: '', STELE_PULL_REQUIRE_S3: '' };
     run('go', ['test', '-race', '-count=1', './...'], { env });
+    run('go', ['test', '-race', '-count=1', './internal/core/textop', '-run=^TestProp', '-rapid.checks=10000'], { env });
+    run(process.execPath, ['--test', 'tools/oracle/generate.test.mjs', 'tools/oracle/report.test.mjs']);
+  },
+  'oracle-scale'() {
+    run('go', ['test', '-tags=oracle_scale', '-count=1', '-timeout=115m', '-v', './internal/core/textop', '-run=^TestOracleScale$']);
+  },
+  'oracle-replay'() {
+    run('go', ['test', '-tags=oracle_scale', '-count=1', '-timeout=5m', '-v', './internal/core/textop', '-run=^TestOracleReplay$']);
+  },
+  'textop-acceptance'() {
+    run('go', ['test', '-race', '-count=1', '-timeout=12h', './internal/core/textop', '-run=^TestProp', '-rapid.checks=1000000']);
+    run('go', ['test', '-race', '-count=1', './internal/core/textop', '-coverprofile=coverage.textop.out']);
+    const coverage = capture('go', ['tool', 'cover', '-func=coverage.textop.out']);
+    console.log(coverage);
+    const total = coverage.match(/total:.*?([\d.]+)%/);
+    if (!total || Number(total[1]) <= 90) throw new Error('textop coverage must exceed 90%');
+    for (const target of ['FuzzParse', 'FuzzInsertEscapes', 'FuzzApply']) {
+      run('go', ['test', '-race', '-run=^$', `-fuzz=^${target}$`, '-fuzztime=10m', '-timeout=15m', './internal/core/textop']);
+    }
+  },
+  'textop-perf'() {
+    let performanceFailure;
+    try {
+      run('go', ['test', '-count=1', '-timeout=30m', '-v', './internal/core/textop', '-run=^TestTextopPerformance$'], {
+        env: { ...process.env, TEXTOP_PERF: '1', TEXTOP_CPU: cpus()[0]?.model || 'unknown' },
+      });
+    } catch (error) { performanceFailure = error; }
+    run('go', ['test', '-run=^$', '-bench=Benchmark(Apply|TransformGap)', '-benchmem', '-count=5', './internal/core/textop']);
+    if (performanceFailure) throw performanceFailure;
   },
   'test-integration'() {
     up();
@@ -101,7 +130,7 @@ const tasks = {
     for (const pkg of packages) {
       const targets = capture('go', ['test', '-list', '^Fuzz', pkg]).split(/\r?\n/).filter(line => /^Fuzz\w+$/.test(line));
       for (const target of targets) {
-        run('go', ['test', '-race', '-run=^$', `-fuzz=^${target}$`, `-fuzztime=${process.env.FUZZ_TIME || '60s'}`, pkg]);
+        run('go', ['test', '-race', '-run=^$', `-fuzz=^${target}$`, `-fuzztime=${process.env.FUZZ_TIME || '60s'}`, '-timeout=75m', pkg]);
         count++;
       }
     }
@@ -116,13 +145,27 @@ const tasks = {
     if (existsSync('tools/oracle/generate.mjs')) run(process.execPath, ['tools/oracle/generate.mjs']);
   },
   'fixtures-check'() {
-    const snapshot = () => new Map(files('schema', '.json').map(path => [path, readFileSync(path)]));
-    const before = snapshot();
-    tasks.fixtures();
-    const after = snapshot();
-    if (before.size !== after.size || [...before].some(([path, bytes]) => !after.get(path)?.equals(bytes))) {
-      throw new Error('Fixture regeneration changed schema/. Review and commit the generated changes.');
-    }
+    // Preserve phase 1's regeneration gate. Oracle drift checks never overwrite
+    // committed goldens, and detect missing/untracked files explicitly.
+    const paths = ['schema/textop/apply.json', 'schema/textop/compose.json', 'schema/textop/transform.json', 'schema/textop/invalid.json'];
+    for (const path of paths) if (!existsSync(path)) throw new Error(`Missing required fixture ${path}`);
+    const tracked = capture('git', ['ls-files', '--', ...paths]).trim().split(/\r?\n/);
+    for (const path of paths) if (!tracked.includes(path)) throw new Error(`Fixture must be committed: ${path}`);
+    const phase1 = () => new Map(files('schema', '.json').filter(path => !path.includes(`textop`)).map(path => [path, readFileSync(path)]));
+    const before = phase1();
+    run('go', ['test', './internal/manifest', '-run', '^TestContractFixtures$', '-count=1', '-update']);
+    const after = phase1();
+    if (before.size !== after.size || [...before].some(([path, bytes]) => !after.get(path)?.equals(bytes))) throw new Error('Phase 1 fixture drift');
+    const scratch = mkdtempSync(join(tmpdir(), 'stele-oracle-drift-'));
+    try {
+      for (const pass of ['first', 'second']) run(process.execPath, ['tools/oracle/generate.mjs', '--out', join(scratch, pass)]);
+      for (const kind of ['apply', 'compose', 'transform']) {
+        const first = readFileSync(join(scratch, 'first', `${kind}.json`));
+        if (!first.equals(readFileSync(join(scratch, 'second', `${kind}.json`))) || !first.equals(readFileSync(`schema/textop/${kind}.json`))) {
+          throw new Error(`Oracle fixture drift: ${kind}; regenerate and review`);
+        }
+      }
+    } finally { rmSync(scratch, { recursive: true, force: true }); }
   },
   contract() {
     run('go', ['test', '-race', '-count=1', './internal/manifest', './internal/core/policy']);

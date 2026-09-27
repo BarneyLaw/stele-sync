@@ -1,0 +1,100 @@
+name: Nightly
+on:
+  schedule:
+    - cron: "17 18 * * *"
+  workflow_dispatch:
+    inputs:
+      seed:
+        description: Replay one oracle shard with this seed (0 through 4294967295)
+        required: false
+        type: string
+      count:
+        description: Cases per shard (618 through 10000000)
+        default: "2500000"
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: nightly
+  cancel-in-progress: false
+jobs:
+  soak:
+    name: Nightly / ${{ matrix.gate }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        gate: [fuzz-short, sim, e2e]
+    env:
+      FUZZ_TIME: 1h
+      SIM_RUNS: "10000"
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup
+      - run: node tools/tasks.mjs ${{ matrix.gate }}
+  oracle:
+    name: Nightly / oracle shard ${{ matrix.shard }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJSON(inputs.seed != '' && '[0]' || '[0,1,2,3]') }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup
+      - name: Choose seed
+        env:
+          SHARD: ${{ matrix.shard }}
+          INPUT_SEED: ${{ inputs.seed }}
+          INPUT_COUNT: ${{ inputs.count || '2500000' }}
+        run: |
+          seed="${INPUT_SEED:-$(( (GITHUB_RUN_ID * 4 + SHARD) % 4294967296 ))}"
+          export ORACLE_SEED="$seed" ORACLE_COUNT="$INPUT_COUNT"
+          node --input-type=module -e "import {integer} from './tools/oracle/generate.mjs'; integer(process.env.ORACLE_SEED, 'seed', 0, 4294967295); integer(process.env.ORACLE_COUNT, 'count', 618, 10000000);"
+          echo "ORACLE_SEED=$seed" >> "$GITHUB_ENV"
+          echo "ORACLE_COUNT=$INPUT_COUNT" >> "$GITHUB_ENV"
+          echo "::notice title=Oracle shard ${SHARD}::seed=$seed count=$INPUT_COUNT"
+      - run: node tools/tasks.mjs oracle-scale
+        env:
+          ORACLE_FAILURES: ${{ runner.temp }}/oracle-failures.ndjson
+          ORACLE_SUMMARY: ${{ runner.temp }}/oracle-summary.json
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: oracle-failures-shard-${{ matrix.shard }}
+          path: ${{ runner.temp }}/oracle-failures.ndjson
+          if-no-files-found: ignore
+          retention-days: 30
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: oracle-summary-shard-${{ matrix.shard }}
+          path: ${{ runner.temp }}/oracle-summary.json
+          if-no-files-found: ignore
+          retention-days: 30
+  oracle-report:
+    name: Nightly / collate oracle failures
+    needs: oracle
+    if: always() && !cancelled()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: oracle-*
+          path: oracle-artifacts
+      - uses: actions/github-script@v8
+        if: always()
+        env:
+          ORACLE_RESULT: ${{ needs.oracle.result }}
+        with:
+          script: |
+            const { reportNightly } = await import(`${process.env.GITHUB_WORKSPACE}/tools/oracle/report.mjs`);
+            await reportNightly({ github, context, core, directory: 'oracle-artifacts', result: process.env.ORACLE_RESULT });

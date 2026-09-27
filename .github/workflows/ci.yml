@@ -33,6 +33,17 @@ jobs:
       - name: Deterministic simulation (500 runs)
         if: matrix.gate == 'verification'
         run: node tools/tasks.mjs sim
+      - name: Preserve minimized property and fuzz counterexamples
+        if: failure() && (matrix.gate == 'test' || matrix.gate == 'verification')
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-counterexamples-${{ matrix.gate }}
+          path: |
+            internal/core/**/testdata/rapid/**
+            internal/core/**/testdata/fuzz/**
+            internal/proto/**/testdata/fuzz/**
+          if-no-files-found: ignore
+          retention-days: 30
       - name: Integration diagnostics
         if: failure() && matrix.gate == 'test-integration'
         run: docker compose logs --tail=100

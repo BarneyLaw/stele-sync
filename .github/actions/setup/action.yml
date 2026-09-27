@@ -1,5 +1,5 @@
-name: Set up M0 tooling
-description: Install the pinned Go/Node toolchain and locked plugin dependencies
+name: Set up tooling
+description: Install the pinned Go/Node toolchain and locked test/plugin dependencies
 inputs:
   go-tools:
     description: Install pinned Go lint and vulnerability tools
@@ -13,10 +13,14 @@ runs:
         cache: true
     - uses: actions/setup-node@v6
       with:
-        node-version: "24"
+        node-version: "24.12.0"
         cache: npm
-        cache-dependency-path: plugin/package-lock.json
+        cache-dependency-path: |
+          plugin/package-lock.json
+          tools/oracle/package-lock.json
     - run: npm ci --prefix plugin
+      shell: bash
+    - run: npm ci --prefix tools/oracle
       shell: bash
     - uses: actions/cache@v4
       if: inputs.go-tools == 'true'
