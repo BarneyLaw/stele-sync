@@ -41,6 +41,7 @@ legacy/*
 /.dev/
 /node_modules/
 plugin/node_modules/
+tools/oracle/node_modules/
 plugin/main.js
 plugin/**/*.map
 plugin/data.json
