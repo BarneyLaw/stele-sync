@@ -8,6 +8,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.113.1
 	github.com/aws/smithy-go v1.28.1
 	golang.org/x/text v0.42.0
+	pgregory.net/rapid v1.2.0
 )
 
 require (

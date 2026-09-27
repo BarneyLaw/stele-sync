@@ -120,7 +120,7 @@ type Builder struct{ ... }
 func (b *Builder) Retain(n int) *Builder
 func (b *Builder) Insert(s string) *Builder
 func (b *Builder) Delete(n int) *Builder
-func (b *Builder) Op() Op
+func (b *Builder) Op() (Op, error) // M1 clarification: sticky construction errors; ADR 002
 ```
 
 **Design notes.**
@@ -158,7 +158,7 @@ schema/textop/invalid.json    hand-written malformed ops, each with the expected
 | `TestPropComposeApply` | `apply(d, compose(a,b)) == apply(apply(d,a), b)` |
 | `TestPropLengths` | `ap.BaseLen() == b.TargetLen()` and `bp.BaseLen() == a.TargetLen()` for every transform |
 | `TestPropCanonical` | Every op produced by `Builder`, `Compose` or `Transform` is canonical and round-trips through `Parse` |
-| `TestOracle{Apply,Compose,Transform}` | Byte-equal to every fixture |
+| `TestOracle{Apply,Compose,Transform}` | Exact typed components and UTF-8 document bytes; JSON escape spelling may differ (ADR 002) |
 | `TestInvalid` | Every entry in `invalid.json` returns its named error |
 | `TestSurrogates` | Splitting an emoji by retain, delete or insert position is rejected |
 | `FuzzParse` | No panic; accepted input re-marshals to an equivalent op |

@@ -54,9 +54,9 @@ Every Makefile recipe is one directly runnable command on Windows and Unix:
 | Target | Direct command | Proof |
 | --- | --- | --- |
 | lint | node tools/tasks.mjs lint | tidy, gofmt/goimports, vet, configured linters, negative dependency probes |
-| test | node tools/tasks.mjs test | inherited Go tests with race detection; no ambient Garage dependency |
+| test | node tools/tasks.mjs test | repository race tests, 10,000 textop cases/property, oracle tooling tests |
 | test-integration | node tools/tasks.mjs test-integration | ready Postgres, real SQL query, six phase 1 Garage tests with race detection; missing Garage fails |
-| fixtures | node tools/tasks.mjs fixtures | regenerate phase 1 manifest contract fixtures |
+| fixtures | node tools/tasks.mjs fixtures | regenerate phase 1 manifest and M1 textop oracle fixtures |
 | contract | node tools/tasks.mjs contract | shared Go/TypeScript contracts |
 | fuzz-short | node tools/tasks.mjs fuzz-short | discovers core/proto fuzz targets; 60 s each when present |
 | sim | node tools/tasks.mjs sim | 500 runs once M7 provides tools/sim/main.go |
@@ -74,17 +74,19 @@ The dependency proof creates and removes a temporary module with deliberately
 forbidden storage imports; it never adds a broken import to the working tree.
 This repeats the M0 throwaway-branch proof on every lint run.
 
-M0 has no new decoders, engine simulator, or runnable sync server. Fuzz, simulation,
-and nightly e2e tasks explicitly report deferral to M1–M4, M7, and M14. They are
-entry points for those milestones, not evidence of phase 2 correctness. The only
+M1 adds textop deterministic/property/oracle tests and three fuzz targets. See
+[the oracle guide](../tools/oracle/README.md) for acceptance and performance gates,
+coverage quotas, failure artifacts and replay commands. Simulation and nightly
+e2e still report deferral to M7 and M14. The only
 current runnable Go commands are stele-pull and stele-pull-worker; obsync-server
 and obsyncctl contain package documentation only.
 
 ## CI and main protection
 
-CI runs on every PR and main push, with stable M0 check names; there are no
+CI runs on every PR and manual dispatch, with stable M0 check names; there are no
 workflow-level path filters. Nightly runs use 1 h per fuzz target, 10,000 simulator
-runs, and the future end-to-end entry point. Production publishing/GitOps writes
+runs, the future end-to-end entry point, and four 2.5M-case oracle shards. A single
+rolling issue collates oracle failures. Production publishing/GitOps writes
 are not part of M0 workflows. The phase 1 image and deployment checks still run.
 
 The required-check configuration is .github/main-protection.json. Its contexts
@@ -97,8 +99,8 @@ gh api --method PUT repos/BarneyLaw/stele-sync/branches/main/protection --input 
 This configuration was applied to main on 2026-09-20: checks must be current,
 admins are included, and force pushes/deletion are forbidden. A PR is required;
 the approval count is zero so a solo maintainer can merge after reviewing the
-diff and passing every check. Hosted CI executes when a PR is opened, on a main
-push, or by manual dispatch; local verification does not substitute for that run.
+diff and passing every check. Hosted CI executes when a PR is opened or updated,
+or by manual dispatch; local verification does not substitute for that run.
 
 ADRs 001–012 are recorded from the architecture decision log. ADR 001 remains
 proposed per the explicit M0 instruction; its text records the architecture/M1

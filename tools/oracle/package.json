@@ -1,0 +1,9 @@
+{
+  "name": "stele-textop-oracle",
+  "private": true,
+  "type": "module",
+  "description": "Generates schema/textop fixtures from ot.js. Test-only; never a runtime dependency (ADR 001).",
+  "dependencies": {
+    "ot": "0.0.15"
+  }
+}

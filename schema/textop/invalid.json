@@ -1,0 +1,24 @@
+{
+  "header": {"schema_version":1,"kind":"invalid","hand_written":true},
+  "cases": [
+    {"id":"lone-high-suffix","stage":"parse","raw":"[\"\\ud800x\"]","error":"invalid_unicode"},
+    {"id":"lone-low","stage":"parse","raw":"[\"\\udc00\"]","error":"invalid_unicode"},
+    {"id":"delete-half-emoji","stage":"apply","doc":"😀","raw":"[1,-1]","error":"splits_surrogate"},
+    {"id":"invalid-utf8","stage":"parse","raw_base64":"WyL/Il0=","error":"invalid_utf8"},
+    {"id":"invalid-doc-utf8","stage":"doc","raw_base64":"/w==","error":"invalid_utf8"},
+    {"id":"wrong-root","stage":"parse","raw":"{}","error":"invalid_json"},
+    {"id":"wrong-type","stage":"parse","raw":"[true]","error":"invalid_count"},
+    {"id":"exponent-count","stage":"parse","raw":"[1e0]","error":"invalid_count"},
+    {"id":"overflow-count","stage":"parse","raw":"[9223372036854775808]","error":"invalid_count"},
+    {"id":"min-int-policy","stage":"parse","raw":"[-9223372036854775808]","error":"limit"},
+    {"id":"adjacent-retains","stage":"parse","raw":"[1,2]","error":"noncanonical"},
+    {"id":"replacement-order","stage":"parse","raw":"[-1,\"a\"]","error":"noncanonical"},
+    {"id":"missing-retain","stage":"apply","doc":"ab","raw":"[1]","error":"length_mismatch"},
+    {"id":"compose-split-insert","stage":"compose","raw":"[\"😀\"]","b":[1,-1],"error":"splits_surrogate"},
+    {"id":"compose-length","stage":"compose","raw":"[1]","b":[],"error":"length_mismatch"},
+    {"id":"transform-length","stage":"transform","raw":"[1]","b":[],"error":"length_mismatch"},
+    {"id":"invalid-policy","stage":"parse","raw":"[]","limits":{"MaxUnits":0,"MaxDocBytes":8,"MaxComponents":8,"MaxJSONBytes":8},"error":"invalid_limits"},
+    {"id":"target-bytes","stage":"apply","doc":"","raw":"[\"中\"]","limits":{"MaxUnits":8,"MaxDocBytes":2,"MaxComponents":8,"MaxJSONBytes":100},"error":"limit"},
+    {"id":"merged-units","stage":"transform","raw":"[\"a\"]","b":["b"],"limits":{"MaxUnits":1,"MaxDocBytes":8,"MaxComponents":8,"MaxJSONBytes":100},"error":"limit"}
+  ]
+}
