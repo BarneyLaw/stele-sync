@@ -25,8 +25,12 @@ linters:
       rules:
         core:
           list-mode: strict
-          files: ["**/internal/core/**"]
+          files: ["**/internal/core/**", "!$test"]
           allow: ["$gostd", "golang.org/x/text", "github.com/BarneyLaw/stele-sync/internal/core/"]
+        core-tests:
+          list-mode: strict
+          files: ["**/internal/core/**/*_test.go"]
+          allow: ["$gostd", "golang.org/x/text", "pgregory.net/rapid$", "github.com/BarneyLaw/stele-sync/internal/core/"]
         core-pure:
           files: ["**/internal/core/**", "!$test"]
           deny:
