@@ -35,3 +35,7 @@ Each portion is committed with its tests and rationale.
 ## Verification log
 
 Started on clean main at 1a887d6; branch m2/annot. Host tools are Go 1.27.1 / Node 25.5.0. Go 1.26.6 was downloaded and selected explicitly for package verification. Repository-pinned lint tools are installed locally. Baseline core tests passed.
+
+The file codec passed its deterministic tests, 1,000 randomized round trips,
+and the user's real sample round trip under the race detector on Go 1.26.6.
+The parser preserves the sample without exposing or committing lecture content.
