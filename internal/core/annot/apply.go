@@ -93,6 +93,9 @@ func Apply(head Sidecar, ops Ops, at int64) (Result, error) {
 	if _, err := strictJSON(raw, next.limits, next.limits.MaxBytes); err != nil {
 		return Result{}, err
 	}
+	if _, err := EncodeState(next); err != nil {
+		return Result{}, err
+	}
 	return Result{Sidecar: next, Effective: cloneOps(effective), Dropped: dropped}, nil
 }
 func cloneOps(o Ops) Ops {

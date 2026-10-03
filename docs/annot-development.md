@@ -45,3 +45,8 @@ under the race detector, including the independent three-device stale-baseline
 model and planted-tombstone-bug detection. The model compares both values and
 array order against plain maps plus independent insertion ranks. The effective
 sequence regression specifically puts a suppressed element before a new one.
+
+The state codec passed race tests and strict package lint. Its envelope validates
+version, complete unique order keys, live/dead disjointness, tombstone versions,
+sorted bookkeeping and agreement between stored order and the embedded file.
+Pruning is strictly before the supplied retention cutoff and preserves content.
