@@ -197,7 +197,7 @@ func checkedOps(o Ops, l Limits, trusted bool) (Ops, error) {
 	count := len(o.Elements) + len(o.Entries) + len(o.MetaPut) + len(o.MetaDel)
 	maxCount, maxBytes := l.MaxOps, l.MaxOpBytes
 	if trusted {
-		maxCount = l.MaxElements + l.MaxTombstones
+		maxCount = l.MaxStateBytes // Every encoded operation consumes at least one byte.
 		maxBytes = l.MaxStateBytes
 	}
 	if count > maxCount {

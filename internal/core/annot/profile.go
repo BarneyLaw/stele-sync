@@ -17,7 +17,7 @@ func topLevelKeys() []string {
 }
 func structural(key string) bool { return key == "appendedPages" || key == "removedPages" }
 func reserved(key string) bool {
-	return kindIndex(Kind(key)) >= 0 || key == "pdfPageTemplates" || key == "deletedPdfPages" || key == "permanentlyDeletedPdfPages" || key == "pdfPageState"
+	return kindIndex(Kind(key)) >= 0 || key == "pdfPageTemplates" || key == "deletedPdfPages" || key == "permanentlyDeletedPdfPages"
 }
 func compareElement(a, b ElementKey) int {
 	if a.Kind != b.Kind {

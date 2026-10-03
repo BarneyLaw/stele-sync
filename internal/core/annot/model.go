@@ -183,6 +183,9 @@ func Marshal(sc Sidecar) ([]byte, error) {
 		out = appendMember(out, key, root[key])
 	}
 	out = append(out, '}')
+	if !indentFits(out, sc.limits.MaxBytes) {
+		return nil, ErrLimit
+	}
 	var pretty bytes.Buffer
 	if err := json.Indent(&pretty, out, "", "  "); err != nil {
 		return nil, ErrInvalidState
@@ -191,6 +194,51 @@ func Marshal(sc Sidecar) ([]byte, error) {
 		return nil, ErrLimit
 	}
 	return pretty.Bytes(), nil
+}
+
+// indentFits checks json.Indent's exact expansion before allocating it. A small
+// deeply nested input can otherwise allocate far beyond the materialized limit.
+// Input is already compact, valid JSON; quoted punctuation is never structural.
+func indentFits(raw []byte, limit int) bool {
+	size, depth := len(raw), 0
+	inString, escaped := false, false
+	for i, c := range raw {
+		if inString {
+			switch {
+			case escaped:
+				escaped = false
+			case c == '\\':
+				escaped = true
+			case c == '"':
+				inString = false
+			}
+			continue
+		}
+		extra := 0
+		switch c {
+		case '"':
+			inString = true
+		case '{', '[':
+			depth++
+			if raw[i+1] != '}' && raw[i+1] != ']' {
+				extra = 1 + 2*depth
+			}
+		case '}', ']':
+			depth--
+			if raw[i-1] != '{' && raw[i-1] != '[' {
+				extra = 1 + 2*depth
+			}
+		case ',':
+			extra = 1 + 2*depth
+		case ':':
+			extra = 1
+		}
+		if size > limit-extra {
+			return false
+		}
+		size += extra
+	}
+	return size <= limit
 }
 
 // CanonicalHash is SHA-256 of Marshal(sc), the exact bytes used by the audit.

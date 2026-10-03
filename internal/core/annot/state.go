@@ -140,7 +140,7 @@ func decodeState(b []byte, l Limits) (Sidecar, error) {
 		}
 		previous = o.Key
 		e, ok := sc.elements[o.Key]
-		if !ok || o.Version < 0 || o.Version > version || o.Ordinal < 0 || o.Ordinal >= max(l.MaxOps, l.MaxElements+l.MaxTombstones) {
+		if !ok || o.Version < 0 || o.Version > version || o.Ordinal < 0 || o.Ordinal >= max(l.MaxOps, l.MaxElements) {
 			return Sidecar{}, ErrInvalidState
 		}
 		order := orderKey{Version: o.Version, Ordinal: o.Ordinal}

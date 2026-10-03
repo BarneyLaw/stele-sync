@@ -50,3 +50,10 @@ The state codec passed race tests and strict package lint. Its envelope validate
 version, complete unique order keys, live/dead disjointness, tombstone versions,
 sorted bookkeeping and agreement between stored order and the embedded file.
 Pruning is strictly before the supplied retention cutoff and preserves content.
+
+Review found that checking the file-size limit after json.Indent could allocate
+far more memory than the configured limit. Marshal now counts exact indentation
+expansion before allocation, with a nested-input regression. A second regression
+keeps the virtual entry-family name pdfPageState available as opaque top-level
+metadata; only actual FreeDraw array keys are reserved. Ordinal bounds and trusted
+batch bounds also avoid adding configurable integer ceilings together.
