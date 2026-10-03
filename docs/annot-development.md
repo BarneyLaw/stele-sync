@@ -57,3 +57,9 @@ expansion before allocation, with a nested-input regression. A second regression
 keeps the virtual entry-family name pdfPageState available as opaque top-level
 metadata; only actual FreeDraw array keys are reserved. Ordinal bounds and trusted
 batch bounds also avoid adding configurable integer ceilings together.
+
+Verification now includes eight actual-plugin synthetic captures, all reopened
+after Go canonicalization; five generated cross-language contract files; and
+an acceptance task wired into fixture/contract checks and automatic fuzz-target
+discovery. The complete measured results and the pre-existing npm audit failure
+are recorded in [annot-verification.md](annot-verification.md).

@@ -85,6 +85,7 @@ const tasks = {
     const env = { ...process.env, GARAGE_ENDPOINT: '', STELE_PULL_REQUIRE_S3: '' };
     run('go', ['test', '-race', '-count=1', './...'], { env });
     run('go', ['test', '-race', '-count=1', './internal/core/textop', '-run=^TestProp', '-rapid.checks=10000'], { env });
+    run('go', ['test', '-race', '-count=1', './internal/core/annot', '-run=^(TestProp|TestModelAgreement)', '-rapid.checks=1000'], { env });
     run(process.execPath, ['--test', 'tools/oracle/generate.test.mjs', 'tools/oracle/report.test.mjs']);
   },
   'oracle-scale'() {
@@ -114,6 +115,21 @@ const tasks = {
     run('go', ['test', '-run=^$', '-bench=Benchmark(Apply|TransformGap)', '-benchmem', '-count=5', './internal/core/textop']);
     if (performanceFailure) throw performanceFailure;
   },
+  'annot-acceptance'() {
+    run('go', ['test', '-count=1', '-timeout=90m', './internal/core/annot', '-run=^(TestProp|TestModelAgreement)', '-rapid.checks=100000']);
+    const scratch = mkdtempSync(join(tmpdir(), 'stele-annot-acceptance-'));
+    try {
+      const profile = join(scratch, 'coverage.out');
+      run('go', ['test', '-race', '-count=1', './internal/core/annot', `-coverprofile=${profile}`]);
+      const coverage = capture('go', ['tool', 'cover', `-func=${profile}`]);
+      console.log(coverage);
+      const total = coverage.match(/total:.*?([\d.]+)%/);
+      if (!total || Number(total[1]) <= 90) throw new Error('annot coverage must exceed 90%');
+    } finally { rmSync(scratch, { recursive: true, force: true }); }
+    for (const target of ['FuzzParse', 'FuzzParseOps', 'FuzzDecodeState', 'FuzzApply']) {
+      run('go', ['test', '-race', '-run=^$', `-fuzz=^${target}$`, '-fuzztime=10m', '-timeout=15m', './internal/core/annot']);
+    }
+  },
   'test-integration'() {
     up();
     const result = compose('exec', '-T', 'postgres', 'psql', '-U', 'obsync', '-d', 'obsync', '-Atc', 'SELECT 1');
@@ -142,12 +158,15 @@ const tasks = {
   },
   fixtures() {
     run('go', ['test', './internal/manifest', '-run', '^TestContractFixtures$', '-count=1', '-update']);
+    run('go', ['test', './internal/core/annot', '-run', '^TestAnnotContractFixtures$', '-count=1', '-update-annot']);
     if (existsSync('tools/oracle/generate.mjs')) run(process.execPath, ['tools/oracle/generate.mjs']);
   },
   'fixtures-check'() {
+    run('go', ['test', './internal/core/annot', '-run', '^TestAnnotContractFixtures$', '-count=1']);
     // Preserve phase 1's regeneration gate. Oracle drift checks never overwrite
     // committed goldens, and detect missing/untracked files explicitly.
-    const paths = ['schema/textop/apply.json', 'schema/textop/compose.json', 'schema/textop/transform.json', 'schema/textop/invalid.json'];
+    const paths = ['schema/textop/apply.json', 'schema/textop/compose.json', 'schema/textop/transform.json', 'schema/textop/invalid.json',
+      ...['parse', 'diff', 'apply', 'state', 'invalid'].map(name => `schema/annot/${name}.json`)];
     for (const path of paths) if (!existsSync(path)) throw new Error(`Missing required fixture ${path}`);
     const tracked = capture('git', ['ls-files', '--', ...paths]).trim().split(/\r?\n/);
     for (const path of paths) if (!tracked.includes(path)) throw new Error(`Fixture must be committed: ${path}`);
@@ -169,6 +188,7 @@ const tasks = {
   },
   contract() {
     run('go', ['test', '-race', '-count=1', './internal/manifest', './internal/core/policy']);
+    run('go', ['test', '-race', '-count=1', './internal/core/annot', '-run', '^TestAnnotContractFixtures$']);
     npm('exec', '--', 'vitest', 'run', 'src/contract.test.ts', 'src/preview.test.ts', 'src/policy.test.ts');
   },
   plugin() {
