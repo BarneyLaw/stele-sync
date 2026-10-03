@@ -63,3 +63,11 @@ after Go canonicalization; five generated cross-language contract files; and
 an acceptance task wired into fixture/contract checks and automatic fuzz-target
 discovery. The complete measured results and the pre-existing npm audit failure
 are recorded in [annot-verification.md](annot-verification.md).
+
+The final documentation portion updates the architecture and downstream
+milestones together: storing only a materialized file would lose tombstones,
+JSONB would rewrite preserved bytes, and immediate remote disk writes would
+conflict with FreeDraw's open-session baseline. ADRs 013/015 record the deferral
+and page-quarantine decisions; ADR 011 is amended as the supplied proposal
+explicitly requires. These are integration requirements, not claims that the
+future engine or client has already been implemented.

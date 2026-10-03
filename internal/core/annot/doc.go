@@ -6,7 +6,8 @@
 // textItems, shapes, and imageItems. Other top-level fields include version,
 // sourceFile, sourcePdf, updatedAt, pdfPageTemplates, nativePageTemplatesEditable,
 // appendedPages, deletedPdfPages, permanentlyDeletedPdfPages, and removedPages.
-// These and future fields remain opaque JSON, including nested page archives.
+// Page arrays become per-page entries; source metadata, future fields and
+// nested page archives remain opaque JSON.
 //
 // Sidecar owns immutable compact JSON. Ordinary operations replace whole
 // elements keyed by (kind, id); deletion wins over later puts. Added pages or
@@ -28,5 +29,5 @@
 // FreeDraw keeps an open session's baseline and rejects conflicting disk saves.
 // The future client must defer remote writes while the PDF is open and diff its
 // saves against the disk baseline. See docs/annot-development.md for pinned
-// source evidence, contract decisions, and the pending manual Obsidian checks.
+// source evidence, contract decisions and actual-plugin verification evidence.
 package annot

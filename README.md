@@ -2,8 +2,9 @@
 Phase 2 of applications in the obsync project family. This iteration features fault tolerant server-side sync actions over all connected devices.
 
 M0 bootstraps the monorepo and promotes the existing phase 1 worker and plugin.
-The phase 2 server is a documented package skeleton; sync implementation starts
-in the later milestones.
+The phase 2 server shell remains a documented package skeleton. M1 implements
+the text-operation core; M2 adds the [FreeDraw annotation core](docs/annot-development.md)
+with [compatibility and verification evidence](docs/annot-verification.md).
 
 See [development setup and M0 verification](docs/development.md), the
 [implementation guide](architecture/obsync-single%20Implementation%20Guide.md),
