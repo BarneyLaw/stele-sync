@@ -140,7 +140,7 @@ func TestLocalSample(t *testing.T) {
 	if path == "" {
 		t.Skip("set ANNOT_SAMPLE for a private local compatibility check")
 	}
-	raw, err := os.ReadFile(path) // #nosec G304 -- explicit opt-in local test input, never a client path.
+	raw, err := os.ReadFile(path) // #nosec G304 G703 -- explicit opt-in local test input, never a client path.
 	if err != nil {
 		t.Fatal(err)
 	}

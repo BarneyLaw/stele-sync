@@ -39,3 +39,9 @@ Started on clean main at 1a887d6; branch m2/annot. Host tools are Go 1.27.1 / No
 The file codec passed its deterministic tests, 1,000 randomized round trips,
 and the user's real sample round trip under the race detector on Go 1.26.6.
 The parser preserves the sample without exposing or committing lecture content.
+
+The operation layer passed its deterministic tests and 1,000 cases per property
+under the race detector, including the independent three-device stale-baseline
+model and planted-tombstone-bug detection. The model compares both values and
+array order against plain maps plus independent insertion ranks. The effective
+sequence regression specifically puts a suppressed element before a new one.
