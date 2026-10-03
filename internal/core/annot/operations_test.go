@@ -96,6 +96,14 @@ func TestPropEffectiveReplays(t *testing.T) {
 		if len(got.Dropped) != 1 || len(replay.Dropped) != 0 || annot.CanonicalHash(got.Sidecar) != annot.CanonicalHash(replay.Sidecar) {
 			t.Fatal("effective replay failed")
 		}
+		originalState, err := annot.EncodeState(got.Sidecar)
+		if err != nil {
+			t.Fatal(err)
+		}
+		replayedState, err := annot.EncodeState(replay.Sidecar)
+		if err != nil || !bytes.Equal(originalState, replayedState) {
+			t.Fatalf("effective replay changed order keys or tombstones: %v", err)
+		}
 	})
 }
 func TestDeleteWins(t *testing.T) {
