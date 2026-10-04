@@ -520,6 +520,7 @@ Each row becomes an ADR file in `docs/adr/` (Nygard format: context, decision, c
 | 012 | Fan-out from the committed change feed (transactional outbox, NOTIFY as wake-up) | Each document actor sends ack and broadcast itself after commit | Actors for different files publish out of seq order; a client persisting its cursor from live messages could skip a change after a crash. Reading the committed feed gives gap-free, ordered delivery and resolves ambiguous commits. |
 | 013 | Defer remote sidecar writes while the PDF is open; diff local saves against the on-disk base | Write remote changes immediately and rely on Freedraw's conflict detection | Freedraw 0.13.3 keeps the sidecar in memory and answers an external change with a recovery copy, not a merge. Deferring keeps its save path clean and lets the server merge by element id. |
 | 015 | Quarantine added pages and trash behind base-checked replacement | Merge positional page references as ordinary elements | Concurrent page shifts can misplace ink, and trash restoration intentionally reuses ids. Stable page anchors are the later upgrade path. |
+| 016 | Discover and isolate CI coverage, properties/models and fuzz jobs behind a stable required aggregate | Serial fuzz jobs and hard-coded milestone package lists | Seven one-hour targets exceed a six-hour job; future packages must join checks without branch-protection churn. |
 
 ### Open questions
 

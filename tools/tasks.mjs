@@ -88,7 +88,7 @@ const tasks = {
   },
   lint() {
     run(binary('actionlint'), ['-shellcheck=', '-pyflakes=']);
-    run(process.execPath, ['--test', 'tools/core-ci.test.mjs']);
+    run(process.execPath, ['--test', 'tools/core-ci.test.mjs', 'tools/workflows.test.mjs']);
     run('go', ['mod', 'tidy', '-diff']);
     const unformatted = capture('gofmt', ['-l', 'cmd', 'internal']);
     if (unformatted.trim()) throw new Error(`Run gofmt on:\n${unformatted}`);
@@ -103,7 +103,7 @@ const tasks = {
   },
   'test-unit'() {
     run('go', ['test', '-race', '-count=1', './...'], { env: unitEnv() });
-    run(process.execPath, ['--test', 'tools/core-ci.test.mjs', 'tools/oracle/generate.test.mjs', 'tools/oracle/report.test.mjs']);
+    run(process.execPath, ['--test', 'tools/core-ci.test.mjs', 'tools/workflows.test.mjs', 'tools/oracle/generate.test.mjs', 'tools/oracle/report.test.mjs']);
   },
   'core-plan'() {
     const plan = corePlan();

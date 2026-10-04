@@ -15,33 +15,26 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        gate: [lint, test, contract, plugin, audit, test-integration, verification]
+        gate: [lint, test, contract, plugin, audit, test-integration]
     steps:
       - uses: actions/checkout@v6
       - uses: ./.github/actions/setup
         with:
           go-tools: ${{ matrix.gate == 'lint' || matrix.gate == 'audit' }}
       - name: Run gate
-        if: matrix.gate != 'verification'
+        if: matrix.gate != 'test'
         run: node tools/tasks.mjs ${{ matrix.gate }}
-      - name: Generated fixtures have no drift
-        if: matrix.gate == 'verification'
-        run: node tools/tasks.mjs fixtures-check
-      - name: Decoder fuzzing (60 seconds per target)
-        if: matrix.gate == 'verification'
-        run: node tools/tasks.mjs fuzz-short
-      - name: Deterministic simulation (500 runs)
-        if: matrix.gate == 'verification'
-        run: node tools/tasks.mjs sim
+      - name: Repository race tests and tooling regressions
+        if: matrix.gate == 'test'
+        run: node tools/tasks.mjs test-unit
       - name: Preserve minimized property and fuzz counterexamples
-        if: failure() && (matrix.gate == 'test' || matrix.gate == 'verification')
+        if: failure() && matrix.gate == 'test'
         uses: actions/upload-artifact@v4
         with:
           name: core-counterexamples-${{ matrix.gate }}
           path: |
-            internal/core/**/testdata/rapid/**
-            internal/core/**/testdata/fuzz/**
-            internal/proto/**/testdata/fuzz/**
+            internal/**/testdata/rapid/**
+            internal/**/testdata/fuzz/**
           if-no-files-found: ignore
           retention-days: 30
       - name: Integration diagnostics
@@ -50,6 +43,37 @@ jobs:
       - name: Stop development services, retain no CI volumes
         if: always() && matrix.gate == 'test-integration'
         run: docker compose down --volumes
+  core:
+    name: Core
+    uses: ./.github/workflows/core.yml
+    with:
+      mode: pr
+  verification:
+    # Keep this required context stable as the discovered matrix grows.
+    name: M0 / verification
+    needs: core
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Require all core matrix jobs
+        env:
+          CORE_RESULT: ${{ needs.core.result }}
+        run: test "$CORE_RESULT" = success
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup
+      - name: Generated fixtures have no drift
+        run: node tools/tasks.mjs fixtures-check
+      - name: Deterministic simulation (500 runs)
+        run: node tools/tasks.mjs sim
+      - name: Preserve minimized simulation counterexamples
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-counterexamples-verification
+          path: internal/**/testdata/rapid/**
+          if-no-files-found: ignore
+          retention-days: 30
   worker:
     name: M0 / worker
     runs-on: ubuntu-latest

@@ -58,3 +58,55 @@ The planner, task changes, tests and this documentation are AI-drafted under the
 user's request. Changes remain on `m2/annot`, with only the user's configured Git
 identity. No hosted workflow, protection update or deployment is triggered by
 local validation.
+
+## Workflow integration
+
+The shared `core.yml` workflow runs the same plan for PRs and nightlies. Routine
+checks split by package; nightly property checks split by test; fuzzing always
+splits by target. Currently that means four routine core checks, thirteen nightly
+property/model checks and seven fuzz targets. Each matrix permits four concurrent
+jobs. Property jobs have 30-minute PR / six-hour nightly limits, with shorter Go
+test deadlines; fuzz jobs have 90-minute limits for at most one hour of fuzzing.
+
+`M0 / verification` depends on the entire reusable workflow before checking
+fixtures and simulation. All eight existing protected contexts remain unchanged.
+The result aggregator explicitly rejects discovery failure, failed/cancelled
+children and unexpected skips. Tests execute that actual shell fragment over
+160 result/empty-matrix combinations and compare required names with the tracked
+protection configuration. No remote protection change is necessary.
+
+Nightly retains the four oracle shards and simulator/e2e entry points, and adds
+the existing dedicated non-race textop performance check. Logs, coverage,
+discovery plans and minimized counterexamples are uploaded with distinct names.
+Uploads opt into hidden files only for the explicit plan/coverage paths under
+`.cache/core-ci`; otherwise upload-artifact would omit that evidence. A regression
+test reproduced the missing opt-in before the workflow correction.
+This resolves the prior seven-hour serial fuzz workload inside a six-hour job.
+[ADR 016](adr/016-discovered-ci-checks.md) records the decision and alternatives.
+
+## Verification — 2026-10-04
+
+Local Linux/amd64 checks used Go 1.26.6 and Node 25.5.0; CI retains Node 24.12.0.
+
+- `node tools/tasks.mjs test` passed repository-wide race tests, all routine
+  property/model budgets and the tooling tests.
+- Per-package race coverage passed: annot 93.74%, policy 93.20%, textop 95.66%,
+  vpath 90.54% (unrounded statement ratios drive the gate).
+- `node tools/tasks.mjs lint` passed actionlint 1.7.12, planner tests, tidy, vet,
+  formatting, configured linters and negative dependency probes. Optional
+  actionlint shellcheck/pyflakes integrations are disabled, as in M1 validation.
+- Both real discovery plans matched the expected package/test counts. The
+  workflow regression tests passed, including failure/cancellation propagation
+  and unchanged required contexts.
+- `fixtures-check` and `contract` passed, including regeneration/tracking checks
+  and the existing 90 TypeScript contract tests.
+- `FUZZ_TIME=5s node tools/tasks.mjs core-fuzz` passed all seven target invocations.
+  This only smoke-tests wiring; several annotation targets spent that short
+  budget loading the existing corpus. It is not new hour-long fuzz evidence.
+
+The new hosted matrices and their full nightly budgets have not been executed
+locally or dispatched. M1's previously recorded performance failures and M2's
+three existing moderate npm audit advisories are not fixed or suppressed here.
+See [textop verification](textop-verification.md) and
+[annotation verification](annot-verification.md). No Go/npm dependency lockfiles,
+test fixtures or production algorithms changed in this CI follow-up.
