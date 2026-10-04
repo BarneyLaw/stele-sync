@@ -173,57 +173,43 @@ schema/textop/invalid.json    hand-written malformed ops, each with the expected
 
 ## M2: core/annot
 
-**Goal.** A pure package that turns a Freedraw sidecar into an id-keyed model, diffs two versions into element operations, applies operations with the conflict rules, and serializes deterministically.
+The [supplied M2 proposal](../internal/core/annot/M2-core-annot-proposal.md)
+replaces the original single-array plan. Its sections 5–10 define the goal,
+interface, semantics, build order, proof and exit criteria; the
+[implementation record](../docs/annot-development.md) records necessary replay
+and ordering clarifications. [Verification](../docs/annot-verification.md)
+records measured results and actual-plugin checks.
 
-**Before writing code.** Install the pinned Freedraw version, annotate a real PDF (pen, highlighter, eraser, text, inserted page, image) and commit the resulting sidecars to `schema/annot/samples/`. Write down in the package doc: the sidecar file name pattern, where elements live, which field is the element id, and which top-level fields exist. If elements have no stable id, stop and raise it; the whole Class B design assumes one.
+**Goal.** A pure, bounded FreeDraw 0.13.3 codec and merge core: five annotation
+collections keyed by (kind, id), per-page state/templates, volatile metadata
+masking, whole-document quarantine for added pages/trash, and separate file and
+durable-state encodings.
 
-**Interface.**
+**Interface.** See the exported package API and proposal §6. Parse takes Limits;
+Marshal takes Sidecar; CanonicalHash hashes Marshal bytes. Diff emits ordinary
+Ops or ErrWholeDocument. Apply returns Sidecar, Effective and Dropped. Only
+trusted ReplaceOps may restore tombstoned keys after the engine checks base ==
+head. EncodeState/DecodeState retain creation order and tombstones;
+PruneTombstones requires the retention owner's authorization.
 
-```go
-package annot
+**Design notes.** Preserve compact raw element/entry/metadata values verbatim.
+Array order is (created version, effective ordinal), with imported order
+preserved. Page entries use ordinary LWW deletes, while element deletes retain
+tombstones. ParseOps rejects client Replace and noncanonical operation sets.
+Bound bytes, live keys, tombstones, operations, id length, depth and node count;
+check formatted output size before allocation. See ADRs 011, 013 and 015.
 
-type ElementID string
+**Proof.** Codec round trips, independent stale-device reference model, planted
+tombstone bug detection, diff/apply, no-lost-live-key, deletion-wins, disjoint
+existing-key commutation, effective replay, state/operation round trips, unknown
+field preservation, limits and malformed inputs. Four native fuzz targets cover
+Parse, ParseOps, DecodeState and Apply. Captured samples and generated contracts
+live under schema/annot; the M13 TypeScript port must consume those same contracts.
 
-type Sidecar struct {
-    elements   map[ElementID]element     // raw JSON value + first-created version
-    tombstones map[ElementID]Version
-    meta       map[string]json.RawMessage // every other top-level field, preserved
-}
-
-type Ops struct {
-    Elements []ElementOp            // Put{ID, Value} or Del{ID}
-    Meta     map[string]json.RawMessage
-}
-
-func Parse(b []byte, s Schema) (Sidecar, error)
-func Diff(old, new Sidecar) Ops
-func Apply(sc Sidecar, ops Ops, at Version) (Sidecar, error)
-func Marshal(sc Sidecar, s Schema) ([]byte, error) // deterministic
-func CanonicalHash(sc Sidecar) [32]byte            // what the convergence audit compares
-```
-
-`Schema` holds the few facts from the samples (elements path, id field) so a Freedraw format change is a config change plus fixtures, not a rewrite.
-
-**Design notes.**
-
-- Element values are kept as `json.RawMessage`, never decoded into Go structs. The server must not need to understand a stroke to sync it, and must not drop fields it does not know.
-- Deterministic output: elements ordered by first-created version then id; object keys inside `meta` sorted. Two servers given the same ops produce byte-identical files.
-- Rules from the architecture doc: put replaces the whole element; a put to a tombstoned id is dropped and reported (the engine counts it); meta puts are last-writer-wins per top-level key.
-- Tombstones are pruned with op retention, not before, or a late put could resurrect an erased stroke.
-
-**Proof.**
-
-| Test | Asserts |
-| --- | --- |
-| `TestPropDiffApply` | For random sidecars `a`, `b`: `CanonicalHash(Apply(a, Diff(a,b))) == CanonicalHash(b)` |
-| `TestPropCommutesOnDisjointIDs` | Ops touching disjoint ids give the same result in either order |
-| `TestDeleteWins` | Put after delete of the same id is dropped |
-| `TestSamplesRoundTrip` | Every committed Freedraw sample: `Marshal(Parse(x))` parses to the same model, and Freedraw opens the output (manual check, recorded once in the PR) |
-| `TestUnknownFieldsPreserved` | Extra fields at every level survive a round trip |
-| `TestMarshalDeterministic` | Same model, 100 map iteration orders, one byte sequence |
-| `FuzzParse` | No panic on arbitrary bytes; size limit enforced |
-
-**Exit criteria.** Properties pass at 100,000 cases; real samples round-trip and still open in Freedraw; ADR 013 records the verified Freedraw 0.13.3 behaviour (no hot reload of a changed sidecar during annotation; conflict detection plus a recovery copy on save) and the client deferral rules it forces. Re-run the manual check whenever the pinned Freedraw version changes.
+**Exit criteria.** 100,000 cases per property/model; planted bug caught; four
+ten-minute fuzz runs; package coverage above 90%; real FreeDraw captures round-
+trip and open in the plugin; contract fixtures and ADRs recorded. Reproduce with
+`node tools/tasks.mjs annot-acceptance`; retain the separate application check.
 
 ## M3: core/vpath, core/classify, core/rules
 
@@ -298,7 +284,7 @@ type Submit struct {
     ClientOpID uuid.UUID
     FileID     uuid.UUID
     BaseVersion int64
-    Body       SubmitBody                    // sealed: TextEdit, AnnotEdit, PutBlob, Create, Rename, RenameGroup, Delete
+    Body       SubmitBody                    // sealed: TextEdit, AnnotEdit, AnnotReplace, PutBlob, Create, Rename, RenameGroup, Delete
     Confirmed  bool
 }
 // ... one struct per catalogue entry
@@ -317,6 +303,7 @@ const ( InvalidOp Code = "invalid_op"; StaleDelete Code = "stale_delete"; /* ...
 - **Two-pass decode.** Check `len(frame) <= MaxFrame` first, then read only `t`, then decode into that type's struct. Unknown `t` is an error; unknown fields inside a known type are ignored.
 - **Parse, don't validate.** `Decode` calls `textop.Parse`, `annot` op parsing and `vpath.Parse`, so a decoded `Submit` carries a canonical `textop.Op` and a legal `vpath.Path`. Nothing downstream re-checks.
 - **Payload-only.** `proto` checks shape and limits, not state. Whether `base_version` is stale is the engine's decision.
+- **Class B.** AnnotEdit calls annot.ParseOps, which rejects the trusted Replace flag. AnnotReplace carries a full parsed document. Add whole_document_required; the engine performs the base == head check before constructing ReplaceOps. Preserve raw operation bytes through framing (an outer json.Marshal can HTML-escape custom Marshaler output).
 - **Numbers.** Versions and sequence numbers are `int64` in Go and fit safely in JavaScript numbers below 2^53; the decoder rejects anything larger rather than letting JavaScript round it.
 - Protocol version constants and the reject-code list are exported to `schema/protocol/codes.json` so the plugin imports the same set.
 
@@ -368,6 +355,7 @@ type Tx interface {
 - `AppendChange` is always the last statement before commit, so the `vault` row lock is held as briefly as possible and always taken after file rows.
 - `pg_notify` inside the transaction is delivered only if it commits. The hub (M8) uses it as a wake-up, never as the data; the data is always re-read from `changes`.
 - Queries through `sqlc`; each query file names the milestone and the use. Hot-path `EXPLAIN` outputs go in the PR.
+- Class B heads and snapshots store annot.EncodeState bytes. Class B op payloads store the exact effective encoding. Use bytea/text, not jsonb, so order keys, tombstones and opaque JSON bytes survive restart unchanged.
 - Migrations embedded with `embed.FS` and run by `obsyncctl migrate`; the server checks `goose` version on start and refuses to run against an unexpected one.
 
 **Proof** (all against a real Postgres via testcontainers-go, `-race` on).
@@ -460,6 +448,7 @@ type Outcome struct {
 - **Rejects are not recorded.** A reject has no effect, so re-evaluating a retried submission is safe; at most one effect is still guaranteed.
 - **The engine never talks to sockets.** Acks and broadcasts come from the hub reading the committed feed (ADR 012). `Outcome` is for metrics, tests and immediate rejects.
 - **Conflict copies** are ordinary `create` changes authored by the system in the same transaction as the decision that triggered them, followed by a `notice`.
+- **Class B pipeline.** DecodeState, enforce the retention window, then Apply. Quarantined heads require AnnotReplace with base == head; stale replacement creates a conflict sidecar. Creates use Apply(Empty(), ReplaceOps(Empty(), doc), v1). Persist/broadcast only Effective and count Dropped. The reference client/simulator must include deferred PDF sessions and state-form shadows.
 
 ### The reference client (`internal/client`)
 
@@ -603,7 +592,7 @@ func Collect(ctx context.Context, st Store, objs objects.Store, now time.Time, d
 
 **Design notes.**
 
-- **CompactOne order:** read head and version in a short read transaction; serialize (text as UTF-8, sidecar with `annot.Marshal`); `PUT snapshots/<file_id>/<version>` (write-once, retry-safe); insert the `snapshots` row. No lock is held across the upload; if the head moved meanwhile, the snapshot is still valid for its own version.
+- **CompactOne order:** read head and version in a short read transaction; serialize (text as UTF-8, Class B with `annot.EncodeState`); `PUT snapshots/<file_id>/<version>` (write-once, retry-safe); insert the `snapshots` row. No lock is held across the upload; if the head moved meanwhile, the snapshot is still valid for its own version. Prune annotation tombstones at the op-retention cutoff only after a covering state snapshot and stale-submission fence exist.
 - **Prune** deletes ops with `created_at` older than retention **only** when a snapshot exists at a version at or above them, and deletes `changes` rows older than retention. Clients whose cursor predates the oldest retained change get `resync_required`.
 - **Candidates** come from a query over files with ops since their last snapshot, ordered by uncompacted bytes, so the worst file is always handled first.
 - **GC** reuses phase 1's mark-and-sweep shape: take its own advisory lock; mark from live heads, tombstones within retention, and snapshots within retention; list `blobs/`, `snapshots/` and `tmp/`; delete unmarked objects older than 24 hours; report counts. `-dry-run` is the default in the CLI; `-apply` must be explicit.
@@ -724,7 +713,7 @@ The advisory-lock connection is watched: if it drops, the process cancels its ro
 4. **`vault/` editor bridge**: a CodeMirror 6 extension registered with `registerEditorExtension`. It converts local transactions to text ops, skips any transaction carrying the plugin's `remote` annotation, and applies remote ops as a single dispatched transaction with that annotation so cursor and selection map correctly.
 5. **`vault/` file watcher**: `create`, `modify`, `delete`, `rename` vault events. For a file not open in an editor, a `modify` is diffed against the shadow to produce an op. The plugin's own writes are recognized by comparing the new content's hash with the content it just wrote, so they are never echoed.
 6. **First sync**: a newly enrolled device, or one with an unknown vault, runs pull-only: `list_files`, download everything within its policy, then enable uploads. Local files that differ from the server become conflict copies; local-only files are uploaded only after the user confirms in a dialog showing the list.
-7. **Freedraw handling**: Freedraw does not reload external sidecar changes while a PDF is open (ADR 013). While a PDF is open in any leaf, apply remote Class B ops to the shadow only, queue the disk write, and flush it when the PDF closes. Diff Freedraw's own saves against the on-disk base, not the newer shadow, so only local strokes are submitted. Test: device A adds strokes while device B is annotating the same PDF; after B closes and reopens it, both sets of strokes are present and no recovery copy was created.
+7. **Freedraw handling**: Freedraw does not reload external sidecar changes while a PDF is open (ADR 013). While a PDF is open in any leaf, apply remote Class B ops to the state-form shadow only, queue the disk write, and flush it when the PDF closes and saves settle. Diff Freedraw's own saves against the on-disk base, not the newer shadow. Port annot against schema/annot fixtures; quarantine added pages/trash and submit full documents on whole_document_required. Stale replaces become conflict copies. Audit the shadow during deferral. Test: device A adds strokes while device B is annotating the same ordinary PDF; after B closes and reopens it, both sets of strokes are present and no recovery copy was created. Added-page concurrency must produce a conflict, never silently move ink.
 8. **`ui/`**: status bar (connected, syncing N, offline, error), conflicts view listing conflict copies with open and compare actions, Canvas notices view, settings (server URL, enroll code, exclusion rules from phase 1, debug log toggle), bulk-delete confirmation modal.
 
 **Design notes.**

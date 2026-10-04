@@ -18,6 +18,11 @@ concurrency:
   group: nightly
   cancel-in-progress: false
 jobs:
+  core:
+    name: Nightly core
+    uses: ./.github/workflows/core.yml
+    with:
+      mode: nightly
   soak:
     name: Nightly / ${{ matrix.gate }}
     runs-on: ubuntu-latest
@@ -25,14 +30,29 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        gate: [fuzz-short, sim, e2e]
+        gate: [sim, e2e, textop-perf]
     env:
-      FUZZ_TIME: 1h
       SIM_RUNS: "10000"
     steps:
       - uses: actions/checkout@v6
       - uses: ./.github/actions/setup
-      - run: node tools/tasks.mjs ${{ matrix.gate }}
+      - name: Run soak or dedicated non-race performance gate
+        env:
+          GATE: ${{ matrix.gate }}
+        run: |
+          set -o pipefail
+          node tools/tasks.mjs "$GATE" 2>&1 | tee "$RUNNER_TEMP/soak.log"
+      - name: Preserve performance evidence and counterexamples
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-${{ matrix.gate }}
+          path: |
+            ${{ runner.temp }}/soak.log
+            internal/**/testdata/rapid/**
+            internal/**/testdata/fuzz/**
+          if-no-files-found: ignore
+          retention-days: 30
   oracle:
     name: Nightly / oracle shard ${{ matrix.shard }}
     runs-on: ubuntu-latest

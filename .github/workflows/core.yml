@@ -1,0 +1,117 @@
+name: Core verification
+on:
+  workflow_call:
+    inputs:
+      mode:
+        description: pr or nightly; validated by the task planner
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  discover:
+    name: Discover core checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      checks: ${{ steps.plan.outputs.checks }}
+      fuzz: ${{ steps.plan.outputs.fuzz }}
+      has-checks: ${{ steps.plan.outputs.has-checks }}
+      has-fuzz: ${{ steps.plan.outputs.has-fuzz }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup
+      - name: Discover implemented packages, properties/models and decoders
+        id: plan
+        env:
+          CORE_MODE: ${{ inputs.mode }}
+        run: node tools/tasks.mjs core-plan
+      - uses: actions/upload-artifact@v4
+        with:
+          name: core-plan-${{ inputs.mode }}
+          path: .cache/core-ci/plan.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+  checks:
+    name: ${{ matrix.package }} ${{ matrix.test }}
+    needs: discover
+    if: needs.discover.outputs.has-checks == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.mode == 'nightly' && 360 || 30 }}
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix: ${{ fromJSON(needs.discover.outputs.checks) }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup
+      - name: Run discovered coverage/property check
+        env:
+          CORE_MODE: ${{ inputs.mode }}
+          CORE_PACKAGE: ${{ matrix.package }}
+          CORE_TEST: ${{ matrix.test }}
+        run: node tools/tasks.mjs core-check
+      - name: Preserve coverage and minimized property counterexamples
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-check-${{ inputs.mode }}-${{ matrix.id }}
+          include-hidden-files: true
+          path: |
+            .cache/core-ci/**/coverage.out
+            internal/**/testdata/rapid/**
+          if-no-files-found: ignore
+          retention-days: 30
+  fuzz:
+    name: ${{ matrix.package }} ${{ matrix.test }}
+    needs: discover
+    if: needs.discover.outputs.has-fuzz == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix: ${{ fromJSON(needs.discover.outputs.fuzz) }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup
+      - name: Fuzz one decoder with race detection
+        env:
+          CORE_MODE: ${{ inputs.mode }}
+          CORE_PACKAGE: ${{ matrix.package }}
+          CORE_TEST: ${{ matrix.test }}
+          FUZZ_TIME: ${{ inputs.mode == 'nightly' && '1h' || '60s' }}
+        run: node tools/tasks.mjs core-fuzz
+      - name: Preserve minimized fuzz counterexamples
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-fuzz-${{ inputs.mode }}-${{ matrix.id }}
+          path: internal/**/testdata/fuzz/**
+          if-no-files-found: ignore
+          retention-days: 30
+  result:
+    name: Core result
+    needs: [discover, checks, fuzz]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # An empty matrix may skip legitimately; discovery failures and cancelled
+      # or failed children must never turn the reusable workflow green.
+      - name: Require every discovered check to pass
+        env:
+          DISCOVERY: ${{ needs.discover.result }}
+          CHECKS: ${{ needs.checks.result }}
+          FUZZ: ${{ needs.fuzz.result }}
+          HAS_CHECKS: ${{ needs.discover.outputs.has-checks }}
+          HAS_FUZZ: ${{ needs.discover.outputs.has-fuzz }}
+        run: |
+          test "$DISCOVERY" = success
+          case "$HAS_CHECKS:$HAS_FUZZ" in
+            true:true|true:false|false:true|false:false) ;;
+            *) exit 1 ;;
+          esac
+          if [ "$HAS_CHECKS" = true ]; then test "$CHECKS" = success; else test "$CHECKS" = skipped; fi
+          if [ "$HAS_FUZZ" = true ]; then test "$FUZZ" = success; else test "$FUZZ" = skipped; fi

@@ -87,7 +87,7 @@ The class is fixed at creation and stored. A rename that would change class (for
 | Class | Matches | Unit of change | Concurrency rule | Size ceiling (default) |
 | --- | --- | --- | --- | --- |
 | A: text | Configured text extensions, content is valid UTF-8, no NUL bytes | Text operation (retain / insert / delete) | OT, server order breaks ties | 8 MiB, else demoted to C |
-| B: sidecar | `*.annot.json` that parses as the pinned Freedraw schema | Element put / delete by annotation id | Last writer wins per element, delete wins over a later put | 16 MiB, else demoted to C |
+| B: sidecar | `*.annot.json` that parses as the pinned Freedraw schema | Element, page-entry and metadata operations; full replacement for added pages/trash | LWW per key; element delete wins; full replacement requires base == head | 16 MiB, else demoted to C |
 | C: opaque | Everything else inside policy | Whole blob, addressed by SHA-256 | Base-version check, conflict copy on divergence | 512 MiB |
 
 Text positions are **UTF-16 code units**, because CodeMirror 6 and JavaScript strings use them. The Go side must count the same way and must reject an operation that splits a surrogate pair. Line endings and a BOM are content: nothing normalizes them.
@@ -106,14 +106,14 @@ files (
   class char(1) check (class in ('A','B','C')),
   version bigint not null,            -- per-file, +1 per accepted change
   content_text text,                  -- Class A head
-  content_json jsonb,                 -- Class B head
+  content_annot bytea,                -- Class B EncodeState bytes, including order/tombstones
   blob_sha256 bytea,                  -- Class C head
   size bigint, deleted_at timestamptz, deleted_by uuid, created_by uuid,
   owner text check (owner in ('user','canvas'))
 )
 unique (path_key) where deleted_at is null
 
-ops (file_id uuid, version bigint, device_id uuid, payload jsonb, bytes int,
+ops (file_id uuid, version bigint, device_id uuid, payload bytea, bytes int,
      created_at timestamptz, primary key (file_id, version))
 
 changes (seq bigint pk, file_id uuid, kind text, version bigint, device_id uuid, at timestamptz)
@@ -169,13 +169,31 @@ An operation is valid against a document only if retains plus deletes equal the 
 
 ### 4.2 Class B: sidecar element operations
 
-A sidecar is parsed into a map `annotation id -> element`, plus the remaining top-level fields. The client computes element operations by parsing the old and new file and diffing by id:
+A sidecar has five top-level collections (`strokes`, `eraserPaths`, `textItems`,
+`shapes`, `imageItems`) keyed by `(kind, id)`. The client diffs its on-disk baseline
+against the saved file. Page state and templates merge by page number; other
+metadata merges by top-level key, with explicit deletes:
 
 ```json
-{"elements": [{"put": "a1", "value": {"...": "..."}}, {"del": "a7"}], "meta": {"put": {"pages": ["..."]}}}
+{"elements":[{"put":{"kind":"strokes","id":"a1"},"value":{"id":"a1"}},{"del":{"kind":"strokes","id":"a7"}}],"entries":[{"put":{"family":"pdfPageState","page":3},"value":"hidden"}],"meta":{"put":{},"del":[]}}
 ```
 
-Rules: a put replaces the whole element (a stroke is atomic). The later put in server order wins. A delete leaves a tombstone, and a put to a tombstoned id is dropped, so an erased stroke never reappears. Unknown fields are preserved in meaning, so a Freedraw upgrade does not corrupt files. Devices write the server's deterministic serialization, and convergence for Class B is checked on that canonical form, because Freedraw may reformat whitespace on save. Materialization orders elements by first-created version, then id, which keeps output deterministic.
+An ordinary put replaces a whole element; the later server version wins.
+Deletion tombstones its kind/id, and later puts are dropped and reported. Page
+entries use ordinary put/delete LWW so hide/unhide/hide works. Diff ignores
+updatedAt and sourcePdf ctime/mtime while retaining meaningful identity changes.
+Compact raw JSON values preserve unknown fields, key order, numeric spelling and
+string escapes. Output uses fixed top-level ordering and two-space indentation;
+elements retain imported order, then use creation version/effective ordinal.
+The audit hashes those exact file bytes. Persist EncodeState and effective op
+bytes, never JSONB-reencoded values or only the materialized FreeDraw file.
+
+Nonempty appendedPages or removedPages requires whole-document mode: positional
+page references shift and trash/restore reuses ids. AnnotReplace is accepted
+only at head, otherwise preserving a conflict copy. The server constructs
+ReplaceOps, which resets document order and clears tombstones for restored keys.
+Clients cannot submit the trusted Replace flag. See ADRs 011, 013 and 015.
+Class B must obey the retention window so pruning cannot enable stale resurrection.
 
 **Freedraw constraint (verified against release 0.13.3).** Freedraw loads a sidecar once when a PDF is opened and keeps it in memory; it does not reload external changes during an annotation session. If the file changes on disk under it, its next save detects the conflict, refuses the normal write, and tries to write a separate recovery copy. So the client follows two rules:
 
@@ -196,6 +214,7 @@ The client uploads bytes with `PUT /v1/blobs/{sha256}`, then submits `put_blob {
 | `rename {file_id, new_path}` | File live, target free | `path_taken` as above; `file_deleted` if gone |
 | `delete {file_id, base_version}` | `base_version == head` | `stale_delete`: someone edited since this device looked. The file stays and syncs back. |
 | edit to a deleted file | never | `file_deleted`: client keeps its text as a conflict copy |
+| `AnnotReplace {file_id, base_version, document}` | File live and `base_version == head` | Preserve the submitted sidecar as a conflict copy whose name still ends in `.annot.json` but does not pair with the PDF |
 
 A rename of a PDF moves its sidecar in the same submission (`rename_group`), or Freedraw loses the pairing. The server applies a group atomically or not at all.
 
@@ -276,7 +295,7 @@ Every frame is a JSON text frame `{"t": "<type>", ...}`. Unknown `t` closes the 
 
 The server gets this ordering from a **transactional outbox**. The submitting transaction writes its `changes` row and calls `pg_notify`, which Postgres delivers only at commit. A single hub goroutine wakes on the notification, reads new `changes` rows in `seq` order, and fans them out, as `ack` to the originating device and `remote` to the rest. Because the vault counter is a row in the same transaction, a rollback also rolls back the increment, so the sequence has no gaps. The hub keeps a ring of the last 10,000 changes so a session finishing catch-up can join the live stream without a race.
 
-Reject codes are part of the contract: `invalid_op`, `stale_delete`, `path_taken`, `file_deleted`, `read_only_path`, `bulk_delete_guard`, `blob_missing`, `too_large`, `rate_limited`, `rebase_required`, `internal`. Clients branch on codes, never on message text.
+Reject codes are part of the contract: `invalid_op`, `stale_delete`, `path_taken`, `file_deleted`, `read_only_path`, `bulk_delete_guard`, `blob_missing`, `too_large`, `rate_limited`, `rebase_required`, `whole_document_required`, `internal`. Clients branch on codes, never on message text.
 
 ### 5.4 Limits (defaults, configurable)
 
@@ -436,6 +455,8 @@ When the budget is spent, feature work stops until reliability work brings it ba
 | `obsync_outbound_queue_frames` | histogram | Saturation per session |
 | `obsync_slow_consumer_closes_total` | counter | Clients being shed |
 | `obsync_conflict_copies_total{reason}` | counter | User-visible merge failures |
+| `obsync_annot_dropped_puts_total` | counter | Stale annotation puts suppressed by retained tombstones |
+| `obsync_annot_whole_document_conflicts_total` | counter | Added-page conflicts; trigger for stable page-anchor work (ADR 015) |
 | `obsync_compaction_lag_bytes` | gauge | Uncompacted op volume |
 | `obsync_blob_bytes_total{direction}` | counter | Transfer volume |
 | `obsync_convergence_mismatch_total` | counter | Must stay 0 |
@@ -498,11 +519,13 @@ Each row becomes an ADR file in `docs/adr/` (Nygard format: context, decision, c
 | 011 | Element-level LWW, delete wins, for sidecars | Text OT on JSON | A stroke is atomic; JSON text merges corrupt structure |
 | 012 | Fan-out from the committed change feed (transactional outbox, NOTIFY as wake-up) | Each document actor sends ack and broadcast itself after commit | Actors for different files publish out of seq order; a client persisting its cursor from live messages could skip a change after a crash. Reading the committed feed gives gap-free, ordered delivery and resolves ambiguous commits. |
 | 013 | Defer remote sidecar writes while the PDF is open; diff local saves against the on-disk base | Write remote changes immediately and rely on Freedraw's conflict detection | Freedraw 0.13.3 keeps the sidecar in memory and answers an external change with a recovery copy, not a merge. Deferring keeps its save path clean and lets the server merge by element id. |
+| 015 | Quarantine added pages and trash behind base-checked replacement | Merge positional page references as ordinary elements | Concurrent page shifts can misplace ink, and trash restoration intentionally reuses ids. Stable page anchors are the later upgrade path. |
+| 016 | Discover and isolate CI coverage, properties/models and fuzz jobs behind a stable required aggregate | Serial fuzz jobs and hard-coded milestone package lists | Seven one-hour targets exceed a six-hour job; future packages must join checks without branch-protection churn. |
 
 ### Open questions
 
 - [ ] **Project name.** "obsync" collides with existing Obsidian tools. Decide before the plugin id is published, because the id becomes a folder name on every device.
-- [ ] **Freedraw sidecar schema.** Pin a Freedraw version, capture real sidecars as fixtures, and confirm the annotation id field and sidecar naming before M2 starts.
+- [x] **Freedraw sidecar schema.** 0.13.3 captures and actual-plugin checks are recorded in `schema/annot/samples/` and `docs/annot-verification.md`.
 - [ ] **Obsidian origins.** Measure the actual WebSocket `Origin` on desktop, Android and iOS, then pin the allowlist.
 - [ ] **At-rest encryption.** Choose between encrypted Longhorn volumes and node-level disk encryption.
 - [ ] **Window numbers.** 24 h and 5,000 ops are starting values. Revisit after the S4 soak with real transform-depth data.

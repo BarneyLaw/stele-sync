@@ -1,5 +1,6 @@
 {
   "golangci-lint": "v2.11.3",
   "govulncheck": "v1.1.4",
+  "actionlint": "v1.7.12",
   "node": "24.12.0"
 }

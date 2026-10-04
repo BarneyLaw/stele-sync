@@ -7,3 +7,4 @@ go.sum text eol=lf
 *.yml text eol=lf
 *.yaml text eol=lf
 *.mjs text eol=lf
+schema/annot/samples/*.pdf binary
