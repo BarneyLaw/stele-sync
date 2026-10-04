@@ -1,10 +1,11 @@
 // Portable task runner: every Makefile recipe also runs directly in PowerShell.
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { tmpdir, cpus } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { compose, integrationEnv, up } from './dev.mjs';
+import { inventory, planChecks, selectChecks, propertyArgs, fuzzArgs, requireCoverage } from './core-ci.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 process.chdir(root);
@@ -33,6 +34,19 @@ function files(directory, suffix) {
     const path = join(directory, entry.name);
     return entry.isDirectory() ? files(path, suffix) : path.endsWith(suffix) ? [path] : [];
   });
+}
+
+function corePlan() {
+  const module = capture('go', ['list', '-m']).trim();
+  const packages = capture('go', ['list', '-f', '{{.ImportPath}}|{{join .GoFiles ","}}', './internal/...']);
+  const events = capture('go', ['test', '-json', '-list', '^(TestProp|TestModelAgreement|Fuzz)', './internal/...'], { maxBuffer: 16 * 1024 * 1024, env: unitEnv() });
+  return planChecks(inventory(module, packages, events), process.env.CORE_MODE || 'pr');
+}
+
+function unitEnv() {
+  // Never let a local compatibility export or ambient service credentials turn
+  // a CI discovery/unit invocation into external I/O.
+  return { ...process.env, GARAGE_ENDPOINT: '', STELE_PULL_REQUIRE_S3: '', ANNOT_SAMPLE: '', ANNOT_OUTPUT_DIR: '' };
 }
 
 function depguardProof() {
@@ -70,8 +84,11 @@ const tasks = {
     const env = { ...process.env, GOBIN: resolve('.tools') };
     run('go', ['install', `github.com/golangci/golangci-lint/v2/cmd/golangci-lint@${versions['golangci-lint']}`], { env });
     run('go', ['install', `golang.org/x/vuln/cmd/govulncheck@${versions.govulncheck}`], { env });
+    run('go', ['install', `github.com/rhysd/actionlint/cmd/actionlint@${versions.actionlint}`], { env });
   },
   lint() {
+    run(binary('actionlint'), ['-shellcheck=', '-pyflakes=']);
+    run(process.execPath, ['--test', 'tools/core-ci.test.mjs']);
     run('go', ['mod', 'tidy', '-diff']);
     const unformatted = capture('gofmt', ['-l', 'cmd', 'internal']);
     if (unformatted.trim()) throw new Error(`Run gofmt on:\n${unformatted}`);
@@ -81,12 +98,43 @@ const tasks = {
     depguardProof();
   },
   test() {
-    // Keep unit tests independent of a developer's ambient Garage credentials.
-    const env = { ...process.env, GARAGE_ENDPOINT: '', STELE_PULL_REQUIRE_S3: '' };
-    run('go', ['test', '-race', '-count=1', './...'], { env });
-    run('go', ['test', '-race', '-count=1', './internal/core/textop', '-run=^TestProp', '-rapid.checks=10000'], { env });
-    run('go', ['test', '-race', '-count=1', './internal/core/annot', '-run=^(TestProp|TestModelAgreement)', '-rapid.checks=1000'], { env });
-    run(process.execPath, ['--test', 'tools/oracle/generate.test.mjs', 'tools/oracle/report.test.mjs']);
+    tasks['test-unit']();
+    tasks['core-check']();
+  },
+  'test-unit'() {
+    run('go', ['test', '-race', '-count=1', './...'], { env: unitEnv() });
+    run(process.execPath, ['--test', 'tools/core-ci.test.mjs', 'tools/oracle/generate.test.mjs', 'tools/oracle/report.test.mjs']);
+  },
+  'core-plan'() {
+    const plan = corePlan();
+    mkdirSync('.cache/core-ci', { recursive: true });
+    writeFileSync('.cache/core-ci/plan.json', JSON.stringify(plan, null, 2) + '\n');
+    if (process.env.GITHUB_OUTPUT) {
+      for (const [name, include] of Object.entries(plan)) {
+        appendFileSync(process.env.GITHUB_OUTPUT, `${name}=${JSON.stringify({ include })}\nhas-${name}=${include.length > 0}\n`);
+      }
+    }
+    console.log(JSON.stringify(plan, null, 2));
+  },
+  'core-check'() {
+    const mode = process.env.CORE_MODE || 'pr';
+    const checks = selectChecks(corePlan().checks, process.env.CORE_PACKAGE, process.env.CORE_TEST);
+    for (const check of checks) {
+      if (check.coverage) {
+        const directory = join('.cache/core-ci', check.package.slice(2));
+        mkdirSync(directory, { recursive: true });
+        const profile = join(directory, 'coverage.out');
+        run('go', ['test', '-race', '-count=1', '-timeout=20m', check.package, `-coverprofile=${profile}`], { env: unitEnv() });
+        const percent = requireCoverage(readFileSync(profile, 'utf8'));
+        console.log(`${check.package}: ${percent.toFixed(2)}% coverage (>90% required)`);
+      }
+      const args = propertyArgs(check, mode);
+      if (args.length) run('go', args, { env: unitEnv() });
+    }
+  },
+  'core-fuzz'() {
+    const targets = selectChecks(corePlan().fuzz, process.env.CORE_PACKAGE, process.env.CORE_TEST);
+    for (const target of targets) run('go', fuzzArgs(target, process.env.FUZZ_TIME || '60s'), { env: unitEnv() });
   },
   'oracle-scale'() {
     run('go', ['test', '-tags=oracle_scale', '-count=1', '-timeout=115m', '-v', './internal/core/textop', '-run=^TestOracleScale$']);
@@ -141,16 +189,7 @@ const tasks = {
     else console.log('M0: Postgres reachability verified; repository tests deferred to M5.');
   },
   'fuzz-short'() {
-    const packages = capture('go', ['list', './internal/core/...', './internal/proto/...']).trim().split(/\r?\n/);
-    let count = 0;
-    for (const pkg of packages) {
-      const targets = capture('go', ['test', '-list', '^Fuzz', pkg]).split(/\r?\n/).filter(line => /^Fuzz\w+$/.test(line));
-      for (const target of targets) {
-        run('go', ['test', '-race', '-run=^$', `-fuzz=^${target}$`, `-fuzztime=${process.env.FUZZ_TIME || '60s'}`, '-timeout=75m', pkg]);
-        count++;
-      }
-    }
-    if (!count) console.log('M0: no fuzz targets yet; decoder fuzzing starts in M1–M4.');
+    tasks['core-fuzz']();
   },
   sim() {
     if (existsSync('tools/sim/main.go')) run('go', ['run', './tools/sim', '-runs', process.env.SIM_RUNS || '500']);
