@@ -110,3 +110,6 @@ three existing moderate npm audit advisories are not fixed or suppressed here.
 See [textop verification](textop-verification.md) and
 [annotation verification](annot-verification.md). No Go/npm dependency lockfiles,
 test fixtures or production algorithms changed in this CI follow-up.
+
+Subsequent follow-up: the Moment audit findings were resolved with a scoped SDK
+dependency override. See [the remediation and passing audit/plugin checks](development.md#moment-audit-remediation--2026-10-04).

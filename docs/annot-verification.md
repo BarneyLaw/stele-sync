@@ -86,6 +86,9 @@ M2. Consequently the complete CI audit gate is not green; Go vulnerability
 checking is green. Infrastructure integration, worker builds and Android/manual
 usability checks were not rerun for this pure-core change.
 
+Subsequent follow-up: the Moment dependency findings were resolved and the exact
+audit gate passed; see [the dependency remediation record](development.md#moment-audit-remediation--2026-10-04).
+
 ## Reproduction
 
 ```sh

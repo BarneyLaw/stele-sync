@@ -128,6 +128,47 @@ proposed per the explicit M0 instruction; its text records the architecture/M1
 accepted-status discrepancy. M2 records FreeDraw verification in ADR 013 and
 added-page quarantine in ADR 015, and amends ADR 011 per the supplied proposal.
 
+## Moment audit remediation — 2026-10-04
+
+The Obsidian SDK 1.12.3 pins Moment 2.29.4, also reached through
+eslint-plugin-obsidianmd 0.4.0. This caused three linked npm audit findings for
+[GHSA-4p3w-j4w9-5jqw](https://github.com/advisories/GHSA-4p3w-j4w9-5jqw).
+[Moment 2.31.0 fixes the issue](https://github.com/moment/moment/releases/tag/2.31.0).
+Even the published SDK 1.13.1 still pins the vulnerable version, so upgrading
+the SDK alone does not fix this dependency chain.
+
+`plugin/package.json` now overrides only `obsidian > moment` to 2.31.0. The
+lockfile changes only Moment's version, URL and integrity; SDK, linter and
+cross-platform optional dependencies are unchanged. No forced SDK downgrade,
+audit suppression or severity threshold change is used. This fixes the local
+development dependency, not the Moment runtime embedded in the Obsidian app;
+the plugin does not bundle this SDK dependency.
+
+`plugin/src/dependencies.test.ts` resolves the actual SDK dependency instead of
+the Obsidian test stub. It checks the reviewed version and verifies locale
+normalization does not trust an object's `match` method, without a traversal
+path or loading a fixture module. Both tests failed on 2.29.4 before the override
+and passed on 2.31.0. The tests and this documentation are AI-drafted.
+
+Verified on Linux with Go 1.26.6, Node 25.5.0 and npm 11.8.0:
+
+```sh
+npm ci --prefix plugin --no-fund
+GOTOOLCHAIN=go1.26.6 node tools/tasks.mjs audit
+node tools/tasks.mjs plugin
+```
+
+The clean install and exact audit gate report zero vulnerabilities (including
+development dependencies); plugin lint, strict core typing, all 159 tests,
+full type-check/bundle and release metadata checks pass. Hosted CI still needs
+to rerun this commit. Earlier M2 audit failures below/in the verification logs
+remain historical evidence, not the current audit result.
+
+Remove the override and update its version-specific test once the SDK dependency
+constraint resolves to a reviewed patched Moment release, then repeat clean
+install, audit and plugin checks. Reverting this commit rolls back the override
+but reintroduces the advisory; no runtime migration or deployment is involved.
+
 ## Verification recorded on 2026-09-20
 
 node tools/tasks.mjs ci completed successfully on Windows with Go 1.26.6,
