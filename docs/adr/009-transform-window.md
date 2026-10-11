@@ -1,6 +1,6 @@
 # 009: Bound reconciliation by a transform window
 
-Status: accepted
+Status: superseded by [021: Class-specific reconciliation bounds](021-class-specific-reconciliation.md)
 
 Date: 2026-09-20
 

@@ -82,12 +82,25 @@ A file is an identity, not a path. Every file has a `file_id` (UUIDv7) minted by
 
 ### File classes
 
-The class is fixed at creation and stored. A rename that would change class (for example `.md` to `.pdf`) is executed by the client as delete plus create.
+The class is fixed at creation and stored. Classification confirms complete content,
+never an 8 KiB prefix. The server checks the committed bytes and rejects a different
+client claim with class_mismatch. Default text extensions are md/txt/mdx; additional
+lowercase ASCII extensions are configurable. Non-pairing .annot.json recovery copies
+are always opaque, even if json is configured as text. Content demotion waits for
+10 seconds of quiet time, preserves local bytes in a server-named conflict copy,
+and restores the original head. C never upgrades. A rename changing the name
+category requires delete plus create; a demoted .md renamed to .md remains C.
+
+Device paths must pass strict vpath.Parse: NFC UTF-8, relative, portable components,
+200 UTF-8 bytes each and 512 total. Windows long-path support is required for long
+vault-root-plus-relative paths. Phase 1 Canvas sanitization retains its old limits.
+Only the server computes `NFC(Fold(NFD(SimpleUpper(path))))`. M5 stores KeyScheme,
+refuses scheme mismatches and requires explicit rekeying with collision review.
 
 | Class | Matches | Unit of change | Concurrency rule | Size ceiling (default) |
 | --- | --- | --- | --- | --- |
 | A: text | Configured text extensions, content is valid UTF-8, no NUL bytes | Text operation (retain / insert / delete) | OT, server order breaks ties | 8 MiB, else demoted to C |
-| B: sidecar | `*.annot.json` that parses as the pinned Freedraw schema | Element, page-entry and metadata operations; full replacement for added pages/trash | LWW per key; element delete wins; full replacement requires base == head | 16 MiB, else demoted to C |
+| B: sidecar | nonempty-stem `*.pdf.annot.json` (ASCII case-insensitive) that parses as the pinned Freedraw schema | Element, page-entry and metadata operations; full replacement for added pages/trash | LWW per key; element delete wins; full replacement requires base == head | 16 MiB, else demoted to C |
 | C: opaque | Everything else inside policy | Whole blob, addressed by SHA-256 | Base-version check, conflict copy on divergence | 512 MiB |
 
 Text positions are **UTF-16 code units**, because CodeMirror 6 and JavaScript strings use them. The Go side must count the same way and must reject an operation that splits a surrogate pair. Line endings and a BOM are content: nothing normalizes them.
@@ -99,10 +112,10 @@ Head content of Class A and B files lives in Postgres, not Garage. A text vault 
 ```sql
 devices (id uuid pk, name text, token_hash bytea unique, created_at, revoked_at, last_seen_at)
 
-vault (id smallint pk check (id = 1), head_seq bigint not null)   -- single row, see below
+vault (id smallint pk check (id = 1), head_seq bigint not null, key_scheme text not null)   -- single row, see below
 
 files (
-  id uuid pk, path text not null, path_key text not null,  -- path_key = casefold(NFC(path))
+  id uuid pk, path text not null, path_key text not null,  -- path_key = vpath.Key (ADR 018)
   class char(1) check (class in ('A','B','C')),
   version bigint not null,            -- per-file, +1 per accepted change
   content_text text,                  -- Class A head
@@ -208,29 +221,47 @@ The client uploads bytes with `PUT /v1/blobs/{sha256}`, then submits `put_blob {
 
 ### 4.4 Namespace operations
 
+The server assigns every name the user did not type. Create/rename carry
+`on_taken` (`number` by default, otherwise `reject`); conflict creates carry
+`copy_of {file_id, reason}`. The ack and change carry the final path and class.
+
 | Operation | Accepted when | Otherwise |
 | --- | --- | --- |
-| `create {file_id, path, class, content or sha256}` | `file_id` unused and `path_key` free | `path_taken`: client renames locally to `Name (2).md` and retries |
-| `rename {file_id, new_path}` | File live, target free | `path_taken` as above; `file_deleted` if gone |
-| `delete {file_id, base_version}` | `base_version == head` | `stale_delete`: someone edited since this device looked. The file stays and syncs back. |
-| edit to a deleted file | never | `file_deleted`: client keeps its text as a conflict copy |
-| `AnnotReplace {file_id, base_version, document}` | File live and `base_version == head` | Preserve the submitted sidecar as a conflict copy whose name still ends in `.annot.json` but does not pair with the PDF |
+| create | unused file_id; free key or a server-assigned numbered name | path_taken for reject/exhaustion |
+| rename | live; unchanged name category; target free or held by self | number or path_taken; file_deleted if gone; class change requires delete/create |
+| delete | live; base == head; guard passes | stale_delete; future/negative bases are invalid |
+| edit to deleted file | never | file_deleted; client requests a server-named conflict copy |
+| AnnotReplace | live B; base == head | stale content becomes an opaque, non-pairing .annot.json conflict copy |
 
-A rename of a PDF moves its sidecar in the same submission (`rename_group`), or Freedraw loses the pairing. The server applies a group atomically or not at all.
+Ownership precedes every other check. Devices may edit user A/B everywhere and
+user C outside CanvasRoot. Bridge may edit only Canvas-owned C inside CanvasRoot.
+Admin is the system authority. Root containment compares path keys. Case-only
+renames are legal when the holder is self.
 
-**Bulk-delete guard.** More than 25 deletes, or more than 10% of live files, from one device within 5 minutes is rejected with `bulk_delete_guard` unless the submission carries `confirmed: true`. The plugin only sets that after an explicit user confirmation dialog. This is the defense against a misconfigured vault path wiping everything.
+A PDF rename with a live sidecar requires an atomic rename_group; check both
+members and both target keys. The sidecar target must exactly equal SidecarOf(To).
+Number the PDF and sidecar together. The unique index remains the final guard.
+
+**Bulk-delete guard.** In five minutes, unconfirmed device deletes may not exceed
+`min(25, max(5, floor(0.10 * live)))`. Confirmed deletes do not count and system
+actors are exempt. The plugin checks the whole batch before sending; the server
+checks each submission and may request confirmation for the remainder. Counts
+expire up to one bucket late, never early. Guard state resets on server restart.
 
 ### 4.5 Offline reconnect
 
-On reconnect the client asks for changes since `last_seq`. For each file with local pending edits:
+On reconnect ask for changes since last_seq. A requires retained ops and at most
+5,000 ops and 24 hours since the server commit time of the base; equality is inside.
+B requires unpruned tombstones, independent of op count/age. C uses its put's base
+check instead of a reconciliation window. M10 derives pruning and its reported
+cutoff from the same value (ADR 021 supersedes 009).
 
-| Situation | Action |
-| --- | --- |
-| Server head equals client base | Send pending edits normally |
-| Head ahead, gap within the **transform window** | Server transforms; normal path |
-| Head ahead, gap outside the window | Server answers `rebase_required`. Client saves its local text as a conflict copy, then adopts the server head. |
-
-The transform window is **24 hours or 5,000 ops since the client's base, whichever is smaller**. Past that, mechanically correct merges produce interleaved half-sentences nobody wants, so a conflict copy is the honest result. Conflict copies are named `Name (conflict 2026-09-20 1432 laptop).md`, in the spirit of Syncthing's `sync-conflict` files.
+Outside the class window, rebase_required causes the client to request a conflict
+copy with copy_of, then adopt the head. Names always contain a conflict marker,
+even when the original path is free. The shell converts timestamps to the configured
+display location before core formats `Name (conflict 2026-09-20 1432 laptop).md`.
+Classes never change on an existing identity, and conflict sidecars never pair
+with the original PDF.
 
 ### 4.6 Version history
 
@@ -295,7 +326,7 @@ Every frame is a JSON text frame `{"t": "<type>", ...}`. Unknown `t` closes the 
 
 The server gets this ordering from a **transactional outbox**. The submitting transaction writes its `changes` row and calls `pg_notify`, which Postgres delivers only at commit. A single hub goroutine wakes on the notification, reads new `changes` rows in `seq` order, and fans them out, as `ack` to the originating device and `remote` to the rest. Because the vault counter is a row in the same transaction, a rollback also rolls back the increment, so the sequence has no gaps. The hub keeps a ring of the last 10,000 changes so a session finishing catch-up can join the live stream without a race.
 
-Reject codes are part of the contract: `invalid_op`, `stale_delete`, `path_taken`, `file_deleted`, `read_only_path`, `bulk_delete_guard`, `blob_missing`, `too_large`, `rate_limited`, `rebase_required`, `whole_document_required`, `internal`. Clients branch on codes, never on message text.
+Reject codes are part of the contract: `invalid_op`, `stale_delete`, `path_taken`, `file_deleted`, `read_only_path`, `bulk_delete_guard`, `blob_missing`, `too_large`, `rate_limited`, `rebase_required`, `whole_document_required`, `invalid_path` (reason, component), `class_mismatch` (class, demotion), `internal`. Clients branch on codes, never on message text.
 
 ### 5.4 Limits (defaults, configurable)
 

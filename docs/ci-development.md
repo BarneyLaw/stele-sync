@@ -113,3 +113,20 @@ test fixtures or production algorithms changed in this CI follow-up.
 
 Subsequent follow-up: the Moment audit findings were resolved with a scoped SDK
 dependency override. See [the remediation and passing audit/plugin checks](development.md#moment-audit-remediation--2026-10-04).
+
+## M3 namespace checks
+
+M3's vpath/classify/rules packages join discovered coverage/property checks and
+add FuzzParse, FuzzKey and FuzzClassify. Six generated contracts under
+schema/vpath, schema/classify and schema/rules run in both languages through the
+contract gate, with regeneration/tracking checked by fixtures-check.
+`node tools/tasks.mjs namespace-acceptance` runs the 100,000-case, >90% coverage,
+three ten-minute fuzz acceptance budget locally.
+
+Core verification also requires a Windows job that verifies RUNNER_TEMP is on
+NTFS before probing exclusive file creation for each key-golden pair. Its success
+feeds the existing M0 / verification context through Core result; a failed,
+skipped or cancelled filesystem job cannot make that gate green. The uploaded
+namespace-ntfs artifact contains the actual measurements. macOS/iOS are deferred
+for this milestone, as requested; Linux NTFS userspace-table checks are separate
+supplemental evidence, not a replacement for the Windows job.

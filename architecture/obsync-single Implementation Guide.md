@@ -213,62 +213,47 @@ trip and open in the plugin; contract fixtures and ADRs recorded. Reproduce with
 
 ## M3: core/vpath, core/classify, core/rules
 
-**Goal.** Three small pure packages that hold every remaining decision: what a legal path is, which class a file belongs to, and how namespace conflicts, windows and conflict copies resolve.
+The [accepted proposal](../internal/core/vpath/M3-core-namespace-proposal.md)
+replaces the original M3 design. [Implementation notes](../docs/m3-development.md)
+record corrections required by Go and adjacent components; the
+[verification record](../docs/m3-verification.md) separates local results from
+platform/application measurements. ADRs 017–021 govern these contracts.
 
-### vpath
+**Goal.** Three pure packages decide legal NFC device paths and filesystem keys,
+complete-content classes, namespace ownership/collisions, staleness, reconnects,
+server-assigned names, bulk deletes and local settling. Phase 1 filename output
+stays unchanged.
 
-Starts as phase 1's `portable`, already tested. Add:
+**Interface.** The exported APIs implement proposal §6, with these clarifications:
+all Decide functions receive Config; Config.Classify carries the same classifier
+used at creation; RenameRequest includes SidecarHolder; the settlement constant
+is SettleClassChange (Go cannot also declare a second ClassChange). Configs are
+validated at the boundary. Phase 1 now calls SanitizePath and NFC; Parse constructs
+strict Path values, while CollisionKey remains phase-1-only.
 
-```go
-type Path struct{ s string }            // portable, NFC, forward slashes, relative
-func Parse(s string) (Path, error)       // strict: rejects instead of sanitizing
-func Sanitize(s string) (Path, string)   // phase 1 behaviour, for Canvas names only
-func (p Path) Key() string               // casefold(NFC(p)), the uniqueness key
-func (p Path) Ext() string
-```
+**Design notes.** Device paths allow 200 bytes per component and 512 total. Keys
+are `NFC(Fold(NFD(SimpleUpper(path))))` with table versions pinned. Classification
+checks complete bytes through the M2 parser and never text-merges recovery
+sidecars. Server name allocation is bounded and checks both PDF/group targets.
+Guards copy their fixed ring by value and retain an extra boundary slot so expiry
+is never early. Clients wait for settled demotions and never upgrade C.
 
-Device paths go through `Parse` and are rejected if not portable: silently renaming a user's file is worse than telling them. Canvas names go through `Sanitize`, as in phase 1. Only the server computes `Key`; clients learn about collisions from `path_taken`, so the Go and JavaScript case-folding rules never have to agree.
+**Proof.** Decision tables and regressions, parse/key properties, actual occupied-
+key naming properties, an independent timestamp-list deletion model, shared Go/TS
+fixtures and actual M2 sample recognition. FuzzParse, FuzzKey and FuzzClassify run
+with race detection. Windows CI performs exclusive-create collision measurements;
+the optional NTFS table probe verifies every on-disk uppercase mapping.
 
-### classify
-
-```go
-type Class byte // 'A', 'B', 'C'
-func Classify(p vpath.Path, size int64, head []byte, cfg Config) Class
-```
-
-`head` is the first 8 KiB, enough to reject NUL bytes and invalid UTF-8 early; the full check happens when content is parsed. The same rules and extension list live in `schema/classify.json`, checked by the plugin.
-
-### rules
-
-Every namespace and reconnect decision as a pure function over plain values:
-
-```go
-func DecideDelete(head, base Version) Decision                // Apply | StaleDelete
-func DecideRename(live bool, targetFree bool) Decision
-func InWindow(gapOps int, gapAge time.Duration, w Window) bool
-func ConflictName(p vpath.Path, device string, at time.Time, taken func(key string) bool) vpath.Path
-
-type DeleteGuard struct{ ... }                                // sliding window per device
-func (g *DeleteGuard) Allow(now time.Time, liveFiles int, confirmed bool) bool
-```
-
-`time.Time` is passed in, never read. `ConflictName` loops `(conflict ...)`, `(conflict ... 2)` until `taken` says free, with a hard cap, so it can never spin.
-
-**Proof.**
-
-| Test | Asserts |
-| --- | --- |
-| Phase 1 `portable` suite | Still green after the move |
-| `TestKeyCollisions` | `A.md`/`a.md`, NFC/NFD pairs, `ß`/`SS` map as documented |
-| `TestClassifyFixtures` | Every row of `schema/classify.json`, in Go and TypeScript |
-| `TestDecisionTables` | One table-driven test per function covering every row of the architecture doc's section 4.4 table |
-| `TestPropConflictNameUnique` | For random taken-sets, the result is never taken and is always a valid `Path` |
-| `TestDeleteGuard` | 25 deletes allowed, 26th refused, confirmed allowed, window slides |
-| `FuzzParsePath` | No panic; accepted paths are idempotent under `Parse(p.String())` |
-
-**Exit criteria.** All decision tables in the architecture doc have a matching test row; classify fixtures pass in both languages.
+**Exit criteria.** Every property passes 100,000 cases, all three fuzz targets
+pass ten minutes, each package exceeds 90% coverage, fixtures pass in both
+languages, phase 1 passes with the renamed API, lint exceptions are removed and
+ADRs recorded. `node tools/tasks.mjs namespace-acceptance` runs the automated
+acceptance suite. Platform deferrals and unmeasured write timing remain explicit
+in the verification record; unit tests do not substitute for them.
 
 ## M4: proto
+
+**M3 integration requirement.** Create/rename carry on_taken (number by default, or reject); conflict creates carry copy_of. Acks and changes include the final path and class. Decode strict vpath reasons and component indexes, and add invalid_path and class_mismatch alongside whole_document_required.
 
 **Goal.** Typed messages for every frame in the architecture doc's catalogue, a decoder that turns untrusted bytes into validated values or a precise error, and golden frames both languages agree on.
 
@@ -322,6 +307,8 @@ const ( InvalidOp Code = "invalid_op"; StaleDelete Code = "stale_delete"; /* ...
 **Exit criteria.** Fuzzing 10 minutes clean; golden fixtures green in Go; the TypeScript side of the fixtures exists as failing tests the plugin work (M13) must turn green.
 
 ## M5: storage/pg
+
+**M3 integration requirement.** Store vpath.Key in files.path_key and KeyScheme on the vault row. Refuse startup on a mismatch; an explicit obsyncctl rekey recomputes and reports collisions. FreeName lookup is inside the locked transaction; the unique index remains the final guard.
 
 **Goal.** The schema from the architecture doc as goose migrations, and a Postgres implementation of the engine's storage port that makes the write path atomic, ordered and idempotent.
 
@@ -417,6 +404,8 @@ func (s *Service) Committed(ctx context.Context, sha [32]byte) (bool, error)
 **Exit criteria.** Upload and ranged download of a 512 MiB file work against local Garage with server RSS staying under 64 MiB of additional memory (streaming, never buffering).
 
 ## M7: engine and simulation harness
+
+**M3 integration requirement.** Use every Decide function, Reconcile, FreeName and DeleteGuard. Validate complete committed content before the transaction and compare the client claim; read blobs outside it. Check text size/NUL inserts after edits. Derive Age from the server base commit time. Keep one guard per device. Simulator/reference clients must handle server-assigned names, group occupancy and Settle.
 
 **Goal.** The authority: given a decoded submission, decide, transform, validate and commit it exactly once, one file at a time. Plus a Go reference client and a deterministic simulator that proves convergence and durability before any socket exists.
 
@@ -615,6 +604,8 @@ func Collect(ctx context.Context, st Store, objs objects.Store, now time.Time, d
 
 ## M11: Canvas bridge
 
+**M3 integration requirement.** Use Sanitize and Bridge authority for C under CanvasRoot; create with on_taken=number, and keep Bridge deletes exempt from the guard. User A/B files require separate/system authority, including sidecars in rename groups. A strict Sanitize failure takes the existing fallback path.
+
 **Goal.** Phase 1's output appears in every vault under `Canvas/`, updates within one worker cycle, and a Canvas-side change never damages anything the user created.
 
 **Interface.**
@@ -703,6 +694,8 @@ The advisory-lock connection is watched: if it drops, the process cancels its ro
 
 ## M13: Obsidian plugin
 
+**M3 integration requirement.** Consume the M3 pure TypeScript contracts. Map local paths to NFC wire paths without losing original disk spelling; adapters still need platform verification. Preflight whole delete batches, apply ack-assigned paths, handle class_mismatch, preserve local class drift in a conflict copy and restore the server head. M2 FreeDraw open-session deferral is unchanged.
+
 **Goal.** A plugin that behaves exactly like the Go reference client, integrated into Obsidian's editor and vault without echo loops, data loss or blocking the UI. This is the milestone where AI drafting is allowed; the fixtures written in M1 to M7 are the leash.
 
 **Build order inside the milestone** (each step green before the next):
@@ -736,6 +729,8 @@ The advisory-lock connection is watched: if it drops, the process cancels its ro
 **Exit criteria.** Two real devices sync text and Freedraw strokes with no manual intervention for a week of normal use; every item of the manual matrix passes on both platforms.
 
 ## M14: verification and release
+
+**M3 integration requirement.** Add obsync_class_mismatch_total (expected zero), obsync_names_assigned_total{marker}, obsync_bulk_delete_guard_total{outcome}, and obsync_invalid_path_total{reason}. Re-run the recorded platform and application probes on supported devices.
 
 **Goal.** Every success criterion S1 to S15 in the architecture doc has recorded evidence from the deployed system, and v1.0.0 is tagged only when all of them pass.
 
