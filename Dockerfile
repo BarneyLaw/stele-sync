@@ -3,7 +3,7 @@
 # The stele-pull worker image: stele-pull-worker, which the CronJob runs, plus the
 # stele-pull CLI for inspecting or garbage-collecting the store from a one-off Job.
 
-FROM golang:1.26.6-alpine AS build
+FROM golang:1.27.2-alpine AS build
 WORKDIR /src
 
 COPY go.mod go.sum ./

@@ -91,10 +91,11 @@ are always opaque, even if json is configured as text. Content demotion waits fo
 and restores the original head. C never upgrades. A rename changing the name
 category requires delete plus create; a demoted .md renamed to .md remains C.
 
-Device paths must pass strict vpath.Parse: NFC UTF-8, relative, portable components,
+Device paths must pass strict vpath.Parse: Unicode-15 NFC UTF-8, relative, portable components,
 200 UTF-8 bytes each and 512 total. Windows long-path support is required for long
 vault-root-plus-relative paths. Phase 1 Canvas sanitization retains its old limits.
-Only the server computes `NFC(Fold(NFD(SimpleUpper(path))))`. M5 stores KeyScheme,
+Only the server computes `NFC(Fold(NFD(SimpleUpper(path))))`, using the Unicode
+versions in KeyScheme independently of wire spelling (ADR 022). M5 stores KeyScheme,
 refuses scheme mismatches and requires explicit rekeying with collision review.
 
 | Class | Matches | Unit of change | Concurrency rule | Size ceiling (default) |

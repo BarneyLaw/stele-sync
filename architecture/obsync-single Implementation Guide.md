@@ -217,7 +217,8 @@ The [accepted proposal](../internal/core/vpath/M3-core-namespace-proposal.md)
 replaces the original M3 design. [Implementation notes](../docs/m3-development.md)
 record corrections required by Go and adjacent components; the
 [verification record](../docs/m3-verification.md) separates local results from
-platform/application measurements. ADRs 017–021 govern these contracts.
+platform/application measurements. ADRs 017–021 govern these contracts; ADR 022
+separates frozen wire spelling from server key tables across toolchain upgrades.
 
 **Goal.** Three pure packages decide legal NFC device paths and filesystem keys,
 complete-content classes, namespace ownership/collisions, staleness, reconnects,

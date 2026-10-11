@@ -12,7 +12,7 @@ See [development setup and M0 verification](docs/development.md), the
 [implementation guide](architecture/obsync-single%20Implementation%20Guide.md),
 and [architecture decisions](docs/adr/).
 
-With Go 1.26.6, Node 24, Docker Compose, Git Bash (Windows), and kubectl or
+With Go 1.27.2, Node 24, Docker Compose, Git Bash (Windows), and kubectl or
 kustomize available:
 
 ```sh

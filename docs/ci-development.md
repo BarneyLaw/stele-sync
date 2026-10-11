@@ -130,3 +130,10 @@ skipped or cancelled filesystem job cannot make that gate green. The uploaded
 namespace-ntfs artifact contains the actual measurements. macOS/iOS are deferred
 for this milestone, as requested; Linux NTFS userspace-table checks are separate
 supplemental evidence, not a replacement for the Windows job.
+
+The M3 CI follow-up updates Go to 1.27.2, govulncheck to v1.9.0 and golangci-lint
+to v2.14.0. The setup action reads Go from go.mod; the existing tools cache key
+includes go.mod and tools/versions.json, so the upgraded pins trigger a rebuild.
+The Windows job reads the same Go pin. The reserved-name Rapid counterexample
+from CI is retained under rules/testdata/rapid and replayed by ordinary tests.
+See [the follow-up evidence](m3-verification.md#ci-follow-up-go-1272).

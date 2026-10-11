@@ -18,7 +18,7 @@
     "component": -1
   },
   {
-    "name": "\ufffd",
+    "name": "�",
     "input_base64": "/w==",
     "reason": "invalid_utf8",
     "component": -1

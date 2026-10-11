@@ -15,8 +15,10 @@ It does not activate phase 2 sync in the phase 1 plugin.
   limits. PathError.Component is zero-based, or -1 for a whole-path error. Empty
   Path is an absent-path sentinel; production rule inputs come from Parse.
 - KeyScheme pins algorithm, Go uppercase, x/text case folding and normalization
-  versions. On Go 1.26.6 these tables are 15.0.0. The host's newer Go must not
-  silently regenerate the golden: use the pinned toolchain. Key is server-only.
+  versions. On Go 1.27.2 these server-only tables are 17.0.0. The upgrade from
+  Unicode 15 is explicitly reviewed in ADR 022; future changes must not silently
+  regenerate the key golden. WireUnicodeVersion remains 15.0.0 independently:
+  Go and TypeScript treat later assignments as inert when normalizing paths.
 - The client pins Unicode 15 assignment boundaries and x/text stream-safe
   nonstarter counts through schema/vpath/normalization.json. Native JS NFC alone
   differs for newer assignments and long combining runs. Generated regressions
@@ -84,10 +86,10 @@ hand-written. The guard property checks an independent timestamp event list,
 and naming properties use occupied key sets.
 
 ```sh
-GOTOOLCHAIN=go1.26.6 node tools/tasks.mjs contract
-GOTOOLCHAIN=go1.26.6 node tools/tasks.mjs namespace-acceptance
-GOTOOLCHAIN=go1.26.6 node tools/tasks.mjs fixtures
-GOTOOLCHAIN=go1.26.6 node tools/tasks.mjs fixtures-check
+GOTOOLCHAIN=go1.27.2 node tools/tasks.mjs contract
+GOTOOLCHAIN=go1.27.2 node tools/tasks.mjs namespace-acceptance
+GOTOOLCHAIN=go1.27.2 node tools/tasks.mjs fixtures
+GOTOOLCHAIN=go1.27.2 node tools/tasks.mjs fixtures-check
 ```
 
 The discovered core matrix includes all M3 coverage, property and fuzz checks.
@@ -100,15 +102,22 @@ Core result gate, so no branch-protection context changes are needed. Logs are
 uploaded on success or failure. The task's ordinary unit environment disables
 optional local filesystem probes to avoid accidental host-dependent runs.
 
-[Verification results](m3-verification.md) record what was actually run. The
-Windows hosted check is configured, not claimed to have run locally. macOS/iOS
-checks were deferred at the user's request. Android path-event behavior and the
+[Verification results](m3-verification.md) record what was actually run, including
+the original implementation's successful hosted Windows check and the later
+local toolchain upgrade. macOS/iOS checks were deferred at the user's request.
+Android path-event behavior and the
 FreeDraw partial-write observation still require a suitable application environment;
 the provisional 10-second quiet default stays in place.
 
+[ADR 022](adr/022-go-upgrade-unicode-compatibility.md) records the security
+toolchain upgrade, independent wire/key Unicode versions and legacy-output guard.
+The naming property filters candidate stems through Parse before constructing
+inputs to FreeName. A committed Rapid counterexample retains the CI seed that
+generated the reserved Windows stem aux; invalid inputs are a parser concern.
+
 ## Authoritative references
 
-- [Unicode §3.13, canonical caseless matching](https://www.unicode.org/versions/Unicode17.0.0/core-spec/chapter-3/): normalization around folding. M3 deliberately adds simple uppercase and pins its older runtime tables; it is an over-approximation, not a claim to use Unicode 17 tables.
+- [Unicode §3.13, canonical caseless matching](https://www.unicode.org/versions/Unicode17.0.0/core-spec/chapter-3/): normalization around folding. M3 deliberately adds simple uppercase; server keys now pin Unicode 17 while wire spelling remains Unicode 15.
 - [Unicode normalization process stability](https://www.unicode.org/reports/tr15/#Stability_Prior_Version): treat characters unassigned in the pinned version as inert; the stream-safe section also explains the bounded nonstarter policy.
 - [Microsoft filename rules](https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file): forbidden characters, trailing dot/space behavior, device aliases and long-path limitations.
 - [Microsoft CreateFile console names](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilea#consoles): CONIN$ and CONOUT$ refer to consoles, so strict paths reject them too.

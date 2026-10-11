@@ -1,6 +1,6 @@
 {
   "note": "Hand-written comparison oracle; changing this file requires an explicit key scheme review. Names may be non-NFC to exercise filesystem normalization.",
-  "scheme": "v1:upper=15.0.0:fold=15.0.0:norm=15.0.0",
+  "scheme": "v1:upper=17.0.0:fold=17.0.0:norm=17.0.0",
   "pairs": [
     {
       "a": "ß.md",
@@ -81,6 +81,31 @@
       "a": "a.md",
       "b": "á.md",
       "equal": false
+    },
+    {
+      "a": "Ᲊ.md",
+      "b": "ᲊ.md",
+      "equal": true
+    },
+    {
+      "a": "Ɤ.md",
+      "b": "ɤ.md",
+      "equal": true
+    },
+    {
+      "a": "𐵐.md",
+      "b": "𐵰.md",
+      "equal": true
+    },
+    {
+      "a": "𖺠.md",
+      "b": "𖺻.md",
+      "equal": true
+    },
+    {
+      "a": "𐗉.md",
+      "b": "𐗉.md",
+      "equal": true
     }
   ]
 }
