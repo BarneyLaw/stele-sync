@@ -1,0 +1,508 @@
+# M3 proposal: core/vpath, core/classify, core/rules
+
+2026-10-11 · Status: accepted (decisions D1 to D6 agreed 2026-10-11; D7 to D9 carried without objection)
+
+M3 is three pure packages that decide every namespace question the engine and the plugin will ask: which strings are legal vault paths and when two of them are the same file, which class a file gets, and what happens on create, rename, delete, stale submissions, reconnects and bulk deletes. The server assigns every name the user did not type, the path key over-approximates case-insensitive filesystems, and classification runs on complete content with the server as the authority.
+
+This document replaces the M3 section of the Implementation Guide. It follows the M2 proposal's layout: background and findings, decisions, step 0, then the guide's five parts (Goal, Interface, Design notes, Proof, Exit criteria), followed by wiring notes for later milestones.
+
+## 1. Background: what the repository hands M3
+
+Read at `e306870` (the M2 merge).
+
+- **vpath is phase 1's `portable`, and phase 1 still calls it.** `internal/run` uses `vpath.Path`, `internal/plan` uses `CollisionKey` and `Disambiguate`, and `internal/scope` uses `Normalize`. Phase 1 manifests are already published with these outputs, so every existing function must keep its output byte for byte.
+- **Name clash.** The guide asks for `type Path struct`, and the package already exports `func Path(string) (string, error)`.
+- **`CollisionKey` is `strings.ToLower(NFC(p))`.** That is simple lowercasing, not case folding.
+- **Lint debt.** `var Normalize = norm.NFC.String` is package-level mutable state (guidelines 3.5). `portable.go` and `portable_test.go` are on the ADR 014 exception list, which says the owning milestone removes the exception. M3 owns them.
+- **classify and rules are empty `doc.go` stubs.**
+- **M2 left three requirements here.** Class B is decided by suffix, a successful `annot.Parse` and at most 16 MiB. An `AnnotReplace` is accepted only when `base == head`, otherwise its content becomes a conflict copy whose name still ends in `.annot.json` but does not pair with the PDF. Class B obeys a retention bound so tombstone pruning cannot resurrect an erased stroke.
+- **The spec splits naming between client and server.** Section 4.4 has the client rename to `Name (2).md` and retry, sections 4.4 and 4.5 have the client create conflict copies, and section 4.3 and M7 have the server create them.
+
+## 2. Findings while writing this proposal
+
+These came up after the debate and change details the debate assumed.
+
+**F1. A strict 120-byte component limit would make some sidecars illegal.** Phase 1 truncates Canvas names to `MaxComponent = 120` bytes. Freedraw names a sidecar by appending `.annot.json` (11 bytes) to the full PDF name, so the sidecar of a maximum-length Canvas PDF has a 131-byte component. If `Parse` reused phase 1's limit, that sidecar could never sync. Device paths therefore get their own limits: 200 bytes per component and 512 bytes in total. ext4 and APFS allow 255 bytes per name and NTFS allows 255 UTF-16 units, so 200 UTF-8 bytes fits all three and leaves room for conflict markers. `Parse` reuses phase 1's character rules but not its truncation length.
+
+**F2. Full case folding alone is not a safe key, and a property I proposed is false.**
+- Unicode full case folding does not equate dotless `ı` (U+0131) with `i`. Windows compares names through an uppercase table, and simple uppercasing maps `ı` to `I`. If NTFS does the same, a fold-only key misses that collision. Step 0 confirms this on a real volume.
+- In the debate I proposed the property "whenever `ToLower` says two paths collide, `Key` agrees". It is false: simple lowercasing maps `İ` (U+0130) to `i`, while full folding maps it to `i` + U+0307. Nothing depends on it, because phase 1 already disambiguated any such Canvas names. It is replaced by two properties against the equivalences that matter (section 9).
+- The key therefore applies simple uppercase per rune before folding (D2).
+
+**F3. The `Canvas/` subtree check must compare keys.** `canvas/x.pdf` and `Canvas/x.pdf` are the same folder on Windows and default macOS, so a string-prefix check would let a device bypass the bridge's ownership.
+
+**F4. A conflict copy of a sidecar is class C.** `Lecture.pdf (conflict ...).annot.json` ends in `.annot.json`, but the part before it no longer ends in `.pdf`, so the name rule classifies it as opaque. Making it class B would contradict `classify`. As an opaque archive it is never merged, which matches how Freedraw recovery copies are treated.
+
+**F5. Formatting a time in a user's time zone needs the tz database, which is I/O.** The shell converts the timestamp into the configured location before calling `FreeName`. Core only formats.
+
+## 3. Decisions
+
+| # | Decision | ADR |
+| --- | --- | --- |
+| D1 | **The server assigns every name the user did not type.** `create` and `rename` carry `on_taken` (`number` by default, or `reject`). Conflict copies, from either side, are requested with `copy_of` and named by the server. The final path travels in the change. | 017 |
+| D2 | **The path key over-approximates every filesystem a vault can live on.** `Key = NFC(Fold(NFD(SimpleUpper(p))))`, with the scheme and Unicode versions pinned by a golden fixture and stored by M5. Phase 1's `CollisionKey` is unchanged and never used for `path_key`. | 018 |
+| D3 | **Path legality is a cross-language contract; the key is not.** `Parse` has a typed `Reason`, fixtures in `schema/vpath/`, a TypeScript port, and a new reject code `invalid_path`. Paths travel as NFC, and the server rejects anything else. | 018 |
+| D4 | **Classification runs on complete content, and the server is the authority.** A client's class is a claim the server re-checks on the bytes it commits. A mismatch is rejected with `class_mismatch`. | 019 |
+| D5 | **Class drift becomes a conflict copy of the new class.** Classes never change in place and never upgrade. A demotion is acted on only after a quiet period, so half-written files are not locked into class C. | 019 |
+| D6 | **The bulk-delete guard is a pure value with a small-vault floor.** `limit = min(25, max(5, floor(10% of live)))`. Confirmed deletes are not counted, system actors are exempt, and the plugin runs the same function before a batch. | 020 |
+| D7 | **The reconciliation window depends on the class.** Text uses 24 h and 5,000 ops, measured from the server's commit time of the base. Sidecars are bounded only by tombstone pruning. Opaque files have no window, only the base check. | 021 (supersedes 009) |
+| D8 | **Ownership of `Canvas/` is a rules function.** Class C under the Canvas root is bridge-only; classes A and B are user-owned everywhere. | 017 |
+| D9 | **Phase 1 vpath output is frozen.** New behaviour lives in new identifiers. The lint debt in `portable.go` is paid in this milestone. | 018 |
+
+## 4. Step 0: measurements before code (about 2 days)
+
+1. **Filesystem collisions.** On a real NTFS volume and a default (case-insensitive) APFS volume, create every pair in the key golden fixture inside one folder and record which pairs collide. The key must collide for every pair either filesystem collides. Extra collisions are acceptable; missing ones are not.
+2. **Obsidian path normalization.** On macOS, iOS and Android, create a file named with `é` both through the OS keyboard and in decomposed form (`printf 'e\xcc\x81.md'`), and record what `TFile.path` and the vault events report. This decides how the plugin maps local paths to NFC wire paths.
+3. **Freedraw write behaviour.** Record whether a vault `modify` event can observe a partially written sidecar. This sets the default quiet period for D5 (10 s until measured).
+
+Record the results in `docs/m3-verification.md`.
+
+## 5. Goal
+
+Three pure packages:
+
+- **vpath** parses device paths strictly with a typed reason, sanitizes Canvas names with phase 1's rules, and computes the uniqueness key.
+- **classify** decides class A, B or C from a name and size, then confirms it from the complete content.
+- **rules** decides every namespace, staleness, reconnect, naming, ownership and bulk-delete outcome as a pure function over plain values.
+
+## 6. Interface
+
+### vpath
+
+```go
+package vpath
+
+// Phase 1. Output unchanged; Canvas names only.
+const MaxComponent, MaxTotal = 120, 400
+func Component(s string) (string, error)
+func SanitizePath(p string) (string, error)          // renamed from Path; one caller (internal/run)
+func Disambiguate(p string, canvasID int64) string
+func CollisionKey(p string) string                   // phase 1 manifests only, never path_key
+func Fallback(original string, canvasID int64) string
+func NFC(s string) string                            // replaces var Normalize
+
+// Phase 2.
+const DeviceMaxComponent, DeviceMaxTotal = 200, 512  // bytes; see F1
+
+type Path struct{ s string } // valid UTF-8, NFC, '/'-separated, relative, portable
+type Key string              // uniqueness key; computed by the server only
+
+type Reason uint8
+const (
+    ReasonNone Reason = iota
+    InvalidUTF8; NotNFC; Empty; Absolute; Backslash; EmptyComponent; DotComponent; Traversal
+    IllegalChar; ControlChar; LeadingSpace; TrailingDotOrSpace; ReservedName
+    ComponentTooLong; PathTooLong
+)
+func (r Reason) String() string // stable snake_case; travels in invalid_path
+
+type PathError struct{ Input string; Component int; Reason Reason }
+func (e *PathError) Error() string
+
+func Parse(s string) (Path, error)       // strict; returns *PathError
+func Sanitize(s string) (Path, error)    // Canvas: SanitizePath, then Parse
+func (p Path) String() string
+func (p Path) IsZero() bool
+func (p Path) Key() Key
+func (p Path) Base() string
+func (p Path) Dir() (Path, bool)         // false at the vault root
+func (p Path) Ext() string               // lowercase final extension without the dot; "" for none or ".gitignore"
+func (p Path) Join(name string) (Path, error)
+func (p Path) WithBase(name string) (Path, error)
+func (p Path) Within(dir Path) bool      // component-wise, compared by key (F3)
+func KeyScheme() string                  // scheme number plus Unicode table versions; stored by M5
+```
+
+### classify
+
+```go
+package classify
+
+type Class byte
+const ( Text Class = 'A'; Sidecar Class = 'B'; Opaque Class = 'C' )
+
+type Demotion uint8
+const ( Kept Demotion = iota; TooLarge; InvalidUTF8; ContainsNUL; NotFreedraw )
+
+type Config struct {
+    TextExts   []string     // lowercase, no dot (the final list is an open question in the spec)
+    MaxText    int          // 8 MiB of UTF-8
+    MaxSidecar int          // 16 MiB
+    Annot      annot.Limits // Annot.MaxBytes must equal MaxSidecar
+}
+func DefaultConfig() Config
+func (c Config) Validate() error
+
+func IsSidecarName(p vpath.Path) bool                                   // base ends ".pdf.annot.json", ASCII case-insensitive, stem nonempty
+func Expect(p vpath.Path, size int64, cfg Config) Class                 // from metadata; Opaque is final
+func CheckText(b []byte, cfg Config) Demotion
+func CheckSidecar(b []byte, cfg Config) Demotion
+func Confirm(expected Class, content []byte, cfg Config) (Class, Demotion)
+func Classify(p vpath.Path, content []byte, cfg Config) (Class, Demotion) // Confirm(Expect(...))
+```
+
+The 512 MiB opaque ceiling is a blob limit and stays in `blob` and `proto`. Per-device exclusion stays in `policy`; classification never depends on it.
+
+### rules
+
+```go
+package rules
+
+type Actor uint8   // Device, Bridge, Admin
+type Owner uint8   // User, Canvas
+type Holder uint8  // Free, Self, Other: which live file holds the target key
+type OnTaken uint8 // Number, Reject
+
+type File struct {
+    Live  bool
+    Head  int64
+    Class classify.Class
+    Owner Owner
+    Path  vpath.Path
+    Size  int64
+}
+
+type Decision uint8
+const (
+    Apply Decision = iota + 1
+    ApplyNumbered  // apply under FreeName(Numbered)
+    PathTaken
+    StaleDelete
+    FileDeleted
+    ReadOnlyPath
+    ClassChange
+    ConflictCopy   // keep the head; store the submission as a server-named copy
+    RebaseRequired
+    NeedsConfirm
+    InvalidBase    // base above head: a client bug
+    GroupRequired  // a PDF with a live sidecar renamed without it
+)
+
+type Config struct {
+    CanvasRoot  vpath.Path    // "Canvas"
+    Compound    []string      // [".annot.json"]
+    MaxAttempts int           // 100
+    Quiet       time.Duration // 10 s, see D5
+    Window      Window
+    Guard       GuardConfig
+}
+func DefaultConfig() Config
+func (c Config) Validate() error
+
+// Namespace and staleness.
+func DecideCreate(a Actor, to vpath.Path, c classify.Class, h Holder, on OnTaken, cfg Config) Decision
+func DecideRename(a Actor, r RenameRequest, cfg Config) Decision
+func DecideEdit(a Actor, f File) Decision                 // Class A or B ops
+func DecidePut(a Actor, f File, base int64) Decision      // Class C put_blob
+func DecideReplace(a Actor, f File, base int64) Decision  // AnnotReplace
+func DecideDelete(a Actor, f File, base int64) Decision
+
+type RenameRequest struct {
+    Primary     File
+    To          vpath.Path
+    Holder      Holder
+    Sidecar     *File  // present for a PDF plus sidecar group
+    SidecarTo   vpath.Path
+    SidecarLive bool   // whether SidecarOf(Primary.Path) is live
+    OnTaken     OnTaken
+}
+
+// Reconnect.
+type Gap struct {
+    Ops              int
+    Age              time.Duration // server now minus the server commit time of the base version
+    OpsPruned        bool
+    TombstonesPruned bool
+}
+type Window struct{ TextMaxOps int; TextMaxAge time.Duration }
+func Reconcile(c classify.Class, g Gap, w Window) Decision // Apply or RebaseRequired
+
+// Names.
+type MarkerKind uint8 // Numbered, Conflict
+type Marker struct{ Kind MarkerKind; Device string; At time.Time } // At already in the display location (F5)
+func FreeName(p vpath.Path, m Marker, cfg Config, taken func(vpath.Path) (bool, error)) (vpath.Path, error)
+func GroupTaken(taken func(vpath.Path) (bool, error)) func(vpath.Path) (bool, error)
+func SidecarOf(pdf vpath.Path) (vpath.Path, error)
+func PDFOf(sidecar vpath.Path) (vpath.Path, bool)
+
+// Bulk deletes.
+type GuardConfig struct {
+    Window      time.Duration // 5 min
+    MaxCount    int           // 25
+    MinForRatio int           // 5
+    Ratio       float64       // 0.10
+    Buckets     int           // 30
+}
+type DeleteGuard struct{ /* fixed ring of counts */ }
+func NewDeleteGuard(cfg GuardConfig) (DeleteGuard, error)
+func (g DeleteGuard) Check(now time.Time, a Actor, batch, live int, confirmed bool) (DeleteGuard, Decision)
+
+// Client-side settling of local changes (D5).
+type Settlement uint8 // Wait, Submit, ClassChange
+type Observation struct {
+    Existing  classify.Class // 0 for a file the server does not know yet
+    Confirmed classify.Class
+    Demotion  classify.Demotion
+    Quiet     time.Duration  // time since the content last changed on disk
+}
+func Settle(o Observation, cfg Config) (Settlement, classify.Class)
+
+var ( ErrNoFreeName, ErrNameTooLong, ErrInvalidConfig error )
+```
+
+Versions are `int64` because core cannot import the engine's `Version` type, as in `annot`. `Decision` is a core enum; mapping it to wire codes happens once, in `session` (guidelines 3.2). `taken` is a callback so `FreeName` stays pure while the engine answers it from the locked transaction; its error is returned unchanged.
+
+## 7. Semantics
+
+### 7.1 vpath
+
+**`Parse`** accepts `s` exactly when all of the following hold, checked in this order so the reported `Reason` is the first failure:
+
+1. `s` is valid UTF-8 (`InvalidUTF8`) and equals `NFC(s)` (`NotNFC`).
+2. `s` is nonempty (`Empty`), does not start with `/` (`Absolute`) and contains no `\` (`Backslash`).
+3. Splitting on `/`, no component is empty (`EmptyComponent`, which covers `a//b` and a trailing slash), `.` (`DotComponent`) or `..` (`Traversal`).
+4. Each component is unchanged by phase 1's character rules: no `<>:"|?*` (`IllegalChar`), no control characters (`ControlChar`), no leading space (`LeadingSpace`), no trailing dot or space (`TrailingDotOrSpace`), and no Windows device name as its stem (`ReservedName`).
+5. Each component is at most `DeviceMaxComponent` bytes (`ComponentTooLong`) and the whole path at most `DeviceMaxTotal` bytes (`PathTooLong`).
+
+Rule 4 is implemented by extracting phase 1's character pass from `Component` into one unexported function that both `Component` and `Parse` call, so the two can never disagree about which characters are legal. `Component`'s output does not change.
+
+**`Sanitize`** runs `SanitizePath`, then `Parse`. A `Parse` failure after a successful `SanitizePath` is a bug, which a property test hunts; the bridge then falls back to phase 1's `Fallback`.
+
+**`Key`** is `NFC(Fold(NFD(SimpleUpper(p))))`:
+
+- `SimpleUpper` is `strings.Map(unicode.ToUpper, p)`, the per-rune simple mapping. It makes the key at least as coarse as an uppercase-table comparison (F2).
+- `Fold` is `cases.Fold()` from `golang.org/x/text`, constructed per call, never held in a package variable. Full folding equates `ß` with `ss`, `ſ` with `s`, the Kelvin sign with `k` and `ﬁ` with `fi`.
+- The NFD and NFC passes follow Unicode's definition of canonical caseless matching, because folding can produce unnormalized output.
+
+`KeyScheme()` returns a scheme number plus the Unicode versions of the case and normalization tables in use. An upgrade that changes any key changes the scheme, which M5 refuses to start against until the keys are recomputed.
+
+**`Within`** compares component keys, so `canvas/x.pdf` is within `Canvas`.
+
+### 7.2 classify
+
+`Expect` decides from the name and size alone:
+
+| Name | Size | Expect |
+| --- | --- | --- |
+| `IsSidecarName` | at most `MaxSidecar` | Sidecar |
+| `IsSidecarName` | above `MaxSidecar` | Opaque |
+| `Ext()` in `TextExts` | at most `MaxText` | Text |
+| `Ext()` in `TextExts` | above `MaxText` | Opaque |
+| anything else | any | Opaque |
+
+The sidecar check runs first, so `TextExts` containing `json` cannot pull a sidecar into class A.
+
+`Confirm` decides from the complete content:
+
+| Expected | Check | Result |
+| --- | --- | --- |
+| Opaque | none | Opaque, `Kept` |
+| Text | at most `MaxText` bytes, valid UTF-8, no `0x00` | Text, or Opaque with `TooLarge`, `InvalidUTF8` or `ContainsNUL` |
+| Sidecar | at most `MaxSidecar` bytes and `annot.Parse` succeeds | Sidecar, or Opaque with `TooLarge` or `NotFreedraw` |
+
+A failed sidecar never becomes Text, because ADR 011 rejects text merges on JSON. A BOM and CRLF line endings are content and stay class A. `Confirm` never returns a class other than `expected` or Opaque.
+
+**Who classifies.** The client runs `Expect` before reading a file (so it never reads a large opaque file to classify it) and `Confirm` before creating it, and sends its class. The server runs `Confirm` on the bytes it will commit, including initial text that arrives through the blob path, and rejects a disagreement with `class_mismatch {class, demotion}`. Both sides pass the same fixtures, so a mismatch means a bug or version skew; it is counted. The reject keeps the engine from having to write a blob to Garage on the client's behalf inside the commit path.
+
+### 7.3 rules: actors and ownership
+
+| Actor | May do |
+| --- | --- |
+| Device | Anything on user-owned files. Nothing on canvas-owned files (`ReadOnlyPath`). May not create or rename a class C file to a path `Within(CanvasRoot)` (`ReadOnlyPath`). Classes A and B are allowed anywhere, which is what lets a sidecar sit next to a Canvas PDF. |
+| Bridge | Only class C, canvas-owned files within `CanvasRoot`. Anything else is `ReadOnlyPath`, and the engine logs it as a bridge bug. |
+| Admin | Anything (`obsyncctl` restore runs as the system device through the engine). |
+
+The ownership check runs before every other check below.
+
+### 7.4 rules: namespace and staleness
+
+| Operation | Condition, first match wins | Decision |
+| --- | --- | --- |
+| Create | `Holder` Free | Apply |
+| | Holder taken, `on_taken = number` | ApplyNumbered |
+| | Holder taken, `on_taken = reject` | PathTaken |
+| Rename | Primary not live | FileDeleted |
+| | Primary is a PDF, `SidecarLive`, no sidecar member | GroupRequired |
+| | Sidecar member present and `SidecarTo != SidecarOf(To)` | GroupRequired |
+| | `To == Primary.Path` | Apply (no-op) |
+| | `Expect(Primary.Path, Size) != Expect(To, Size)` | ClassChange (client deletes and creates) |
+| | `Holder` Free or Self | Apply |
+| | Holder Other, `on_taken = number` | ApplyNumbered (PDF and sidecar numbered together through `GroupTaken`) |
+| | Holder Other, `on_taken = reject` | PathTaken |
+| Edit (A or B ops) | Not live | FileDeleted |
+| | otherwise | Apply (Reconcile decides rebases) |
+| Put blob (C) | Not live | FileDeleted |
+| | `base > head` | InvalidBase |
+| | `base < head` | ConflictCopy |
+| | `base == head` | Apply |
+| AnnotReplace | Not live | FileDeleted |
+| | `base > head` | InvalidBase |
+| | `base < head` | ConflictCopy |
+| | `base == head` | Apply |
+| Delete | Not live | FileDeleted (the client treats this as done) |
+| | `base > head` | InvalidBase |
+| | `base < head` | StaleDelete |
+| | `base == head` | Apply, then the guard |
+
+`Holder` Self is what makes a case-only rename (`a.md` to `A.md`) legal: the only live file holding the key is the file being renamed. A class change on rename compares the name categories, not the stored class, so a demoted `.md` renamed to another `.md` keeps class C.
+
+A group is all or nothing: if any member's decision is not Apply or ApplyNumbered, the whole group gets that decision.
+
+### 7.5 rules: reconnect window
+
+| Class | RebaseRequired when | Otherwise |
+| --- | --- | --- |
+| Text | `OpsPruned`, or `Ops > TextMaxOps`, or `Age > TextMaxAge` | Apply |
+| Sidecar | `TombstonesPruned` | Apply |
+| Opaque | never (the put's base check decides) | Apply |
+
+Exactly 5,000 ops and exactly 24 h are inside the window. `Age` comes from the server's commit time of the base version, never from client-reported offline time (invariant 5). Element ops are not transformed, so their op count is irrelevant; only tombstone pruning can make a stale sidecar edit unsafe.
+
+### 7.6 rules: names
+
+`FreeName` builds candidates and returns the first one `taken` reports free:
+
+1. **Split the base name.** The extension is the longest suffix in `Compound` that matches case-insensitively and leaves a nonempty stem, otherwise the final extension if it is at most 16 bytes and not a leading dot, otherwise none. The original spelling of the extension is kept.
+2. **Numbered markers** are ` (2)`, ` (3)` and so on. If the stem already ends in ` (k)` with `k >= 2`, numbering continues from `k + 1` instead of producing `Name (2) (2)`.
+3. **Conflict markers** are ` (conflict 2006-01-02 1504 device)`, then ` (conflict 2006-01-02 1504 device 2)` and so on. The time is formatted from `At` as given. The device name passes through `vpath.Component`, is cut to 32 bytes, and becomes `device` if nothing survives.
+4. **Fit.** If stem, marker and extension exceed `DeviceMaxComponent`, the stem is shortened without splitting a rune and trailing dots and spaces are trimmed. A result that fails `Parse` is a bug. A result over `DeviceMaxTotal` returns `ErrNameTooLong`.
+5. **Stop.** After `MaxAttempts` candidates, return `ErrNoFreeName`.
+
+Conflict copies always carry the conflict marker, even when the original path is free. Otherwise an edit to a file another device deleted would silently re-create it at its old path, which reads as an undelete.
+
+`SidecarOf(pdf)` appends `.annot.json` exactly. `PDFOf` reverses it only when the remainder ends in `.pdf` case-insensitively. A sidecar's conflict copy therefore never pairs with the PDF and classifies as Opaque (F4).
+
+### 7.7 rules: bulk-delete guard
+
+```
+limit(live) = min(MaxCount, max(MinForRatio, floor(Ratio × live)))
+n           = unconfirmed deletes recorded in the window + batch
+```
+
+| Condition | Decision | State |
+| --- | --- | --- |
+| Actor is Bridge or Admin | Apply | unchanged |
+| `confirmed` | Apply | unchanged |
+| `n > limit(live)` | NeedsConfirm | unchanged |
+| otherwise | Apply | records `batch` |
+
+| Live files | Limit before confirmation |
+| --- | --- |
+| 6 | 5 |
+| 80 | 8 |
+| 100 | 10 |
+| 250 | 25 |
+| 20,000 | 25 |
+
+Counts sit in `Buckets` slots of `Window / Buckets` each (10 s by default), so memory is fixed. Expiry is rounded against the user: a delete is forgotten up to one slot late, never early.
+
+The server checks each submission with `batch = 1`. The plugin runs the same function with the real batch size before sending the first delete of a folder, so it asks once, up front, instead of discovering the limit halfway. If the two states disagree (for example, the plugin missed a reject), the server's `bulk_delete_guard` stops the remainder, and the plugin asks and resends those with `confirmed`.
+
+### 7.8 rules: settling local changes
+
+`Settle` is the client's decision for a file it has just seen change on disk.
+
+| Situation | Settlement |
+| --- | --- |
+| `Demotion == Kept`, new file | Submit as `Confirmed` (create) |
+| `Demotion == Kept`, `Confirmed == Existing` | Submit (diff against the shadow) |
+| `Demotion != Kept`, `Quiet < cfg.Quiet` | Wait |
+| `Demotion != Kept`, quiet, new file | Submit as Opaque |
+| `Demotion != Kept`, quiet, existing file | ClassChange to Opaque |
+
+On ClassChange the client creates its local bytes as a conflict copy of the new class (`create {copy_of, class}`, named by the server), then writes the server head back to the original path and shows a notice. Nothing is lost: the bytes are in the copy and the head is intact. A server reject of `too_large` on a class A edit takes the same path. Classes never upgrade: a class C `.annot.json` that later parses stays class C.
+
+## 8. Implementation guide
+
+Build in this order, with each step's tests green before the next.
+
+1. **vpath housekeeping.**
+   - Rename `Path` to `SanitizePath` and update `internal/run`.
+   - Replace `var Normalize` with `func NFC` and update `internal/scope`.
+   - Extract the character pass from `Component` without changing its output.
+   - Fix lint findings, then remove `portable.go` and `portable_test.go` from the ADR 014 exception list. The phase 1 suite must pass unchanged apart from the rename.
+2. **vpath phase 2.** `Path`, `Reason`, `Parse`, `Sanitize`, the accessors, `Key`, `KeyScheme`, `Within`. Write the parse fixture inputs and the key golden first.
+3. **classify.** `Config`, `Expect`, the two checks, `Confirm`. Reuse `annot.Parse`; do not re-implement sidecar recognition.
+4. **rules: decisions.** Actors, the namespace table and `Reconcile`, one table-driven test per table in section 7 written before the code.
+5. **rules: names.** `SidecarOf`, `PDFOf`, `FreeName`, `GroupTaken`. Write the `FreeName` property first.
+6. **rules: guard and settle.** Value-semantics guard with the bucket ring; `Settle`.
+7. **Fixtures and the TypeScript side.** `make fixtures` generates `schema/vpath/parse.json`, `schema/classify/{expect,confirm}.json` and `schema/rules/{guard,settle}.json` from Go. The plugin ports vpath legality (not `Key`), classify, the guard and `Settle` into `plugin/src/core/` and passes them. The TypeScript may be AI-drafted (guidelines 9.1) because the fixtures exist first.
+
+Expected effort: about two part-time weeks including step 0, against the guide's one.
+
+## 9. Proof
+
+Write the decision-table tests and the first property for each package before its implementation.
+
+| Test | Asserts |
+| --- | --- |
+| Phase 1 `portable` suite | Unchanged apart from the rename |
+| `TestParseFixtures` | Every row of `schema/vpath/parse.json`, in Go and TypeScript, including the reason and component index |
+| `TestPropParseCharacterRules` | For random strings, a component passes rule 4 exactly when the shared character pass leaves it unchanged; a passing component of at most 120 bytes is a fixed point of `Component` |
+| `TestPropParseRoundTrip` | `Parse(p.String()) == p` |
+| `TestPropSanitizeIsStrict` | Whenever `Sanitize` succeeds, its result passes `Parse` |
+| `TestKeyGolden` | Every pair in `testdata/key-golden.json` maps as recorded: `ß`/`SS`, `ẞ`/`ss`, `ı`/`i`, `İ`/`i` (distinct), `İ`/`i̇`, `ſ`/`s`, Kelvin sign/`k`, `ﬁ`/`fi`, NFD/NFC `é`, `Σ`/`σ`/`ς`, Cherokee pairs. The header pins `KeyScheme()` |
+| `TestPropKeyCoarserThanFold` | Paths equal under NFC plus full folding have equal keys |
+| `TestPropKeyCoarserThanUpper` | Paths equal under NFC plus simple uppercase have equal keys |
+| `TestPropKeyIdempotent` | Applying the key function to a key's string returns the same key |
+| `TestWithinByKey` | `canvas/x.pdf` is within `Canvas`; `Canvasx/y` is not |
+| `TestClassifyFixtures` | Every row of `schema/classify/*.json`, in Go and TypeScript |
+| `TestDemotions` | NUL at byte 9,000 (the hole an 8 KiB head leaves), UTF-8 cut mid-sequence at the end, `MaxText + 1` bytes, a malformed sidecar and a `MaxSidecar + 1` sidecar each demote with their reason; BOM and CRLF stay Text |
+| `TestSamplesAreSidecars` | Every file in `schema/annot/samples/` classifies as Sidecar |
+| `TestPropConfirmNeverUpgrades` | `Confirm` returns `expected` or Opaque |
+| `TestDecisionTables` | One subtest per row of sections 7.3 to 7.5; `exhaustive` covers every `Decision` switch |
+| `TestCaseOnlyRename` | `a.md` to `A.md` with Holder Self is Apply |
+| `TestReconcileBoundaries` | 5,000 ops in, 5,001 out; 24 h in, 24 h plus 1 ns out; each pruned flag out for its class; Opaque always Apply |
+| `TestPropFreeName` | For random occupied sets: the result passes `Parse`, is not taken, keeps the original extension (compound included), fits `DeviceMaxComponent` and is deterministic; exhaustion returns `ErrNoFreeName` after exactly `MaxAttempts` calls to `taken` |
+| `TestSidecarCopyDoesNotPair` | `PDFOf` of a sidecar's conflict copy is false and `Expect` of it is Opaque |
+| `TestGroupNumbering` | A numbered PDF and its sidecar are both free and still pair |
+| `TestDeleteGuardTable` | The limit table in 7.7; the 26th delete in a large vault and the 6th in a 6-file vault need confirmation; confirmed deletes do not count; Bridge is exempt |
+| `TestPropDeleteGuard` | Over random sequences of checks, no window span ever contains more applied unconfirmed deletes than the limit, and a NeedsConfirm never changes state |
+| `TestSettle` | The table in 7.8; ClassChange never precedes the quiet period |
+| `FuzzParse`, `FuzzKey`, `FuzzClassify` | No panic; accepted paths round-trip; rejections carry a reason; classification is deterministic |
+
+**Cross-language fixtures.** As in M2, the fixtures prove the TypeScript port matches Go, not that Go is right. Go's correctness for the key rests on step 0's filesystem table and the golden; for the rules, on the decision tables and properties.
+
+## 10. Exit criteria
+
+- Every property passes at 100,000 cases; the three fuzz targets run 10 minutes each with no finding.
+- Coverage is above 90% in each of the three packages.
+- Fixtures are committed and pass in both languages.
+- Step 0's measurements are recorded, and the key collides on every pair either filesystem collides.
+- The phase 1 suite passes with only the rename, and `portable.go` is off the lint exception list.
+- ADRs 017 to 021 are merged.
+
+## 11. How it wires into later milestones
+
+| Milestone | Uses from M3 | What M3 requires of it |
+| --- | --- | --- |
+| M4 proto | `vpath.Parse` inside `Decode`; `Reason` strings | `create` and `rename` gain `on_taken` (`number` by default, or `reject`) and `create` gains `copy_of {file_id, reason}`. `ack` and the change carry the final `path` and `class`. New reject codes `invalid_path {reason, component}` and `class_mismatch {class, demotion}`, next to M2's `whole_document_required`. `path_taken` remains for `on_taken = reject` and exhausted names. |
+| M5 storage/pg | `Key`, `KeyScheme` | `files.path_key` is `vpath.Key`. The `vault` row stores `key_scheme`; the server refuses to start on a mismatch, and `obsyncctl rekey` recomputes keys and reports collisions. `taken` for `FreeName` is a key lookup inside the transaction; the unique index stays the final guard. |
+| M7 engine | Every `Decide*`, `Reconcile`, `FreeName`, `DeleteGuard`, `Confirm`, `CheckText` | Decisions map to codes only in `session`. One guard per device in engine memory (it resets on restart). `Confirm` runs before the transaction; a blob read is outside it. After applying a text op, the engine checks size and NUL-free inserts. Server-made conflict copies carry the submitting device's name and the configured display location. The reference client and simulator gain server-assigned names and `Settle`. |
+| M10 compaction / GC | `Gap.TombstonesPruned` | The tombstone prune cutoff and `TombstonesPruned` come from the same value, as M2 requires. |
+| M11 Canvas bridge | `Sanitize`, Actor Bridge | Creates use `on_taken = number`, so a lecturer's `notes.md` beside a user's `notes.md` becomes `notes (2).md`. Bridge deletes are exempt from the guard. |
+| M13 plugin | TypeScript ports of vpath legality, classify, the guard and `Settle` | Maps local paths to NFC wire paths (from step 0), pre-checks legality and lists unsyncable files with their reason, confirms before a batch delete, renames local files to server-assigned names after the ack, resubmits on `class_mismatch`, and executes ClassChange. |
+| M14 verification | Metrics | `obsync_class_mismatch_total` (expected 0), `obsync_names_assigned_total{marker}`, `obsync_bulk_delete_guard_total{outcome}`, `obsync_invalid_path_total{reason}`. |
+
+## 12. Accepted limitations
+
+- **The key over-approximates.** Names that a filesystem would keep apart, such as `ß.md` and `ss.md`, cannot coexist; the second is numbered.
+- **Classes never upgrade.** A file demoted to class C stays class C even after its content becomes valid; deleting and re-creating it is the remedy.
+- **A ClassChange visibly reverts the local file.** The local bytes survive in the conflict copy, but the user sees the original path return to the server's content.
+- **The guard resets on restart.** After each server restart a device can make up to one more window of unconfirmed deletes.
+- **Server-assigned names arrive after the ack.** A device holds a new file at its requested path until the ack renames it.
+- **Windows path length.** Device paths up to 512 bytes, plus the vault root, can exceed 260 UTF-16 units; Windows needs long-path support. Phase 1's 400-byte limit already had this exposure.
+- **Folder operations are per file.** A folder rename or delete is many submissions, and other devices can observe intermediate states.
+
+## 13. Documents to update
+
+| Document | Change |
+| --- | --- |
+| Architecture Specification, section 3 | `path_key` defined as `vpath.Key`; `key_scheme` on the `vault` row; device path limits |
+| Architecture Specification, section 4.4 | Server-assigned names and `on_taken`; `copy_of`; the group rule; case-only renames; the guard formula, confirmed deletes and system actors |
+| Architecture Specification, section 4.5 | Per-class window (ADR 021); conflict copies requested with `copy_of`; conflict-copy timestamps use the configured display location |
+| Architecture Specification, section 5.3 | Reject codes `invalid_path` and `class_mismatch` |
+| Implementation Guide, M3 | Replace with sections 5 to 10 of this document |
+| Implementation Guide, M4, M5, M7, M11, M13, M14 | The requirements in section 11 |
+| `.golangci.yml` | Remove the vpath files from the ADR 014 exception list |
+| ADRs | Write 017 to 021; mark 009 superseded by 021 |
