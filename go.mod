@@ -1,6 +1,6 @@
 module github.com/BarneyLaw/stele-sync
 
-go 1.26.6
+go 1.27.2
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.47.0

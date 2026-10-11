@@ -359,12 +359,12 @@ func toPlanFiles(log *slog.Logger, raw []canvas.File, folders map[int64]canvas.F
 
 func resolvePath(dir, name string, id int64) (string, string) {
 	joined := joinPath(dir, name)
-	p, err := vpath.Path(joined)
+	p, err := vpath.SanitizePath(joined)
 	if err == nil {
 		return p, ""
 	}
 	fb := vpath.Fallback(name, id)
-	if p2, err2 := vpath.Path(joinPath(dir, fb)); err2 == nil {
+	if p2, err2 := vpath.SanitizePath(joinPath(dir, fb)); err2 == nil {
 		return p2, fmt.Sprintf("Canvas name %q could not be made portable (%v); stored as %q", name, err, fb)
 	}
 	return fb, fmt.Sprintf("Canvas path %q could not be made portable (%v); stored at the course root as %q", joined, err, fb)

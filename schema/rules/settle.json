@@ -1,0 +1,1154 @@
+[
+  {
+    "existing": "",
+    "confirmed": "A",
+    "demotion": "kept",
+    "quiet_ns": "0",
+    "settlement": "submit",
+    "class": "A"
+  },
+  {
+    "existing": "",
+    "confirmed": "A",
+    "demotion": "kept",
+    "quiet_ns": "9999999999",
+    "settlement": "submit",
+    "class": "A"
+  },
+  {
+    "existing": "",
+    "confirmed": "A",
+    "demotion": "kept",
+    "quiet_ns": "10000000000",
+    "settlement": "submit",
+    "class": "A"
+  },
+  {
+    "existing": "",
+    "confirmed": "A",
+    "demotion": "kept",
+    "quiet_ns": "10000000001",
+    "settlement": "submit",
+    "class": "A"
+  },
+  {
+    "existing": "",
+    "confirmed": "A",
+    "demotion": "too_large",
+    "quiet_ns": "0",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "",
+    "confirmed": "A",
+    "demotion": "too_large",
+    "quiet_ns": "9999999999",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "",
+    "confirmed": "A",
+    "demotion": "too_large",
+    "quiet_ns": "10000000000",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "",
+    "confirmed": "A",
+    "demotion": "too_large",
+    "quiet_ns": "10000000001",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "",
+    "confirmed": "A",
+    "demotion": "not_freedraw",
+    "quiet_ns": "0",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "",
+    "confirmed": "A",
+    "demotion": "not_freedraw",
+    "quiet_ns": "9999999999",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "",
+    "confirmed": "A",
+    "demotion": "not_freedraw",
+    "quiet_ns": "10000000000",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "",
+    "confirmed": "A",
+    "demotion": "not_freedraw",
+    "quiet_ns": "10000000001",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "",
+    "confirmed": "B",
+    "demotion": "kept",
+    "quiet_ns": "0",
+    "settlement": "submit",
+    "class": "B"
+  },
+  {
+    "existing": "",
+    "confirmed": "B",
+    "demotion": "kept",
+    "quiet_ns": "9999999999",
+    "settlement": "submit",
+    "class": "B"
+  },
+  {
+    "existing": "",
+    "confirmed": "B",
+    "demotion": "kept",
+    "quiet_ns": "10000000000",
+    "settlement": "submit",
+    "class": "B"
+  },
+  {
+    "existing": "",
+    "confirmed": "B",
+    "demotion": "kept",
+    "quiet_ns": "10000000001",
+    "settlement": "submit",
+    "class": "B"
+  },
+  {
+    "existing": "",
+    "confirmed": "B",
+    "demotion": "too_large",
+    "quiet_ns": "0",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "",
+    "confirmed": "B",
+    "demotion": "too_large",
+    "quiet_ns": "9999999999",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "",
+    "confirmed": "B",
+    "demotion": "too_large",
+    "quiet_ns": "10000000000",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "",
+    "confirmed": "B",
+    "demotion": "too_large",
+    "quiet_ns": "10000000001",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "",
+    "confirmed": "B",
+    "demotion": "not_freedraw",
+    "quiet_ns": "0",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "",
+    "confirmed": "B",
+    "demotion": "not_freedraw",
+    "quiet_ns": "9999999999",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "",
+    "confirmed": "B",
+    "demotion": "not_freedraw",
+    "quiet_ns": "10000000000",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "",
+    "confirmed": "B",
+    "demotion": "not_freedraw",
+    "quiet_ns": "10000000001",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "",
+    "confirmed": "C",
+    "demotion": "kept",
+    "quiet_ns": "0",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "",
+    "confirmed": "C",
+    "demotion": "kept",
+    "quiet_ns": "9999999999",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "",
+    "confirmed": "C",
+    "demotion": "kept",
+    "quiet_ns": "10000000000",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "",
+    "confirmed": "C",
+    "demotion": "kept",
+    "quiet_ns": "10000000001",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "",
+    "confirmed": "C",
+    "demotion": "too_large",
+    "quiet_ns": "0",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "",
+    "confirmed": "C",
+    "demotion": "too_large",
+    "quiet_ns": "9999999999",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "",
+    "confirmed": "C",
+    "demotion": "too_large",
+    "quiet_ns": "10000000000",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "",
+    "confirmed": "C",
+    "demotion": "too_large",
+    "quiet_ns": "10000000001",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "",
+    "confirmed": "C",
+    "demotion": "not_freedraw",
+    "quiet_ns": "0",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "",
+    "confirmed": "C",
+    "demotion": "not_freedraw",
+    "quiet_ns": "9999999999",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "",
+    "confirmed": "C",
+    "demotion": "not_freedraw",
+    "quiet_ns": "10000000000",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "",
+    "confirmed": "C",
+    "demotion": "not_freedraw",
+    "quiet_ns": "10000000001",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "A",
+    "confirmed": "A",
+    "demotion": "kept",
+    "quiet_ns": "0",
+    "settlement": "submit",
+    "class": "A"
+  },
+  {
+    "existing": "A",
+    "confirmed": "A",
+    "demotion": "kept",
+    "quiet_ns": "9999999999",
+    "settlement": "submit",
+    "class": "A"
+  },
+  {
+    "existing": "A",
+    "confirmed": "A",
+    "demotion": "kept",
+    "quiet_ns": "10000000000",
+    "settlement": "submit",
+    "class": "A"
+  },
+  {
+    "existing": "A",
+    "confirmed": "A",
+    "demotion": "kept",
+    "quiet_ns": "10000000001",
+    "settlement": "submit",
+    "class": "A"
+  },
+  {
+    "existing": "A",
+    "confirmed": "A",
+    "demotion": "too_large",
+    "quiet_ns": "0",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "A",
+    "confirmed": "A",
+    "demotion": "too_large",
+    "quiet_ns": "9999999999",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "A",
+    "confirmed": "A",
+    "demotion": "too_large",
+    "quiet_ns": "10000000000",
+    "settlement": "class_change",
+    "class": "C"
+  },
+  {
+    "existing": "A",
+    "confirmed": "A",
+    "demotion": "too_large",
+    "quiet_ns": "10000000001",
+    "settlement": "class_change",
+    "class": "C"
+  },
+  {
+    "existing": "A",
+    "confirmed": "A",
+    "demotion": "not_freedraw",
+    "quiet_ns": "0",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "A",
+    "confirmed": "A",
+    "demotion": "not_freedraw",
+    "quiet_ns": "9999999999",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "A",
+    "confirmed": "A",
+    "demotion": "not_freedraw",
+    "quiet_ns": "10000000000",
+    "settlement": "class_change",
+    "class": "C"
+  },
+  {
+    "existing": "A",
+    "confirmed": "A",
+    "demotion": "not_freedraw",
+    "quiet_ns": "10000000001",
+    "settlement": "class_change",
+    "class": "C"
+  },
+  {
+    "existing": "A",
+    "confirmed": "B",
+    "demotion": "kept",
+    "quiet_ns": "0",
+    "settlement": "class_change",
+    "class": "B"
+  },
+  {
+    "existing": "A",
+    "confirmed": "B",
+    "demotion": "kept",
+    "quiet_ns": "9999999999",
+    "settlement": "class_change",
+    "class": "B"
+  },
+  {
+    "existing": "A",
+    "confirmed": "B",
+    "demotion": "kept",
+    "quiet_ns": "10000000000",
+    "settlement": "class_change",
+    "class": "B"
+  },
+  {
+    "existing": "A",
+    "confirmed": "B",
+    "demotion": "kept",
+    "quiet_ns": "10000000001",
+    "settlement": "class_change",
+    "class": "B"
+  },
+  {
+    "existing": "A",
+    "confirmed": "B",
+    "demotion": "too_large",
+    "quiet_ns": "0",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "A",
+    "confirmed": "B",
+    "demotion": "too_large",
+    "quiet_ns": "9999999999",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "A",
+    "confirmed": "B",
+    "demotion": "too_large",
+    "quiet_ns": "10000000000",
+    "settlement": "class_change",
+    "class": "C"
+  },
+  {
+    "existing": "A",
+    "confirmed": "B",
+    "demotion": "too_large",
+    "quiet_ns": "10000000001",
+    "settlement": "class_change",
+    "class": "C"
+  },
+  {
+    "existing": "A",
+    "confirmed": "B",
+    "demotion": "not_freedraw",
+    "quiet_ns": "0",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "A",
+    "confirmed": "B",
+    "demotion": "not_freedraw",
+    "quiet_ns": "9999999999",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "A",
+    "confirmed": "B",
+    "demotion": "not_freedraw",
+    "quiet_ns": "10000000000",
+    "settlement": "class_change",
+    "class": "C"
+  },
+  {
+    "existing": "A",
+    "confirmed": "B",
+    "demotion": "not_freedraw",
+    "quiet_ns": "10000000001",
+    "settlement": "class_change",
+    "class": "C"
+  },
+  {
+    "existing": "A",
+    "confirmed": "C",
+    "demotion": "kept",
+    "quiet_ns": "0",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "A",
+    "confirmed": "C",
+    "demotion": "kept",
+    "quiet_ns": "9999999999",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "A",
+    "confirmed": "C",
+    "demotion": "kept",
+    "quiet_ns": "10000000000",
+    "settlement": "class_change",
+    "class": "C"
+  },
+  {
+    "existing": "A",
+    "confirmed": "C",
+    "demotion": "kept",
+    "quiet_ns": "10000000001",
+    "settlement": "class_change",
+    "class": "C"
+  },
+  {
+    "existing": "A",
+    "confirmed": "C",
+    "demotion": "too_large",
+    "quiet_ns": "0",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "A",
+    "confirmed": "C",
+    "demotion": "too_large",
+    "quiet_ns": "9999999999",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "A",
+    "confirmed": "C",
+    "demotion": "too_large",
+    "quiet_ns": "10000000000",
+    "settlement": "class_change",
+    "class": "C"
+  },
+  {
+    "existing": "A",
+    "confirmed": "C",
+    "demotion": "too_large",
+    "quiet_ns": "10000000001",
+    "settlement": "class_change",
+    "class": "C"
+  },
+  {
+    "existing": "A",
+    "confirmed": "C",
+    "demotion": "not_freedraw",
+    "quiet_ns": "0",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "A",
+    "confirmed": "C",
+    "demotion": "not_freedraw",
+    "quiet_ns": "9999999999",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "A",
+    "confirmed": "C",
+    "demotion": "not_freedraw",
+    "quiet_ns": "10000000000",
+    "settlement": "class_change",
+    "class": "C"
+  },
+  {
+    "existing": "A",
+    "confirmed": "C",
+    "demotion": "not_freedraw",
+    "quiet_ns": "10000000001",
+    "settlement": "class_change",
+    "class": "C"
+  },
+  {
+    "existing": "B",
+    "confirmed": "A",
+    "demotion": "kept",
+    "quiet_ns": "0",
+    "settlement": "class_change",
+    "class": "A"
+  },
+  {
+    "existing": "B",
+    "confirmed": "A",
+    "demotion": "kept",
+    "quiet_ns": "9999999999",
+    "settlement": "class_change",
+    "class": "A"
+  },
+  {
+    "existing": "B",
+    "confirmed": "A",
+    "demotion": "kept",
+    "quiet_ns": "10000000000",
+    "settlement": "class_change",
+    "class": "A"
+  },
+  {
+    "existing": "B",
+    "confirmed": "A",
+    "demotion": "kept",
+    "quiet_ns": "10000000001",
+    "settlement": "class_change",
+    "class": "A"
+  },
+  {
+    "existing": "B",
+    "confirmed": "A",
+    "demotion": "too_large",
+    "quiet_ns": "0",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "B",
+    "confirmed": "A",
+    "demotion": "too_large",
+    "quiet_ns": "9999999999",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "B",
+    "confirmed": "A",
+    "demotion": "too_large",
+    "quiet_ns": "10000000000",
+    "settlement": "class_change",
+    "class": "C"
+  },
+  {
+    "existing": "B",
+    "confirmed": "A",
+    "demotion": "too_large",
+    "quiet_ns": "10000000001",
+    "settlement": "class_change",
+    "class": "C"
+  },
+  {
+    "existing": "B",
+    "confirmed": "A",
+    "demotion": "not_freedraw",
+    "quiet_ns": "0",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "B",
+    "confirmed": "A",
+    "demotion": "not_freedraw",
+    "quiet_ns": "9999999999",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "B",
+    "confirmed": "A",
+    "demotion": "not_freedraw",
+    "quiet_ns": "10000000000",
+    "settlement": "class_change",
+    "class": "C"
+  },
+  {
+    "existing": "B",
+    "confirmed": "A",
+    "demotion": "not_freedraw",
+    "quiet_ns": "10000000001",
+    "settlement": "class_change",
+    "class": "C"
+  },
+  {
+    "existing": "B",
+    "confirmed": "B",
+    "demotion": "kept",
+    "quiet_ns": "0",
+    "settlement": "submit",
+    "class": "B"
+  },
+  {
+    "existing": "B",
+    "confirmed": "B",
+    "demotion": "kept",
+    "quiet_ns": "9999999999",
+    "settlement": "submit",
+    "class": "B"
+  },
+  {
+    "existing": "B",
+    "confirmed": "B",
+    "demotion": "kept",
+    "quiet_ns": "10000000000",
+    "settlement": "submit",
+    "class": "B"
+  },
+  {
+    "existing": "B",
+    "confirmed": "B",
+    "demotion": "kept",
+    "quiet_ns": "10000000001",
+    "settlement": "submit",
+    "class": "B"
+  },
+  {
+    "existing": "B",
+    "confirmed": "B",
+    "demotion": "too_large",
+    "quiet_ns": "0",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "B",
+    "confirmed": "B",
+    "demotion": "too_large",
+    "quiet_ns": "9999999999",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "B",
+    "confirmed": "B",
+    "demotion": "too_large",
+    "quiet_ns": "10000000000",
+    "settlement": "class_change",
+    "class": "C"
+  },
+  {
+    "existing": "B",
+    "confirmed": "B",
+    "demotion": "too_large",
+    "quiet_ns": "10000000001",
+    "settlement": "class_change",
+    "class": "C"
+  },
+  {
+    "existing": "B",
+    "confirmed": "B",
+    "demotion": "not_freedraw",
+    "quiet_ns": "0",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "B",
+    "confirmed": "B",
+    "demotion": "not_freedraw",
+    "quiet_ns": "9999999999",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "B",
+    "confirmed": "B",
+    "demotion": "not_freedraw",
+    "quiet_ns": "10000000000",
+    "settlement": "class_change",
+    "class": "C"
+  },
+  {
+    "existing": "B",
+    "confirmed": "B",
+    "demotion": "not_freedraw",
+    "quiet_ns": "10000000001",
+    "settlement": "class_change",
+    "class": "C"
+  },
+  {
+    "existing": "B",
+    "confirmed": "C",
+    "demotion": "kept",
+    "quiet_ns": "0",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "B",
+    "confirmed": "C",
+    "demotion": "kept",
+    "quiet_ns": "9999999999",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "B",
+    "confirmed": "C",
+    "demotion": "kept",
+    "quiet_ns": "10000000000",
+    "settlement": "class_change",
+    "class": "C"
+  },
+  {
+    "existing": "B",
+    "confirmed": "C",
+    "demotion": "kept",
+    "quiet_ns": "10000000001",
+    "settlement": "class_change",
+    "class": "C"
+  },
+  {
+    "existing": "B",
+    "confirmed": "C",
+    "demotion": "too_large",
+    "quiet_ns": "0",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "B",
+    "confirmed": "C",
+    "demotion": "too_large",
+    "quiet_ns": "9999999999",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "B",
+    "confirmed": "C",
+    "demotion": "too_large",
+    "quiet_ns": "10000000000",
+    "settlement": "class_change",
+    "class": "C"
+  },
+  {
+    "existing": "B",
+    "confirmed": "C",
+    "demotion": "too_large",
+    "quiet_ns": "10000000001",
+    "settlement": "class_change",
+    "class": "C"
+  },
+  {
+    "existing": "B",
+    "confirmed": "C",
+    "demotion": "not_freedraw",
+    "quiet_ns": "0",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "B",
+    "confirmed": "C",
+    "demotion": "not_freedraw",
+    "quiet_ns": "9999999999",
+    "settlement": "wait",
+    "class": "C"
+  },
+  {
+    "existing": "B",
+    "confirmed": "C",
+    "demotion": "not_freedraw",
+    "quiet_ns": "10000000000",
+    "settlement": "class_change",
+    "class": "C"
+  },
+  {
+    "existing": "B",
+    "confirmed": "C",
+    "demotion": "not_freedraw",
+    "quiet_ns": "10000000001",
+    "settlement": "class_change",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "A",
+    "demotion": "kept",
+    "quiet_ns": "0",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "A",
+    "demotion": "kept",
+    "quiet_ns": "9999999999",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "A",
+    "demotion": "kept",
+    "quiet_ns": "10000000000",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "A",
+    "demotion": "kept",
+    "quiet_ns": "10000000001",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "A",
+    "demotion": "too_large",
+    "quiet_ns": "0",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "A",
+    "demotion": "too_large",
+    "quiet_ns": "9999999999",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "A",
+    "demotion": "too_large",
+    "quiet_ns": "10000000000",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "A",
+    "demotion": "too_large",
+    "quiet_ns": "10000000001",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "A",
+    "demotion": "not_freedraw",
+    "quiet_ns": "0",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "A",
+    "demotion": "not_freedraw",
+    "quiet_ns": "9999999999",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "A",
+    "demotion": "not_freedraw",
+    "quiet_ns": "10000000000",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "A",
+    "demotion": "not_freedraw",
+    "quiet_ns": "10000000001",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "B",
+    "demotion": "kept",
+    "quiet_ns": "0",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "B",
+    "demotion": "kept",
+    "quiet_ns": "9999999999",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "B",
+    "demotion": "kept",
+    "quiet_ns": "10000000000",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "B",
+    "demotion": "kept",
+    "quiet_ns": "10000000001",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "B",
+    "demotion": "too_large",
+    "quiet_ns": "0",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "B",
+    "demotion": "too_large",
+    "quiet_ns": "9999999999",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "B",
+    "demotion": "too_large",
+    "quiet_ns": "10000000000",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "B",
+    "demotion": "too_large",
+    "quiet_ns": "10000000001",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "B",
+    "demotion": "not_freedraw",
+    "quiet_ns": "0",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "B",
+    "demotion": "not_freedraw",
+    "quiet_ns": "9999999999",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "B",
+    "demotion": "not_freedraw",
+    "quiet_ns": "10000000000",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "B",
+    "demotion": "not_freedraw",
+    "quiet_ns": "10000000001",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "C",
+    "demotion": "kept",
+    "quiet_ns": "0",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "C",
+    "demotion": "kept",
+    "quiet_ns": "9999999999",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "C",
+    "demotion": "kept",
+    "quiet_ns": "10000000000",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "C",
+    "demotion": "kept",
+    "quiet_ns": "10000000001",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "C",
+    "demotion": "too_large",
+    "quiet_ns": "0",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "C",
+    "demotion": "too_large",
+    "quiet_ns": "9999999999",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "C",
+    "demotion": "too_large",
+    "quiet_ns": "10000000000",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "C",
+    "demotion": "too_large",
+    "quiet_ns": "10000000001",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "C",
+    "demotion": "not_freedraw",
+    "quiet_ns": "0",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "C",
+    "demotion": "not_freedraw",
+    "quiet_ns": "9999999999",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "C",
+    "demotion": "not_freedraw",
+    "quiet_ns": "10000000000",
+    "settlement": "submit",
+    "class": "C"
+  },
+  {
+    "existing": "C",
+    "confirmed": "C",
+    "demotion": "not_freedraw",
+    "quiet_ns": "10000000001",
+    "settlement": "submit",
+    "class": "C"
+  }
+]

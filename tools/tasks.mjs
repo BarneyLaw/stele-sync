@@ -46,7 +46,17 @@ function corePlan() {
 function unitEnv() {
   // Never let a local compatibility export or ambient service credentials turn
   // a CI discovery/unit invocation into external I/O.
-  return { ...process.env, GARAGE_ENDPOINT: '', STELE_PULL_REQUIRE_S3: '', ANNOT_SAMPLE: '', ANNOT_OUTPUT_DIR: '' };
+  return { ...process.env, GARAGE_ENDPOINT: '', STELE_PULL_REQUIRE_S3: '', ANNOT_SAMPLE: '', ANNOT_OUTPUT_DIR: '', M3_FS_PROBE: '', M3_NTFS_UPCASE: '' };
+}
+
+const namespaceContracts = [
+  { package: 'vpath', test: '(TestParseFixtures|TestNormalizationFixture)', update: '-update-vpath', files: ['parse', 'normalization'] },
+  { package: 'classify', test: 'TestClassifyFixtures', update: '-update-classify', files: ['expect', 'confirm'] },
+  { package: 'rules', test: 'TestRulesFixtures', update: '-update-rules', files: ['guard', 'settle'] },
+];
+function namespaceFixtures(update = false) {
+  for (const c of namespaceContracts) run('go', ['test', '-race', '-count=1', `./internal/core/${c.package}`,
+    `-run=^${c.test}$`, ...(update ? [c.update] : [])], { env: unitEnv() });
 }
 
 function depguardProof() {
@@ -178,6 +188,22 @@ const tasks = {
       run('go', ['test', '-race', '-run=^$', `-fuzz=^${target}$`, '-fuzztime=10m', '-timeout=15m', './internal/core/annot']);
     }
   },
+  'namespace-acceptance'() {
+    for (const c of namespaceContracts) {
+      const pkg = `./internal/core/${c.package}`;
+      run('go', ['test', '-race', '-count=1', '-timeout=30m', pkg, '-run=^TestProp', '-rapid.checks=100000'], { env: unitEnv() });
+      const directory = join('.cache/core-ci', pkg.slice(2));
+      mkdirSync(directory, { recursive: true });
+      const profile = join(directory, 'coverage.out');
+      run('go', ['test', '-race', '-count=1', pkg, `-coverprofile=${profile}`], { env: unitEnv() });
+      console.log(`${pkg}: ${requireCoverage(readFileSync(profile, 'utf8')).toFixed(2)}% coverage`);
+    }
+    for (const target of corePlan().fuzz.filter(t => namespaceContracts.some(c => t.package === `./internal/core/${c.package}`))) {
+      run('go', fuzzArgs(target, '10m'), { env: unitEnv() });
+    }
+    namespaceFixtures();
+    npm('exec', '--', 'vitest', 'run', 'src/namespace.test.ts');
+  },
   'test-integration'() {
     up();
     const result = compose('exec', '-T', 'postgres', 'psql', '-U', 'obsync', '-d', 'obsync', '-Atc', 'SELECT 1');
@@ -196,15 +222,17 @@ const tasks = {
     else console.log('M0: simulation deferred to M7 (tools/sim/main.go).');
   },
   fixtures() {
+    namespaceFixtures(true);
     run('go', ['test', './internal/manifest', '-run', '^TestContractFixtures$', '-count=1', '-update']);
     run('go', ['test', './internal/core/annot', '-run', '^TestAnnotContractFixtures$', '-count=1', '-update-annot']);
     if (existsSync('tools/oracle/generate.mjs')) run(process.execPath, ['tools/oracle/generate.mjs']);
   },
   'fixtures-check'() {
+    namespaceFixtures();
     run('go', ['test', './internal/core/annot', '-run', '^TestAnnotContractFixtures$', '-count=1']);
     // Preserve phase 1's regeneration gate. Oracle drift checks never overwrite
     // committed goldens, and detect missing/untracked files explicitly.
-    const paths = ['schema/textop/apply.json', 'schema/textop/compose.json', 'schema/textop/transform.json', 'schema/textop/invalid.json',
+    const paths = [...namespaceContracts.flatMap(c => c.files.map(f => `schema/${c.package}/${f}.json`)), 'schema/textop/apply.json', 'schema/textop/compose.json', 'schema/textop/transform.json', 'schema/textop/invalid.json',
       ...['parse', 'diff', 'apply', 'state', 'invalid'].map(name => `schema/annot/${name}.json`)];
     for (const path of paths) if (!existsSync(path)) throw new Error(`Missing required fixture ${path}`);
     const tracked = capture('git', ['ls-files', '--', ...paths]).trim().split(/\r?\n/);
@@ -226,9 +254,10 @@ const tasks = {
     } finally { rmSync(scratch, { recursive: true, force: true }); }
   },
   contract() {
+    namespaceFixtures();
     run('go', ['test', '-race', '-count=1', './internal/manifest', './internal/core/policy']);
     run('go', ['test', '-race', '-count=1', './internal/core/annot', '-run', '^TestAnnotContractFixtures$']);
-    npm('exec', '--', 'vitest', 'run', 'src/contract.test.ts', 'src/preview.test.ts', 'src/policy.test.ts');
+    npm('exec', '--', 'vitest', 'run', 'src/contract.test.ts', 'src/preview.test.ts', 'src/policy.test.ts', 'src/namespace.test.ts');
   },
   plugin() {
     npm('run', 'lint', '--', '--max-warnings=0');

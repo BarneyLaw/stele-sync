@@ -147,7 +147,7 @@ func matchSegs(pat, segs []string) bool {
 // slashes, no leading "./" or "/", no trailing "/", no synthetic "course
 // files" root (users copy that from the Canvas UI), then case-folded.
 func normalize(r string) string {
-	n := vpath.Normalize(strings.TrimSpace(r))
+	n := vpath.NFC(strings.TrimSpace(r))
 	n = strings.ReplaceAll(n, "\\", "/")
 	parts := strings.Split(n, "/")
 	kept := parts[:0]

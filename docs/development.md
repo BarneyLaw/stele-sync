@@ -7,7 +7,7 @@ or server has been implemented in M0.
 
 ## Prerequisites
 
-Use Go 1.26.6 (pinned in go.mod, CI, and the worker image), Node 24 with npm,
+Use Go 1.27.2 (pinned in go.mod, CI, and the worker image), Node 24 with npm,
 Docker with Compose v2, and kubectl or kustomize for phase 1 deployment rendering.
 Windows needs a C compiler on PATH for go test -race, and Git Bash at its standard
 installation path for the inherited rendering script. Go can automatically

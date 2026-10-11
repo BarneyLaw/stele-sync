@@ -1,0 +1,266 @@
+[
+  {
+    "name": "a.md",
+    "input_base64": "YS5tZA==",
+    "reason": "none",
+    "component": -1
+  },
+  {
+    "name": "Canvas/讲义.pdf.annot.json",
+    "input_base64": "Q2FudmFzL+iusuS5iS5wZGYuYW5ub3QuanNvbg==",
+    "reason": "none",
+    "component": -1
+  },
+  {
+    "name": ".gitignore",
+    "input_base64": "LmdpdGlnbm9yZQ==",
+    "reason": "none",
+    "component": -1
+  },
+  {
+    "name": "�",
+    "input_base64": "/w==",
+    "reason": "invalid_utf8",
+    "component": -1
+  },
+  {
+    "name": "é.md",
+    "input_base64": "ZcyBLm1k",
+    "reason": "not_nfc",
+    "component": -1
+  },
+  {
+    "name": "",
+    "input_base64": "",
+    "reason": "empty",
+    "component": -1
+  },
+  {
+    "name": "/a",
+    "input_base64": "L2E=",
+    "reason": "absolute",
+    "component": -1
+  },
+  {
+    "name": "a\\b",
+    "input_base64": "YVxi",
+    "reason": "backslash",
+    "component": -1
+  },
+  {
+    "name": "a//b",
+    "input_base64": "YS8vYg==",
+    "reason": "empty_component",
+    "component": 1
+  },
+  {
+    "name": "a/.",
+    "input_base64": "YS8u",
+    "reason": "dot_component",
+    "component": 1
+  },
+  {
+    "name": "a/..",
+    "input_base64": "YS8uLg==",
+    "reason": "traversal",
+    "component": 1
+  },
+  {
+    "name": "a/what?",
+    "input_base64": "YS93aGF0Pw==",
+    "reason": "illegal_char",
+    "component": 1
+  },
+  {
+    "name": "a/\u0000b",
+    "input_base64": "YS8AYg==",
+    "reason": "control_char",
+    "component": 1
+  },
+  {
+    "name": "a/b",
+    "input_base64": "YS/ChWI=",
+    "reason": "control_char",
+    "component": 1
+  },
+  {
+    "name": "a/ b",
+    "input_base64": "YS8gYg==",
+    "reason": "leading_space",
+    "component": 1
+  },
+  {
+    "name": "a/b.",
+    "input_base64": "YS9iLg==",
+    "reason": "trailing_dot_or_space",
+    "component": 1
+  },
+  {
+    "name": "a/b ",
+    "input_base64": "YS9iIA==",
+    "reason": "trailing_dot_or_space",
+    "component": 1
+  },
+  {
+    "name": "CON.txt",
+    "input_base64": "Q09OLnR4dA==",
+    "reason": "reserved_name",
+    "component": 0
+  },
+  {
+    "name": "COM¹.txt",
+    "input_base64": "Q09NwrkudHh0",
+    "reason": "reserved_name",
+    "component": 0
+  },
+  {
+    "name": "LPT³",
+    "input_base64": "TFBUwrM=",
+    "reason": "reserved_name",
+    "component": 0
+  },
+  {
+    "name": "nul.tar.gz",
+    "input_base64": "bnVsLnRhci5neg==",
+    "reason": "reserved_name",
+    "component": 0
+  },
+  {
+    "name": "COM0",
+    "input_base64": "Q09NMA==",
+    "reason": "none",
+    "component": -1
+  },
+  {
+    "name": "x?/..",
+    "input_base64": "eD8vLi4=",
+    "reason": "traversal",
+    "component": 1
+  },
+  {
+    "name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/y?",
+    "input_base64": "eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4L3k/",
+    "reason": "illegal_char",
+    "component": 1
+  },
+  {
+    "name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "input_base64": "YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE=",
+    "reason": "none",
+    "component": -1
+  },
+  {
+    "name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "input_base64": "YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFh",
+    "reason": "component_too_long",
+    "component": 0
+  },
+  {
+    "name": "éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé",
+    "input_base64": "w6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6k=",
+    "reason": "none",
+    "component": -1
+  },
+  {
+    "name": "ééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé",
+    "input_base64": "w6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqQ==",
+    "reason": "component_too_long",
+    "component": 0
+  },
+  {
+    "name": "a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/bc",
+    "input_base64": "YS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYmM=",
+    "reason": "none",
+    "component": -1
+  },
+  {
+    "name": "a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/b",
+    "input_base64": "YS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9hL2EvYS9i",
+    "reason": "path_too_long",
+    "component": -1
+  },
+  {
+    "name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.annot.json",
+    "input_base64": "eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4LmFubm90Lmpzb24=",
+    "reason": "none",
+    "component": -1
+  },
+  {
+    "name": "𐗉.md",
+    "input_base64": "8JCXksyHLm1k",
+    "reason": "none",
+    "component": -1
+  },
+  {
+    "name": "𑎃.md",
+    "input_base64": "8JGOgvCRj4kubWQ=",
+    "reason": "none",
+    "component": -1
+  },
+  {
+    "name": "𖄡.md",
+    "input_base64": "8JaEnvCWhJ4ubWQ=",
+    "reason": "none",
+    "component": -1
+  },
+  {
+    "name": "𖵨.md",
+    "input_base64": "8Ja1p/CWtacubWQ=",
+    "reason": "none",
+    "component": -1
+  },
+  {
+    "name": "x́́́́́́́́́́́́́́́́́́́́́́́́́́́́́́́",
+    "input_base64": "eMyBzIHMgcyBzIHMgcyBzIHMgcyBzIHMgcyBzIHMgcyBzIHMgcyBzIHMgcyBzIHMgcyBzIHMgcyBzIHMgcyB",
+    "reason": "not_nfc",
+    "component": -1
+  },
+  {
+    "name": "ᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡ",
+    "input_base64": "4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh",
+    "reason": "not_nfc",
+    "component": -1
+  },
+  {
+    "name": "xﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞ",
+    "input_base64": "eO++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++ng==",
+    "reason": "not_nfc",
+    "component": -1
+  },
+  {
+    "name": "aࢗ̀̕",
+    "input_base64": "YcyV4KKXzIA=",
+    "reason": "none",
+    "component": -1
+  },
+  {
+    "name": "CONIN$",
+    "input_base64": "Q09OSU4k",
+    "reason": "reserved_name",
+    "component": 0
+  },
+  {
+    "name": "conout$.txt",
+    "input_base64": "Y29ub3V0JC50eHQ=",
+    "reason": "reserved_name",
+    "component": 0
+  },
+  {
+    "name": "CON .txt",
+    "input_base64": "Q09OIC50eHQ=",
+    "reason": "reserved_name",
+    "component": 0
+  },
+  {
+    "name": "COM¹ .md",
+    "input_base64": "Q09NwrkgLm1k",
+    "reason": "reserved_name",
+    "component": 0
+  },
+  {
+    "name": "LPT1 .pdf",
+    "input_base64": "TFBUMSAucGRm",
+    "reason": "reserved_name",
+    "component": 0
+  }
+]

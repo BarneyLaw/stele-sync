@@ -58,7 +58,7 @@ func TestComponentTruncates(t *testing.T) {
 	}
 }
 
-func TestPath(t *testing.T) {
+func TestSanitizePath(t *testing.T) {
 	cases := []struct {
 		name string
 		in   string
@@ -76,7 +76,7 @@ func TestPath(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			got, err := Path(c.in)
+			got, err := SanitizePath(c.in)
 			if c.err {
 				if err == nil {
 					t.Fatalf("want error, got %q", got)
@@ -188,7 +188,7 @@ func TestFallback(t *testing.T) {
 		if got != c.want {
 			t.Fatalf("Fallback(%q) = %q want %q", c.orig, got, c.want)
 		}
-		if _, err := Path(got); err != nil {
+		if _, err := SanitizePath(got); err != nil {
 			t.Fatalf("fallback %q is not itself portable: %v", got, err)
 		}
 	}

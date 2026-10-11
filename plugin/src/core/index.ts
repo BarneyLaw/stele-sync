@@ -1,2 +1,2 @@
-/** Phase 2 pure core starts at M13; this module performs no I/O. */
+/** Pure M3 path, classification and local safety rules. Transport wiring is M13. */
 export {};

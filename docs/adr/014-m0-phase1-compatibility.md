@@ -47,3 +47,8 @@ M0 does not claim phase 2 correctness: fuzzing starts in M1–M4, the engine sim
 in M7, and server end-to-end tests in M14. Their tasks explicitly report deferral
 until implementations exist. All CI jobs run on every PR for now, so required
 checks cannot disappear through workflow path filters.
+
+M3 retires the exact `internal/core/vpath/portable.go` and `portable_test.go`
+exceptions after preserving the inherited behavior, removing mutable normalization
+state and addressing their lint findings. Other inherited exceptions remain owned
+by their corresponding milestones.

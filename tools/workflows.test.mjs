@@ -42,7 +42,7 @@ test('workflow result script rejects failed/cancelled children and permits only 
       for (const child of ['success', 'failure', 'cancelled', 'skipped']) {
         const expectedFuzz = hasFuzz === 'true' ? 'success' : 'skipped';
         for (const failingJob of ['CHECKS', 'FUZZ']) {
-          const env = { ...process.env, DISCOVERY: discovery, HAS_CHECKS: hasChecks, HAS_FUZZ: hasFuzz,
+          const env = { ...process.env, FILESYSTEM: 'success', DISCOVERY: discovery, HAS_CHECKS: hasChecks, HAS_FUZZ: hasFuzz,
             CHECKS: hasChecks === 'true' ? 'success' : 'skipped', FUZZ: expectedFuzz, [failingJob]: child };
           const result = spawnSync(bash, ['-e', '-c', script], { env, encoding: 'utf8' });
           assert.ifError(result.error);
@@ -53,4 +53,29 @@ test('workflow result script rejects failed/cancelled children and permits only 
       }
     }
   }
+});
+
+
+test('actual NTFS collision probe is mandatory inside the stable core gate', () => {
+  assert.match(core, /runs-on: windows-latest/);
+  assert.match(core, /M3_FS_PROBE: "1"/);
+  assert.match(core, /FileSystem -ne 'NTFS'/);
+  assert.match(core, /go test -race -count=1 -v .*TestFilesystemCollisions/);
+  assert.match(core, /needs: \[discover, checks, fuzz, namespace-filesystem\]/);
+  const section = core.slice(core.indexOf('      - name: Require every discovered check to pass'));
+  const script = section.match(/        run: \|\n([\s\S]+)$/)[1].replace(/^          /gm, '');
+  const bash = process.platform === 'win32' ? 'C:/Program Files/Git/bin/bash.exe' : 'bash';
+  for (const result of ['failure', 'cancelled', 'skipped', '']) {
+    const outcome = spawnSync(bash, ['-e', '-c', script], { env: { ...process.env, FILESYSTEM: result,
+      DISCOVERY: 'success', CHECKS: 'success', FUZZ: 'success', HAS_CHECKS: 'true', HAS_FUZZ: 'true' } });
+    assert.notEqual(outcome.status, 0);
+  }
+});
+
+test('namespace contracts join regeneration, drift tracking and the plugin contract gate', () => {
+  const tasks = readFileSync(new URL('./tasks.mjs', import.meta.url), 'utf8');
+  assert.match(tasks, /namespaceFixtures\(true\)/);
+  for (const name of ['TestParseFixtures', 'TestClassifyFixtures', 'TestRulesFixtures', 'src/namespace.test.ts']) assert(tasks.includes(name));
+  assert.match(tasks, /namespaceContracts.flatMap/);
+  assert.match(tasks, /namespace-acceptance/);
 });
