@@ -88,7 +88,7 @@ linters:
     rules:
       # Mechanical phase 1 promotion only: exact inherited filenames, ADR 014.
       # New files (including new files in these packages) get every lint rule.
-      - path: '^(cmd/stele-pull/(main|main_test|objectreader)|cmd/stele-pull-worker/main|internal/canvas/(client|client_test|limiter|types)|internal/core/policy/(policy|policy_test)|internal/core/vpath/(portable|portable_test)|internal/gc/(gc|gc_test)|internal/lease/(lease|lease_test)|internal/manifest/(manifest|manifest_test|contract_test)|internal/obs/metrics|internal/plan/(plan|plan_test)|internal/run/(run|run_test|summary|s3_integration_test)|internal/scope/(scope|scope_test)|internal/storage/objects/(fs|logged|memory|open|s3|s3_integration_test|store|store_test))\.go$'
+      - path: '^(cmd/stele-pull/(main|main_test|objectreader)|cmd/stele-pull-worker/main|internal/canvas/(client|client_test|limiter|types)|internal/core/policy/(policy|policy_test)|internal/gc/(gc|gc_test)|internal/lease/(lease|lease_test)|internal/manifest/(manifest|manifest_test|contract_test)|internal/obs/metrics|internal/plan/(plan|plan_test)|internal/run/(run|run_test|summary|s3_integration_test)|internal/scope/(scope|scope_test)|internal/storage/objects/(fs|logged|memory|open|s3|s3_integration_test|store|store_test))\.go$'
         linters: [errcheck, revive, errorlint, wrapcheck, bodyclose, gosec, noctx, forbidigo, contextcheck]
       - path: '^internal/storage/objects/s3\.go$'
         text: 'QF1001:'

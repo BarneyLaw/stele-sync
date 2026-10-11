@@ -15,8 +15,10 @@ import (
 )
 
 const (
+	// MaxComponent bounds phase 1 Canvas components in UTF-8 bytes.
 	MaxComponent = 120
-	MaxTotal     = 400
+	// MaxTotal bounds phase 1 Canvas paths in UTF-8 bytes.
+	MaxTotal = 400
 
 	// maxExt bounds what counts as an extension worth preserving on
 	// truncation. "lecture.pdf" has one; "notes.from the tutor about week 3"
@@ -24,22 +26,17 @@ const (
 	maxExt = 16
 )
 
-// Normalize is applied to every component before sanitisation.
-//
-// macOS hands you NFD, Windows and Linux hand you NFC, and iOS is inconsistent.
-// Without normalisation the same file becomes two different paths depending on
-// which device the worker happened to run on. Left as a variable so tests can
-// swap it.
-var Normalize = norm.NFC.String
+// NFC returns the canonical wire spelling without mutable package state.
+func NFC(s string) string { return norm.NFC.String(s) }
 
-// reserved holds Windows device names. Illegal as a whole component with or
-// without an extension: "CON", "con.txt" and "CON.PDF" all collide.
-var reserved = map[string]bool{
-	"CON": true, "PRN": true, "AUX": true, "NUL": true,
-	"COM1": true, "COM2": true, "COM3": true, "COM4": true, "COM5": true,
-	"COM6": true, "COM7": true, "COM8": true, "COM9": true,
-	"LPT1": true, "LPT2": true, "LPT3": true, "LPT4": true, "LPT5": true,
-	"LPT6": true, "LPT7": true, "LPT8": true, "LPT9": true,
+// reservedName preserves phase 1's published device-name table.
+func reservedName(s string) bool {
+	switch strings.ToUpper(stem(s)) {
+	case "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9":
+		return true
+	default:
+		return false
+	}
 }
 
 // illegal on Windows, awkward on iOS. Slashes are handled separately because
@@ -48,32 +45,14 @@ const illegal = `<>:"|?*`
 
 // Component sanitises a single path segment.
 func Component(s string) (string, error) {
-	s = Normalize(s)
+	s = NFC(s)
 
-	var b strings.Builder
-	for _, r := range s {
-		switch {
-		case r == '/' || r == '\\':
-			b.WriteRune('-')
-		case strings.ContainsRune(illegal, r):
-			b.WriteRune('-')
-		case unicode.IsControl(r):
-			// dropped
-		default:
-			b.WriteRune(r)
-		}
-	}
-
-	// Windows silently strips trailing dots and spaces, turning "lecture ."
-	// into "lecture" behind your back. Do it ourselves so the manifest matches
-	// what actually lands on disk.
-	out := strings.TrimRight(b.String(), ". ")
-	out = strings.TrimLeft(out, " ")
+	out := characterPass(s)
 
 	if out == "" || out == "." || out == ".." {
 		return "", fmt.Errorf("portable: component %q is empty after sanitisation", s)
 	}
-	if reserved[strings.ToUpper(stem(out))] {
+	if reservedName(out) {
 		out = "_" + out
 	}
 	if len(out) > MaxComponent {
@@ -85,9 +64,34 @@ func Component(s string) (string, error) {
 	return out, nil
 }
 
-// Path sanitises each component of a slash-separated path and refuses anything
+// characterPass is shared with strict parsing; keep legacy output unchanged.
+func characterPass(s string) string {
+	var b strings.Builder
+	for _, r := range s {
+		switch {
+		case r == '/' || r == '\\':
+			_, _ = b.WriteRune('-')
+		case strings.ContainsRune(illegal, r):
+			_, _ = b.WriteRune('-')
+		case unicode.IsControl(r):
+			// dropped
+		default:
+			_, _ = b.WriteRune(r)
+		}
+	}
+
+	// Windows silently strips trailing dots and spaces, turning "lecture ."
+	// into "lecture" behind your back. Do it ourselves so the manifest matches
+	// what actually lands on disk.
+	out := strings.TrimRight(b.String(), ". ")
+	out = strings.TrimLeft(out, " ")
+
+	return out
+}
+
+// SanitizePath sanitises each component of a slash-separated path and refuses anything
 // that tries to escape the vault root.
-func Path(p string) (string, error) {
+func SanitizePath(p string) (string, error) {
 	p = strings.ReplaceAll(p, "\\", "/")
 	if strings.HasPrefix(p, "/") {
 		return "", fmt.Errorf("portable: absolute path %q", p)
@@ -143,12 +147,10 @@ func Disambiguate(p string, canvasID int64) string {
 	return dir + stemPart + suffix + ext
 }
 
-// CollisionKey is the identity two paths share if they would land on the same
-// file on a case-insensitive filesystem (Windows, default macOS). Vaults live
-// on those, so "Slides.pdf" and "slides.pdf" are a collision even though the
-// strings differ.
+// CollisionKey is the frozen phase 1 manifest key. It is not the phase 2
+// filesystem uniqueness key; never store it in files.path_key.
 func CollisionKey(p string) string {
-	return strings.ToLower(Normalize(p))
+	return strings.ToLower(NFC(p))
 }
 
 // Fallback is a portable stand-in name for a Canvas file whose real name
