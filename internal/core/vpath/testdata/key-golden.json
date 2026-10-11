@@ -1,0 +1,86 @@
+{
+  "note": "Hand-written comparison oracle; changing this file requires an explicit key scheme review. Names may be non-NFC to exercise filesystem normalization.",
+  "scheme": "v1:upper=15.0.0:fold=15.0.0:norm=15.0.0",
+  "pairs": [
+    {
+      "a": "ß.md",
+      "b": "SS.md",
+      "equal": true
+    },
+    {
+      "a": "ẞ.md",
+      "b": "ss.md",
+      "equal": true
+    },
+    {
+      "a": "ı.md",
+      "b": "i.md",
+      "equal": true
+    },
+    {
+      "a": "İ.md",
+      "b": "i.md",
+      "equal": false
+    },
+    {
+      "a": "İ.md",
+      "b": "i̇.md",
+      "equal": true
+    },
+    {
+      "a": "ſ.md",
+      "b": "s.md",
+      "equal": true
+    },
+    {
+      "a": "K.md",
+      "b": "k.md",
+      "equal": true
+    },
+    {
+      "a": "ﬁ.md",
+      "b": "fi.md",
+      "equal": true
+    },
+    {
+      "a": "é.md",
+      "b": "é.md",
+      "equal": true
+    },
+    {
+      "a": "Σ.md",
+      "b": "σ.md",
+      "equal": true
+    },
+    {
+      "a": "Σ.md",
+      "b": "ς.md",
+      "equal": true
+    },
+    {
+      "a": "Ꭰ.md",
+      "b": "ꭰ.md",
+      "equal": true
+    },
+    {
+      "a": "ᏸ.md",
+      "b": "Ᏸ.md",
+      "equal": true
+    },
+    {
+      "a": "ᾀ.md",
+      "b": "ἀι.md",
+      "equal": true
+    },
+    {
+      "a": "Canvas/x.pdf.md",
+      "b": "canvas/X.PDF.md",
+      "equal": true
+    },
+    {
+      "a": "a.md",
+      "b": "á.md",
+      "equal": false
+    }
+  ]
+}
