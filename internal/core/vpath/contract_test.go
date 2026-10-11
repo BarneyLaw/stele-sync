@@ -13,6 +13,7 @@ import (
 	"unicode/utf8"
 
 	"golang.org/x/text/unicode/norm"
+	"golang.org/x/text/unicode/rangetable"
 )
 
 var updatePaths = flag.Bool("update-vpath", false, "regenerate path legality fixtures")
@@ -102,10 +103,14 @@ func TestKeyGolden(t *testing.T) {
 // knows. Newer JS normalizers treat older-unassigned scalars as barriers, matching
 // Go, rather than introducing new decompositions/combining classes/compositions.
 func TestNormalizationFixture(t *testing.T) {
+	assignedTable := rangetable.Assigned(WireUnicodeVersion)
+	if assignedTable == nil {
+		t.Fatal("wire Unicode assignment table is unavailable")
+	}
 	var ranges [][2]int
 	start := -1
 	for r := rune(0); r <= utf8.MaxRune+1; r++ {
-		assigned := r <= utf8.MaxRune && unicode.In(r, unicode.L, unicode.M, unicode.N, unicode.P, unicode.S, unicode.Z, unicode.Cc, unicode.Cf, unicode.Co, unicode.Cs)
+		assigned := r <= utf8.MaxRune && unicode.Is(assignedTable, r)
 		if assigned && start < 0 {
 			start = int(r)
 		}
@@ -114,12 +119,9 @@ func TestNormalizationFixture(t *testing.T) {
 			start = -1
 		}
 	}
-	if norm.Version != unicode.Version {
-		t.Fatal("normalization and assignment table versions must match")
-	}
 	var stream [][4]int
 	for r := rune(0); r <= utf8.MaxRune; r++ {
-		if !utf8.ValidRune(r) {
+		if !utf8.ValidRune(r) || !unicode.Is(assignedTable, r) {
 			continue
 		}
 		decomposition := []rune(norm.NFKD.String(string(r)))
@@ -164,7 +166,7 @@ func TestNormalizationFixture(t *testing.T) {
 		Ranges  [][2]int `json:"assigned_ranges"`
 		Stream  [][4]int `json:"stream_ranges"`
 		Samples []sample `json:"samples"`
-	}{unicode.Version, ranges, stream, samples}
+	}{WireUnicodeVersion, ranges, stream, samples}
 	data, e := json.Marshal(fixture)
 	if e != nil {
 		t.Fatal(e)

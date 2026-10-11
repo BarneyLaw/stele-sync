@@ -152,7 +152,7 @@ func TestPropKeyIdempotent(t *testing.T) {
 func TestPropKeyCoarserThanFold(t *testing.T) {
 	rapid.Check(t, func(t *rapid.T) {
 		s := NFC(rapid.String().Draw(t, "s"))
-		f := NFC(cases.Fold().String(norm.NFD.String(s)))
+		f := norm.NFC.String(cases.Fold().String(norm.NFD.String(s)))
 		if pathKey(s) != pathKey(f) {
 			t.Fatalf("%q != fold %q", s, f)
 		}
@@ -161,7 +161,7 @@ func TestPropKeyCoarserThanFold(t *testing.T) {
 func TestPropKeyCoarserThanUpper(t *testing.T) {
 	rapid.Check(t, func(t *rapid.T) {
 		s := NFC(rapid.String().Draw(t, "s"))
-		u := NFC(strings.Map(unicode.ToUpper, s))
+		u := norm.NFC.String(strings.Map(unicode.ToUpper, s))
 		if pathKey(s) != pathKey(u) {
 			t.Fatalf("%q != upper %q", s, u)
 		}

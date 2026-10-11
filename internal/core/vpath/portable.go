@@ -12,6 +12,7 @@ import (
 	"unicode/utf8"
 
 	"golang.org/x/text/unicode/norm"
+	"golang.org/x/text/unicode/rangetable"
 )
 
 const (
@@ -26,8 +27,29 @@ const (
 	maxExt = 16
 )
 
-// NFC returns the canonical wire spelling without mutable package state.
-func NFC(s string) string { return norm.NFC.String(s) }
+// WireUnicodeVersion pins path spelling independently of server key tables.
+// Keep existing Canvas manifests and the minimum client repertoire unchanged.
+const WireUnicodeVersion = "15.0.0"
+
+// NFC returns Unicode-15 wire spelling using normalization process stability:
+// scalars unassigned in that version are inert boundaries (UAX #15 section 11.3).
+func NFC(s string) string {
+	assigned := rangetable.Assigned(WireUnicodeVersion)
+	var b strings.Builder
+	start := 0
+	for i, r := range s {
+		if !unicode.Is(assigned, r) {
+			b.WriteString(norm.NFC.String(s[start:i]))
+			b.WriteRune(r)
+			start = i + utf8.RuneLen(r)
+		}
+	}
+	if start == 0 {
+		return norm.NFC.String(s)
+	}
+	b.WriteString(norm.NFC.String(s[start:]))
+	return b.String()
+}
 
 // reservedName preserves phase 1's published device-name table.
 func reservedName(s string) bool {
@@ -150,7 +172,14 @@ func Disambiguate(p string, canvasID int64) string {
 // CollisionKey is the frozen phase 1 manifest key. It is not the phase 2
 // filesystem uniqueness key; never store it in files.path_key.
 func CollisionKey(p string) string {
-	return strings.ToLower(NFC(p))
+	assigned := rangetable.Assigned(WireUnicodeVersion)
+	return strings.Map(func(r rune) rune {
+		lower := unicode.ToLower(r)
+		if !unicode.Is(assigned, r) || !unicode.Is(assigned, lower) {
+			return r
+		}
+		return lower
+	}, NFC(p))
 }
 
 // Fallback is a portable stand-in name for a Canvas file whose real name

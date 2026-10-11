@@ -87,7 +87,7 @@ func Parse(s string) (Path, error) {
 	switch {
 	case !utf8.ValidString(s):
 		return fail(InvalidUTF8, -1)
-	case !norm.NFC.IsNormalString(s):
+	case NFC(s) != s:
 		return fail(NotNFC, -1)
 	case s == "":
 		return fail(Empty, -1)
@@ -176,7 +176,7 @@ func (p Path) IsZero() bool { return p.s == "" }
 // Key returns the versioned filesystem uniqueness key.
 func (p Path) Key() Key { return pathKey(p.s) }
 func pathKey(s string) Key {
-	return Key(NFC(cases.Fold().String(norm.NFD.String(strings.Map(unicode.ToUpper, s)))))
+	return Key(norm.NFC.String(cases.Fold().String(norm.NFD.String(strings.Map(unicode.ToUpper, s)))))
 }
 
 // KeyScheme pins algorithm and all Unicode tables, including Go's simple uppercase.
