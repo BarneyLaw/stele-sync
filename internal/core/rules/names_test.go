@@ -17,7 +17,12 @@ import (
 func TestPropFreeName(t *testing.T) {
 	rapid.Check(t, func(t *rapid.T) {
 		n := rapid.IntRange(0, 8).Draw(t, "occupied")
-		stem := rapid.StringMatching(`[a-zé]{1,60}`).Draw(t, "stem")
+		// FreeName accepts an already validated Path. Alphabetic strings can
+		// still be reserved Windows names, e.g. the CI counterexample "aux".
+		stem := rapid.StringMatching(`[a-zé]{1,60}`).Filter(func(s string) bool {
+			_, err := vpath.Parse(s)
+			return err == nil
+		}).Draw(t, "stem")
 		ext := rapid.SampledFrom([]string{".md", ".PDF", ".annot.json", ""}).Draw(t, "ext")
 		p, e := vpath.Parse(stem + ext)
 		if e != nil {
