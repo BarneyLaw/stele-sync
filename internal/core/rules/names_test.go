@@ -126,3 +126,9 @@ func TestGroupNumbering(t *testing.T) {
 		t.Fatal("not pdf")
 	}
 }
+
+func TestPairingUsesClassifierSuffix(t *testing.T) {
+	if _, ok := PDFOf(path(t, "x.pdf.annot.jſon")); ok {
+		t.Fatal("Unicode folding must not recognize a non-ASCII sidecar suffix")
+	}
+}

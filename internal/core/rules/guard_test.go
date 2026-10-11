@@ -76,7 +76,7 @@ func TestPropDeleteGuard(t *testing.T) {
 			before := g
 			next, d := g.Check(now, Device, batch, live, false)
 			if d == NeedsConfirm {
-				if !reflect.DeepEqual(before, next) {
+				if before != next {
 					t.Fatal("reject mutated")
 				}
 				continue
