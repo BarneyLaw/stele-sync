@@ -1,0 +1,1580 @@
+[
+  {
+    "path": "a.md",
+    "size": -1,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.md",
+    "size": 0,
+    "class": "A",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.md",
+    "size": 8388608,
+    "class": "A",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.md",
+    "size": 8388609,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.md",
+    "size": 16777216,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.md",
+    "size": 16777217,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.MDX",
+    "size": -1,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.MDX",
+    "size": 0,
+    "class": "A",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.MDX",
+    "size": 8388608,
+    "class": "A",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.MDX",
+    "size": 8388609,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.MDX",
+    "size": 16777216,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.MDX",
+    "size": 16777217,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.txt",
+    "size": -1,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.txt",
+    "size": 0,
+    "class": "A",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.txt",
+    "size": 8388608,
+    "class": "A",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.txt",
+    "size": 8388609,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.txt",
+    "size": 16777216,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.txt",
+    "size": 16777217,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.pdf.annot.json",
+    "size": -1,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.pdf.annot.json",
+    "size": 0,
+    "class": "B",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.pdf.annot.json",
+    "size": 8388608,
+    "class": "B",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.pdf.annot.json",
+    "size": 8388609,
+    "class": "B",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.pdf.annot.json",
+    "size": 16777216,
+    "class": "B",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.pdf.annot.json",
+    "size": 16777217,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.PDF.ANNOT.JSON",
+    "size": -1,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.PDF.ANNOT.JSON",
+    "size": 0,
+    "class": "B",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.PDF.ANNOT.JSON",
+    "size": 8388608,
+    "class": "B",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.PDF.ANNOT.JSON",
+    "size": 8388609,
+    "class": "B",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.PDF.ANNOT.JSON",
+    "size": 16777216,
+    "class": "B",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.PDF.ANNOT.JSON",
+    "size": 16777217,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": ".pdf.annot.json",
+    "size": -1,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": ".pdf.annot.json",
+    "size": 0,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": ".pdf.annot.json",
+    "size": 8388608,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": ".pdf.annot.json",
+    "size": 8388609,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": ".pdf.annot.json",
+    "size": 16777216,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": ".pdf.annot.json",
+    "size": 16777217,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "x.annot.json",
+    "size": -1,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "x.annot.json",
+    "size": 0,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "x.annot.json",
+    "size": 8388608,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "x.annot.json",
+    "size": 8388609,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "x.annot.json",
+    "size": 16777216,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "x.annot.json",
+    "size": 16777217,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.pdf (conflict x).annot.json",
+    "size": -1,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.pdf (conflict x).annot.json",
+    "size": 0,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.pdf (conflict x).annot.json",
+    "size": 8388608,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.pdf (conflict x).annot.json",
+    "size": 8388609,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.pdf (conflict x).annot.json",
+    "size": 16777216,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.pdf (conflict x).annot.json",
+    "size": 16777217,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "x.json",
+    "size": -1,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "x.json",
+    "size": 0,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "x.json",
+    "size": 8388608,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "x.json",
+    "size": 8388609,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "x.json",
+    "size": 16777216,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "x.json",
+    "size": 16777217,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "x.pdf",
+    "size": -1,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "x.pdf",
+    "size": 0,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "x.pdf",
+    "size": 8388608,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "x.pdf",
+    "size": 8388609,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "x.pdf",
+    "size": 16777216,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "x.pdf",
+    "size": 16777217,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.json",
+    "size": 1,
+    "class": "A",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx",
+        "json"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.pdf.annot.json",
+    "size": 1,
+    "class": "B",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx",
+        "json"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "path": "a.pdf (conflict x).annot.json",
+    "size": 1,
+    "class": "C",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx",
+        "json"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  }
+]

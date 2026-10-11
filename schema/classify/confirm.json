@@ -1,0 +1,1374 @@
+[
+  {
+    "name": "text",
+    "expected": "A",
+    "content_base64": "",
+    "repeat": 1,
+    "class": "A",
+    "demotion": "kept",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "text",
+    "expected": "A",
+    "content_base64": "aGVsbG8NCg==",
+    "repeat": 1,
+    "class": "A",
+    "demotion": "kept",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "text",
+    "expected": "A",
+    "content_base64": "77u/YQ==",
+    "repeat": 1,
+    "class": "A",
+    "demotion": "kept",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "text",
+    "expected": "A",
+    "content_base64": "eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4AA==",
+    "repeat": 1,
+    "class": "C",
+    "demotion": "contains_nul",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "text",
+    "expected": "A",
+    "content_base64": "Y3V0ww==",
+    "repeat": 1,
+    "class": "C",
+    "demotion": "invalid_utf8",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "oversized",
+    "expected": "A",
+    "content_base64": "eA==",
+    "repeat": 16777217,
+    "class": "C",
+    "demotion": "too_large",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "oversized",
+    "expected": "B",
+    "content_base64": "eA==",
+    "repeat": 16777217,
+    "class": "C",
+    "demotion": "too_large",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "oversized",
+    "expected": "C",
+    "content_base64": "eA==",
+    "repeat": 16777217,
+    "class": "C",
+    "demotion": "kept",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "sidecar",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbXX0=",
+    "repeat": 1,
+    "class": "B",
+    "demotion": "kept",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "sidecar",
+    "expected": "B",
+    "content_base64": "e30=",
+    "repeat": 1,
+    "class": "C",
+    "demotion": "not_freedraw",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "sidecar",
+    "expected": "B",
+    "content_base64": "bnVsbA==",
+    "repeat": 1,
+    "class": "C",
+    "demotion": "not_freedraw",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "sidecar",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpudWxsfQ==",
+    "repeat": 1,
+    "class": "C",
+    "demotion": "not_freedraw",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "sidecar",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbXSwic3Ryb2tlcyI6W119",
+    "repeat": 1,
+    "class": "C",
+    "demotion": "not_freedraw",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "sidecar",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbeyJpZCI6ImEifSx7ImlkIjoiYSJ9XX0=",
+    "repeat": 1,
+    "class": "C",
+    "demotion": "not_freedraw",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "sidecar",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbeyJpZCI6IiJ9XX0=",
+    "repeat": 1,
+    "class": "C",
+    "demotion": "not_freedraw",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "sidecar",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbeyJpZCI6MX1dfQ==",
+    "repeat": 1,
+    "class": "C",
+    "demotion": "not_freedraw",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "sidecar",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbeyJpZCI6Ilx1ZDgwMCJ9XX0=",
+    "repeat": 1,
+    "class": "C",
+    "demotion": "not_freedraw",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "sidecar",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbXSwieCI6eyJhIjoxLCJcdTAwNjEiOjJ9fQ==",
+    "repeat": 1,
+    "class": "C",
+    "demotion": "not_freedraw",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "sidecar",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbXSwieCI6MWU5OTl9",
+    "repeat": 1,
+    "class": "B",
+    "demotion": "kept",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "sidecar",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbXSwiZGVsZXRlZFBkZlBhZ2VzIjpbMSwxXX0=",
+    "repeat": 1,
+    "class": "C",
+    "demotion": "not_freedraw",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "sidecar",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbXSwiZGVsZXRlZFBkZlBhZ2VzIjpbMS4wXX0=",
+    "repeat": 1,
+    "class": "C",
+    "demotion": "not_freedraw",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "sidecar",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbXSwiZGVsZXRlZFBkZlBhZ2VzIjpbMjE0NzQ4MzY0OF19",
+    "repeat": 1,
+    "class": "C",
+    "demotion": "not_freedraw",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "sidecar",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbXSwiZGVsZXRlZFBkZlBhZ2VzIjpbMV0sInBlcm1hbmVudGx5RGVsZXRlZFBkZlBhZ2VzIjpbMV19",
+    "repeat": 1,
+    "class": "B",
+    "demotion": "kept",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "sidecar",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbXSwicGRmUGFnZVRlbXBsYXRlcyI6W3sicGFnZSI6MX1dfQ==",
+    "repeat": 1,
+    "class": "B",
+    "demotion": "kept",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "sidecar",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbXSwiYXBwZW5kZWRQYWdlcyI6W119",
+    "repeat": 1,
+    "class": "B",
+    "demotion": "kept",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "sidecar",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbXSwicmVtb3ZlZFBhZ2VzIjp7fX0=",
+    "repeat": 1,
+    "class": "C",
+    "demotion": "not_freedraw",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "sidecar",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbXSwiZnV0dXJlIjoiPCY+In0=",
+    "repeat": 1,
+    "class": "B",
+    "demotion": "kept",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "sidecar",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbXSwiZnV0dXJlIjoiXHUyMDI4XHUyMDI5In0=",
+    "repeat": 1,
+    "class": "B",
+    "demotion": "kept",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "sidecar",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbXSwiZnV0dXJlIjoiXHVkODNkXHVkZTAwIn0=",
+    "repeat": 1,
+    "class": "B",
+    "demotion": "kept",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "annotation-budget",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbXX0=",
+    "repeat": 1,
+    "class": "C",
+    "demotion": "not_freedraw",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 64,
+      "Annot": {
+        "MaxBytes": 64,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "annotation-budget",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbeyJpZCI6ImFiYyJ9LHsiaWQiOiJiIn1dfQ==",
+    "repeat": 1,
+    "class": "C",
+    "demotion": "not_freedraw",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 64,
+      "Annot": {
+        "MaxBytes": 64,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "annotation-budget",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbXSwiZnV0dXJlIjpbWzBdXX0=",
+    "repeat": 1,
+    "class": "C",
+    "demotion": "not_freedraw",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 64,
+      "Annot": {
+        "MaxBytes": 64,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "annotation-budget",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbeyJpZCI6ImEifV0sImRlbGV0ZWRQZGZQYWdlcyI6WzFdfQ==",
+    "repeat": 1,
+    "class": "C",
+    "demotion": "not_freedraw",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 64,
+      "Annot": {
+        "MaxBytes": 64,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "annotation-budget",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbXX0=",
+    "repeat": 1,
+    "class": "B",
+    "demotion": "kept",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 2,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "annotation-budget",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbeyJpZCI6ImFiYyJ9LHsiaWQiOiJiIn1dfQ==",
+    "repeat": 1,
+    "class": "C",
+    "demotion": "not_freedraw",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 2,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "annotation-budget",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbXSwiZnV0dXJlIjpbWzBdXX0=",
+    "repeat": 1,
+    "class": "C",
+    "demotion": "not_freedraw",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 2,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "annotation-budget",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbeyJpZCI6ImEifV0sImRlbGV0ZWRQZGZQYWdlcyI6WzFdfQ==",
+    "repeat": 1,
+    "class": "C",
+    "demotion": "not_freedraw",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 2,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "annotation-budget",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbXX0=",
+    "repeat": 1,
+    "class": "B",
+    "demotion": "kept",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 3
+      }
+    }
+  },
+  {
+    "name": "annotation-budget",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbeyJpZCI6ImFiYyJ9LHsiaWQiOiJiIn1dfQ==",
+    "repeat": 1,
+    "class": "C",
+    "demotion": "not_freedraw",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 3
+      }
+    }
+  },
+  {
+    "name": "annotation-budget",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbXSwiZnV0dXJlIjpbWzBdXX0=",
+    "repeat": 1,
+    "class": "C",
+    "demotion": "not_freedraw",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 3
+      }
+    }
+  },
+  {
+    "name": "annotation-budget",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbeyJpZCI6ImEifV0sImRlbGV0ZWRQZGZQYWdlcyI6WzFdfQ==",
+    "repeat": 1,
+    "class": "C",
+    "demotion": "not_freedraw",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 3
+      }
+    }
+  },
+  {
+    "name": "annotation-budget",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbXX0=",
+    "repeat": 1,
+    "class": "B",
+    "demotion": "kept",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 1,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "annotation-budget",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbeyJpZCI6ImFiYyJ9LHsiaWQiOiJiIn1dfQ==",
+    "repeat": 1,
+    "class": "C",
+    "demotion": "not_freedraw",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 1,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "annotation-budget",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbXSwiZnV0dXJlIjpbWzBdXX0=",
+    "repeat": 1,
+    "class": "B",
+    "demotion": "kept",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 1,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "annotation-budget",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbeyJpZCI6ImEifV0sImRlbGV0ZWRQZGZQYWdlcyI6WzFdfQ==",
+    "repeat": 1,
+    "class": "C",
+    "demotion": "not_freedraw",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 1,
+        "MaxIDBytes": 128,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "annotation-budget",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbXX0=",
+    "repeat": 1,
+    "class": "B",
+    "demotion": "kept",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 1,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "annotation-budget",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbeyJpZCI6ImFiYyJ9LHsiaWQiOiJiIn1dfQ==",
+    "repeat": 1,
+    "class": "C",
+    "demotion": "not_freedraw",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 1,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "annotation-budget",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbXSwiZnV0dXJlIjpbWzBdXX0=",
+    "repeat": 1,
+    "class": "B",
+    "demotion": "kept",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 1,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  },
+  {
+    "name": "annotation-budget",
+    "expected": "B",
+    "content_base64": "eyJzdHJva2VzIjpbeyJpZCI6ImEifV0sImRlbGV0ZWRQZGZQYWdlcyI6WzFdfQ==",
+    "repeat": 1,
+    "class": "B",
+    "demotion": "kept",
+    "config": {
+      "TextExts": [
+        "md",
+        "txt",
+        "mdx"
+      ],
+      "MaxText": 8388608,
+      "MaxSidecar": 16777216,
+      "Annot": {
+        "MaxBytes": 16777216,
+        "MaxElements": 200000,
+        "MaxIDBytes": 1,
+        "MaxOpBytes": 1048576,
+        "MaxStateBytes": 67108864,
+        "MaxOps": 10000,
+        "MaxTombstones": 200000,
+        "MaxDepth": 64,
+        "MaxNodes": 2000000
+      }
+    }
+  }
+]

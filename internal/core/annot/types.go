@@ -83,6 +83,11 @@ func DefaultLimits() Limits {
 	return Limits{MaxBytes: 16 << 20, MaxElements: 200000, MaxIDBytes: 128,
 		MaxOpBytes: 1 << 20, MaxStateBytes: 64 << 20, MaxOps: 10000, MaxTombstones: 200000, MaxDepth: 64, MaxNodes: 2000000}
 }
+
+// Validate checks the configuration without reading a sidecar. Optional zero
+// limits retain their defaults, as in Parse.
+func (l Limits) Validate() error { _, err := l.normalized(); return err }
+
 func (l Limits) normalized() (Limits, error) {
 	if l.MaxBytes <= 0 || l.MaxElements <= 0 || l.MaxIDBytes <= 0 {
 		return Limits{}, ErrInvalidLimits
