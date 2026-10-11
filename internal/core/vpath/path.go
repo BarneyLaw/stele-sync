@@ -146,11 +146,12 @@ func characterReason(s string) Reason {
 // The strict API also excludes Microsoft's superscript device aliases, which
 // phase 1 omitted. Legacy sanitization remains byte-for-byte compatible.
 func deviceReservedName(s string) bool {
+	s = strings.TrimRight(stem(s), " ")
 	if reservedName(s) {
 		return true
 	}
 	switch strings.ToUpper(stem(s)) {
-	case "COM¹", "COM²", "COM³", "LPT¹", "LPT²", "LPT³":
+	case "COM¹", "COM²", "COM³", "LPT¹", "LPT²", "LPT³", "CONIN$", "CONOUT$":
 		return true
 	}
 	return false

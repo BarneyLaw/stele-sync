@@ -203,3 +203,13 @@ func FuzzKey(f *testing.F) {
 		}
 	})
 }
+
+func TestWindowsConsoleAndSpacedDeviceNames(t *testing.T) {
+	for _, s := range []string{"CONIN$", "conout$.txt", "CON .txt", "COM¹ .md", "LPT1 .pdf"} {
+		_, err := Parse(s)
+		var pe *PathError
+		if !errors.As(err, &pe) || pe.Reason != ReservedName {
+			t.Errorf("accepted Windows device alias %q: %v", s, err)
+		}
+	}
+}

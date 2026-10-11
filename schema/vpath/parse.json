@@ -232,5 +232,35 @@
     "input_base64": "YcyV4KKXzIA=",
     "reason": "none",
     "component": -1
+  },
+  {
+    "name": "CONIN$",
+    "input_base64": "Q09OSU4k",
+    "reason": "reserved_name",
+    "component": 0
+  },
+  {
+    "name": "conout$.txt",
+    "input_base64": "Y29ub3V0JC50eHQ=",
+    "reason": "reserved_name",
+    "component": 0
+  },
+  {
+    "name": "CON .txt",
+    "input_base64": "Q09OIC50eHQ=",
+    "reason": "reserved_name",
+    "component": 0
+  },
+  {
+    "name": "COM¹ .md",
+    "input_base64": "Q09NwrkgLm1k",
+    "reason": "reserved_name",
+    "component": 0
+  },
+  {
+    "name": "LPT1 .pdf",
+    "input_base64": "TFBUMSAucGRm",
+    "reason": "reserved_name",
+    "component": 0
   }
 ]

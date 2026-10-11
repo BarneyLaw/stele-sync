@@ -6,12 +6,13 @@ import (
 	"encoding/json"
 	"errors"
 	"flag"
-	"golang.org/x/text/unicode/norm"
 	"os"
 	"strings"
 	"testing"
 	"unicode"
 	"unicode/utf8"
+
+	"golang.org/x/text/unicode/norm"
 )
 
 var updatePaths = flag.Bool("update-vpath", false, "regenerate path legality fixtures")
@@ -28,7 +29,7 @@ func TestParseFixtures(t *testing.T) {
 	// Unicode 16 compositions must stay legal decomposed paths under the pinned
 	// Unicode 15 server tables, even on newer JavaScript runtimes.
 	inputs = append(inputs, "\U000105d2\u0307.md", "\U00011382\U000113c9.md", "\U0001611e\U0001611e.md", "\U00016d67\U00016d67.md")
-	inputs = append(inputs, "x"+strings.Repeat("\u0301", 31), strings.Repeat("\u1161", 31), "x"+strings.Repeat("\uff9e", 31), "a\u0315\u0897\u0300")
+	inputs = append(inputs, "x"+strings.Repeat("\u0301", 31), strings.Repeat("\u1161", 31), "x"+strings.Repeat("\uff9e", 31), "a\u0315\u0897\u0300", "CONIN$", "conout$.txt", "CON .txt", "COM¹ .md", "LPT1 .pdf")
 	rows := make([]parseRow, 0, len(inputs))
 	for _, s := range inputs {
 		_, e := Parse(s)

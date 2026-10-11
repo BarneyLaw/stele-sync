@@ -68,8 +68,8 @@ export function parsePath(input: string | Uint8Array): PathResult {
     if (Array.from(c).some(r => { const n = r.codePointAt(0) ?? 0; return n < 32 || (n >= 127 && n <= 159); })) return fail('control_char', i);
     if (c.startsWith(' ')) return fail('leading_space', i);
     if (/[. ]$/u.test(c)) return fail('trailing_dot_or_space', i);
-    const stem = c.indexOf('.') > 0 ? c.slice(0, c.indexOf('.')) : c;
-    if (/^(CON|PRN|AUX|NUL|COM[1-9¹²³]|LPT[1-9¹²³])$/u.test(asciiLower(stem).toUpperCase())) return fail('reserved_name', i);
+    const stem = (c.indexOf('.') > 0 ? c.slice(0, c.indexOf('.')) : c).replace(/ +$/u, '');
+    if (/^(CON|PRN|AUX|NUL|CONIN\$|CONOUT\$|COM[1-9¹²³]|LPT[1-9¹²³])$/u.test(asciiLower(stem).toUpperCase())) return fail('reserved_name', i);
   }
   for (const [i, c] of parts.entries()) if (byteLength(c) > deviceMaxComponent) return fail('component_too_long', i);
   if (byteLength(s) > deviceMaxTotal) return fail('path_too_long');
