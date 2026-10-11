@@ -184,5 +184,53 @@
     "input_base64": "eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4LmFubm90Lmpzb24=",
     "reason": "none",
     "component": -1
+  },
+  {
+    "name": "𐗉.md",
+    "input_base64": "8JCXksyHLm1k",
+    "reason": "none",
+    "component": -1
+  },
+  {
+    "name": "𑎃.md",
+    "input_base64": "8JGOgvCRj4kubWQ=",
+    "reason": "none",
+    "component": -1
+  },
+  {
+    "name": "𖄡.md",
+    "input_base64": "8JaEnvCWhJ4ubWQ=",
+    "reason": "none",
+    "component": -1
+  },
+  {
+    "name": "𖵨.md",
+    "input_base64": "8Ja1p/CWtacubWQ=",
+    "reason": "none",
+    "component": -1
+  },
+  {
+    "name": "x́́́́́́́́́́́́́́́́́́́́́́́́́́́́́́́",
+    "input_base64": "eMyBzIHMgcyBzIHMgcyBzIHMgcyBzIHMgcyBzIHMgcyBzIHMgcyBzIHMgcyBzIHMgcyBzIHMgcyBzIHMgcyB",
+    "reason": "not_nfc",
+    "component": -1
+  },
+  {
+    "name": "ᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡᅡ",
+    "input_base64": "4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh4YWh",
+    "reason": "not_nfc",
+    "component": -1
+  },
+  {
+    "name": "xﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞﾞ",
+    "input_base64": "eO++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++nu++ng==",
+    "reason": "not_nfc",
+    "component": -1
+  },
+  {
+    "name": "aࢗ̀̕",
+    "input_base64": "YcyV4KKXzIA=",
+    "reason": "none",
+    "component": -1
   }
 ]
