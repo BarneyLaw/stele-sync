@@ -1,0 +1,452 @@
+[
+  {
+    "name": "window",
+    "window_ns": "300000000000",
+    "max_count": 25,
+    "min_for_ratio": 5,
+    "ratio": 0.1,
+    "buckets": 30,
+    "steps": [
+      {
+        "now_ns": "1",
+        "actor": "device",
+        "batch": 5,
+        "live": 6,
+        "confirmed": false,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "2",
+        "actor": "device",
+        "batch": 1,
+        "live": 6,
+        "confirmed": false,
+        "decision": "needs_confirm"
+      },
+      {
+        "now_ns": "3",
+        "actor": "device",
+        "batch": 25,
+        "live": 6,
+        "confirmed": true,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "4",
+        "actor": "bridge",
+        "batch": 100,
+        "live": 6,
+        "confirmed": false,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "5",
+        "actor": "admin",
+        "batch": 100,
+        "live": 6,
+        "confirmed": false,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "6",
+        "actor": "device",
+        "batch": 1,
+        "live": 6,
+        "confirmed": false,
+        "decision": "needs_confirm"
+      },
+      {
+        "now_ns": "300000000000",
+        "actor": "device",
+        "batch": 25,
+        "live": 6,
+        "confirmed": false,
+        "decision": "needs_confirm"
+      },
+      {
+        "now_ns": "310000000000",
+        "actor": "device",
+        "batch": 5,
+        "live": 6,
+        "confirmed": false,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "-1",
+        "actor": "device",
+        "batch": 5,
+        "live": 6,
+        "confirmed": false,
+        "decision": "needs_confirm"
+      },
+      {
+        "now_ns": "620000000000",
+        "actor": "device",
+        "batch": 1,
+        "live": 6,
+        "confirmed": false,
+        "decision": "apply"
+      }
+    ]
+  },
+  {
+    "name": "window",
+    "window_ns": "300000000000",
+    "max_count": 25,
+    "min_for_ratio": 5,
+    "ratio": 0.1,
+    "buckets": 30,
+    "steps": [
+      {
+        "now_ns": "1",
+        "actor": "device",
+        "batch": 5,
+        "live": 80,
+        "confirmed": false,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "2",
+        "actor": "device",
+        "batch": 1,
+        "live": 80,
+        "confirmed": false,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "3",
+        "actor": "device",
+        "batch": 25,
+        "live": 80,
+        "confirmed": true,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "4",
+        "actor": "bridge",
+        "batch": 100,
+        "live": 80,
+        "confirmed": false,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "5",
+        "actor": "admin",
+        "batch": 100,
+        "live": 80,
+        "confirmed": false,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "6",
+        "actor": "device",
+        "batch": 1,
+        "live": 80,
+        "confirmed": false,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "300000000000",
+        "actor": "device",
+        "batch": 25,
+        "live": 80,
+        "confirmed": false,
+        "decision": "needs_confirm"
+      },
+      {
+        "now_ns": "310000000000",
+        "actor": "device",
+        "batch": 5,
+        "live": 80,
+        "confirmed": false,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "-1",
+        "actor": "device",
+        "batch": 5,
+        "live": 80,
+        "confirmed": false,
+        "decision": "needs_confirm"
+      },
+      {
+        "now_ns": "620000000000",
+        "actor": "device",
+        "batch": 1,
+        "live": 80,
+        "confirmed": false,
+        "decision": "apply"
+      }
+    ]
+  },
+  {
+    "name": "window",
+    "window_ns": "300000000000",
+    "max_count": 25,
+    "min_for_ratio": 5,
+    "ratio": 0.1,
+    "buckets": 30,
+    "steps": [
+      {
+        "now_ns": "1",
+        "actor": "device",
+        "batch": 5,
+        "live": 100,
+        "confirmed": false,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "2",
+        "actor": "device",
+        "batch": 1,
+        "live": 100,
+        "confirmed": false,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "3",
+        "actor": "device",
+        "batch": 25,
+        "live": 100,
+        "confirmed": true,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "4",
+        "actor": "bridge",
+        "batch": 100,
+        "live": 100,
+        "confirmed": false,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "5",
+        "actor": "admin",
+        "batch": 100,
+        "live": 100,
+        "confirmed": false,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "6",
+        "actor": "device",
+        "batch": 1,
+        "live": 100,
+        "confirmed": false,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "300000000000",
+        "actor": "device",
+        "batch": 25,
+        "live": 100,
+        "confirmed": false,
+        "decision": "needs_confirm"
+      },
+      {
+        "now_ns": "310000000000",
+        "actor": "device",
+        "batch": 5,
+        "live": 100,
+        "confirmed": false,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "-1",
+        "actor": "device",
+        "batch": 5,
+        "live": 100,
+        "confirmed": false,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "620000000000",
+        "actor": "device",
+        "batch": 1,
+        "live": 100,
+        "confirmed": false,
+        "decision": "apply"
+      }
+    ]
+  },
+  {
+    "name": "window",
+    "window_ns": "300000000000",
+    "max_count": 25,
+    "min_for_ratio": 5,
+    "ratio": 0.1,
+    "buckets": 30,
+    "steps": [
+      {
+        "now_ns": "1",
+        "actor": "device",
+        "batch": 5,
+        "live": 250,
+        "confirmed": false,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "2",
+        "actor": "device",
+        "batch": 1,
+        "live": 250,
+        "confirmed": false,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "3",
+        "actor": "device",
+        "batch": 25,
+        "live": 250,
+        "confirmed": true,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "4",
+        "actor": "bridge",
+        "batch": 100,
+        "live": 250,
+        "confirmed": false,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "5",
+        "actor": "admin",
+        "batch": 100,
+        "live": 250,
+        "confirmed": false,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "6",
+        "actor": "device",
+        "batch": 1,
+        "live": 250,
+        "confirmed": false,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "300000000000",
+        "actor": "device",
+        "batch": 25,
+        "live": 250,
+        "confirmed": false,
+        "decision": "needs_confirm"
+      },
+      {
+        "now_ns": "310000000000",
+        "actor": "device",
+        "batch": 5,
+        "live": 250,
+        "confirmed": false,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "-1",
+        "actor": "device",
+        "batch": 5,
+        "live": 250,
+        "confirmed": false,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "620000000000",
+        "actor": "device",
+        "batch": 1,
+        "live": 250,
+        "confirmed": false,
+        "decision": "apply"
+      }
+    ]
+  },
+  {
+    "name": "window",
+    "window_ns": "300000000000",
+    "max_count": 25,
+    "min_for_ratio": 5,
+    "ratio": 0.1,
+    "buckets": 30,
+    "steps": [
+      {
+        "now_ns": "1",
+        "actor": "device",
+        "batch": 5,
+        "live": 20000,
+        "confirmed": false,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "2",
+        "actor": "device",
+        "batch": 1,
+        "live": 20000,
+        "confirmed": false,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "3",
+        "actor": "device",
+        "batch": 25,
+        "live": 20000,
+        "confirmed": true,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "4",
+        "actor": "bridge",
+        "batch": 100,
+        "live": 20000,
+        "confirmed": false,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "5",
+        "actor": "admin",
+        "batch": 100,
+        "live": 20000,
+        "confirmed": false,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "6",
+        "actor": "device",
+        "batch": 1,
+        "live": 20000,
+        "confirmed": false,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "300000000000",
+        "actor": "device",
+        "batch": 25,
+        "live": 20000,
+        "confirmed": false,
+        "decision": "needs_confirm"
+      },
+      {
+        "now_ns": "310000000000",
+        "actor": "device",
+        "batch": 5,
+        "live": 20000,
+        "confirmed": false,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "-1",
+        "actor": "device",
+        "batch": 5,
+        "live": 20000,
+        "confirmed": false,
+        "decision": "apply"
+      },
+      {
+        "now_ns": "620000000000",
+        "actor": "device",
+        "batch": 1,
+        "live": 20000,
+        "confirmed": false,
+        "decision": "apply"
+      }
+    ]
+  }
+]
