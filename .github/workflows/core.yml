@@ -91,9 +91,38 @@ jobs:
           path: internal/**/testdata/fuzz/**
           if-no-files-found: ignore
           retention-days: 30
+  namespace-filesystem:
+    name: Namespace / Windows NTFS collisions
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: Require an NTFS test volume and measure actual collisions
+        shell: pwsh
+        env:
+          M3_FS_PROBE: "1"
+        run: |
+          $drive = [System.IO.Path]::GetPathRoot($env:RUNNER_TEMP).Substring(0,1)
+          $volume = Get-Volume -DriveLetter $drive
+          if ($volume.FileSystem -ne 'NTFS') { throw "Expected NTFS, got $($volume.FileSystem)" }
+          $env:TMP = $env:RUNNER_TEMP
+          $env:TEMP = $env:RUNNER_TEMP
+          go test -race -count=1 -v ./internal/core/vpath -run '^TestFilesystemCollisions$' 2>&1 | Tee-Object -FilePath "$env:RUNNER_TEMP/ntfs-collisions.log"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Preserve filesystem measurements
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: namespace-ntfs-${{ inputs.mode }}
+          path: ${{ runner.temp }}/ntfs-collisions.log
+          if-no-files-found: error
+          retention-days: 30
   result:
     name: Core result
-    needs: [discover, checks, fuzz]
+    needs: [discover, checks, fuzz, namespace-filesystem]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -102,12 +131,14 @@ jobs:
       # or failed children must never turn the reusable workflow green.
       - name: Require every discovered check to pass
         env:
+          FILESYSTEM: ${{ needs.namespace-filesystem.result }}
           DISCOVERY: ${{ needs.discover.result }}
           CHECKS: ${{ needs.checks.result }}
           FUZZ: ${{ needs.fuzz.result }}
           HAS_CHECKS: ${{ needs.discover.outputs.has-checks }}
           HAS_FUZZ: ${{ needs.discover.outputs.has-fuzz }}
         run: |
+          test "$FILESYSTEM" = success
           test "$DISCOVERY" = success
           case "$HAS_CHECKS:$HAS_FUZZ" in
             true:true|true:false|false:true|false:false) ;;

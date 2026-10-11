@@ -82,3 +82,15 @@ test('coverage enforces strictly greater than 90%, weighted by statements, with 
     assert.throws(() => requireCoverage(input));
   }
 });
+
+
+test('M3 receives per-package coverage, 100000 nightly cases and all three fuzz targets', () => {
+  const packages = [pkg('core/vpath', ['TestPropParseRoundTrip', 'FuzzParse', 'FuzzKey']),
+    pkg('core/classify', ['TestPropConfirmNeverUpgrades', 'FuzzClassify']),
+    pkg('core/rules', ['TestPropDeleteGuard', 'TestPropFreeName'])];
+  const pr = planChecks(packages), nightly = planChecks(packages, 'nightly');
+  assert.equal(pr.checks.filter(c => c.coverage).length, 3);
+  assert.equal(pr.fuzz.length, 3);
+  assert(nightly.checks.every(c => c.count === 100000));
+  assert.equal(nightly.checks.length, 4);
+});
