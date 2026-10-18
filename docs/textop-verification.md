@@ -1,10 +1,20 @@
-# M1 textop verification — 2026-09-27
+# M1 textop verification
+
+Current performance status (2026-10-18): **passed all four existing M1 local
+latency gates**, with an unchanged 50 ms p99 limit. The slowest measured p99 was
+20.874 ms for the 5,000-operation Unicode history. The
+[Linux rerun](#2026-10-18-linux-rerun) records the command, environment, latency
+percentiles and throughput measurements. The earlier Windows failure did not
+reproduce; its cause remains unconfirmed. Full S16 system-load acceptance remains
+pending M7/M14.
+
+## 2026-09-27 Windows verification
 
 Environment: Windows/amd64, Intel Core i7-9700K @ 3.60 GHz, Go 1.26.6,
 Node 24.12.0, GOMAXPROCS=8, rapid 1.2.0, ot 0.0.15. These are local
 observations, not hosted GitHub Actions results or a complete S16 system test.
 
-## Correctness and harness checks
+### Correctness and harness checks
 
 | Check executed | Result |
 | --- | --- |
@@ -62,7 +72,7 @@ without the oracle files; the oracle snapshot passed the Go race suite and Node
 generator tests. The literal case-table tests perform their own convergence,
 length and immutability checks without depending on the oracle consumer.
 
-## Performance: gate failed locally
+### Historical performance: gate failed locally
 
 The dedicated non-race gate measured 1,000 complete workloads after ten warmups.
 It includes setup correctness checks against independently constructed text.
@@ -88,10 +98,10 @@ One-iteration allocation smoke benchmarks after setup correction also passed:
 | 5,000 append history operations | 3,848,000 | 3,280,016 | 55,000 |
 | 5,000 Unicode history operations | 27,319,600 | 41,600,144 | 225,001 |
 
-The performance thresholds were not relaxed. These results warrant follow-up
-measurement/optimization; the testing implementation does not assert S16 passed.
+The performance thresholds were not relaxed. These failures prompted the
+passing Linux rerun below; neither run establishes full S16 system-load acceptance.
 
-## Defects and test-premise corrections
+### Defects and test-premise corrections
 
 The parser regression tests first demonstrated that every valid array was
 rejected: the closing-delimiter check compared with `[` instead of `]`. Only
@@ -106,7 +116,6 @@ Its independent setup check caught the discrepancy before timing. The corrected
 workload inserts the marker at the end; historical append ties put it after the
 new head, and Unicode replacements leave that endpoint intact. No transform
 algorithm change was made to force the benchmark to pass.
-
 
 ## 2026-10-18 Linux rerun
 
