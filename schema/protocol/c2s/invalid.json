@@ -1,0 +1,117 @@
+{
+  "Source": "hand-written",
+  "Cases": [
+    {
+      "Name": "malformed",
+      "Frame": "{",
+      "Tier": "close",
+      "Code": "4400",
+      "Field": ""
+    },
+    {
+      "Name": "top_array",
+      "Frame": "[]",
+      "Tier": "close",
+      "Code": "4400",
+      "Field": ""
+    },
+    {
+      "Name": "missing_type",
+      "Frame": "{}",
+      "Tier": "close",
+      "Code": "4400",
+      "Field": ""
+    },
+    {
+      "Name": "duplicate",
+      "Frame": "{\"t\":\"pong\",\"t\":\"pong\",\"n\":0}",
+      "Tier": "close",
+      "Code": "4400",
+      "Field": ""
+    },
+    {
+      "Name": "lone_surrogate",
+      "Frame": "{\"t\":\"pong\",\"n\":0,\"x\":\"\\ud800\"}",
+      "Tier": "close",
+      "Code": "4400",
+      "Field": ""
+    },
+    {
+      "Name": "bad_token",
+      "Frame": "{\"t\":\"hello\",\"token\":\"bad\"}",
+      "Tier": "close",
+      "Code": "4401",
+      "Field": ""
+    },
+    {
+      "Name": "bad_id",
+      "Frame": "{\"t\":\"submit\",\"client_op_id\":\"bad\",\"kind\":\"delete\"}",
+      "Tier": "close",
+      "Code": "4400",
+      "Field": ""
+    },
+    {
+      "Name": "zero_req",
+      "Frame": "{\"t\":\"list_files\",\"req\":0}",
+      "Tier": "close",
+      "Code": "4400",
+      "Field": ""
+    },
+    {
+      "Name": "bad_query",
+      "Frame": "{\"t\":\"pull_changes\",\"req\":1,\"after_seq\":-1}",
+      "Tier": "query",
+      "Code": "invalid_request",
+      "Field": "after_seq"
+    },
+    {
+      "Name": "query_unknown",
+      "Frame": "{\"t\":\"list_files\",\"req\":1,\"x\":1}",
+      "Tier": "query",
+      "Code": "invalid_request",
+      "Field": "x"
+    },
+    {
+      "Name": "unknown_kind",
+      "Frame": "{\"t\":\"submit\",\"client_op_id\":\"019a1b2c-0000-7000-8000-000000000abc\",\"kind\":\"other\"}",
+      "Tier": "reject",
+      "Code": "invalid_submission",
+      "Field": "kind"
+    },
+    {
+      "Name": "unsafe_base",
+      "Frame": "{\"t\":\"submit\",\"client_op_id\":\"019a1b2c-0000-7000-8000-000000000abc\",\"kind\":\"delete\",\"file_id\":\"019a1b2c-0000-7000-8000-000000000abc\",\"base_version\":9007199254740992}",
+      "Tier": "reject",
+      "Code": "invalid_submission",
+      "Field": "base_version"
+    },
+    {
+      "Name": "invalid_path",
+      "Frame": "{\"t\":\"submit\",\"client_op_id\":\"019a1b2c-0000-7000-8000-000000000abc\",\"kind\":\"rename\",\"file_id\":\"019a1b2c-0000-7000-8000-000000000abc\",\"path\":\"../a\"}",
+      "Tier": "reject",
+      "Code": "invalid_path",
+      "Field": "path"
+    },
+    {
+      "Name": "invalid_op",
+      "Frame": "{\"t\":\"submit\",\"client_op_id\":\"019a1b2c-0000-7000-8000-000000000abc\",\"kind\":\"text_edit\",\"file_id\":\"019a1b2c-0000-7000-8000-000000000abc\",\"base_version\":1,\"op\":[0]}",
+      "Tier": "reject",
+      "Code": "invalid_op",
+      "Field": "op"
+    },
+    {
+      "Name": "text_limit",
+      "Frame": "{\"t\":\"submit\",\"client_op_id\":\"019a1b2c-0000-7000-8000-000000000abc\",\"kind\":\"text_edit\",\"file_id\":\"019a1b2c-0000-7000-8000-000000000abc\",\"base_version\":1,\"op\":[8388609]}",
+      "Tier": "reject",
+      "Code": "too_large",
+      "Field": "op"
+    },
+    {
+      "Name": "nested_unknown",
+      "Frame": "{\"t\":\"submit\",\"client_op_id\":\"019a1b2c-0000-7000-8000-000000000abc\",\"kind\":\"put_blob\",\"file_id\":\"019a1b2c-0000-7000-8000-000000000abc\",\"base_version\":1,\"blob\":{\"sha256\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"size\":0,\"extra\":0}}",
+      "Tier": "reject",
+      "Code": "invalid_submission",
+      "Field": "blob.extra"
+    }
+  ]
+}

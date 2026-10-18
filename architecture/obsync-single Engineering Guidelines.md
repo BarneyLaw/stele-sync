@@ -1,8 +1,8 @@
-# obsync-single: Engineering Guidelines
+# stele-sync: Engineering Guidelines
 
 2026-09-20 · @Someone
 
-These rules are binding for all obsync-single code: a pull request that breaks one either fixes it or records the exception in an ADR.
+These rules are binding for all stele-sync code: a pull request that breaks one either fixes it or records the exception in an ADR.
 
 ## 1. Principles
 
@@ -24,11 +24,12 @@ One monorepo holds phase 1 and phase 2, with phase 1 moved in history-preserved 
 
 ```
 cmd/
-  obsync-server/        wiring only: config, construct, run, shutdown
-  obsyncctl/            admin CLI: devices, history, restore
-  obsync-worker/        phase 1, unchanged
+  stele-server/        wiring only: config, construct, run, shutdown
+  stelectl/            admin CLI: devices, history, restore
+  stele-pull-worker/    phase 1, unchanged
 internal/
   core/                 PURE. stdlib and golang.org/x/text only
+    ids/                UUIDv7 identities and safe version/sequence counters
     textop/             Class A operations: apply, compose, transform
     annot/              Class B sidecar model and element ops
     vpath/              portable paths (from phase 1 portable)
@@ -188,7 +189,7 @@ Postgres is the system of record, so its rules are the strictest in the project:
 - Migrations with `goose`, SQL files, numbered, forward-only in production. Each migration states in a header comment how to back it out by hand.
 - Constraints live in the schema: `NOT NULL`, `CHECK`, foreign keys, the partial unique index on `path_key`. If the application has a rule the database can express, the database expresses it.
 - Expand, then contract: add a column, deploy code that writes both, backfill, deploy code that reads new, drop old. Never rename a column in one step.
-- Migrations run as a separate step (init container or `obsyncctl migrate`) before the server starts; the server refuses to start on an unexpected schema version.
+- Migrations run as a separate step (init container or `stelectl migrate`) before the server starts; the server refuses to start on an unexpected schema version.
 - Every new index states which query needs it; every query on a hot path has its `EXPLAIN` captured in the PR.
 
 ## 6. Reliability patterns checklist

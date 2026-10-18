@@ -1,0 +1,123 @@
+{
+  "close": {
+    "1000": [
+      "normal"
+    ],
+    "1001": [
+      "shutting_down"
+    ],
+    "1009": [
+      "frame_too_large"
+    ],
+    "1011": [
+      "internal"
+    ],
+    "4400": [
+      "protocol"
+    ],
+    "4401": [
+      "hello_timeout",
+      "bad_token",
+      "revoked"
+    ],
+    "4409": [
+      "replaced"
+    ],
+    "4426": [
+      "unsupported_protocol"
+    ],
+    "4429": [
+      "slow_consumer"
+    ]
+  },
+  "query": [
+    "resync_required",
+    "invalid_request",
+    "rate_limited",
+    "internal"
+  ],
+  "reasons": {
+    "copy_of": [
+      "rebase",
+      "deleted",
+      "class_change",
+      "first_sync"
+    ],
+    "demotion": [
+      "kept",
+      "too_large",
+      "invalid_utf8",
+      "contains_nul",
+      "not_freedraw"
+    ],
+    "invalid_op": [
+      "ErrInvalidUTF8",
+      "ErrInvalidJSON",
+      "ErrInvalidCount",
+      "ErrNonCanonical",
+      "ErrLengthMismatch",
+      "ErrSplitsSurrogate",
+      "ErrInvalidUnicode",
+      "ErrInvalidLimits",
+      "ErrNotSidecar",
+      "ErrDuplicateKey",
+      "ErrDuplicateID",
+      "ErrMissingID",
+      "ErrStructuralKey",
+      "ErrWholeDocument",
+      "ErrInvalidState"
+    ],
+    "invalid_path": [
+      "invalid_utf8",
+      "not_nfc",
+      "empty",
+      "absolute",
+      "backslash",
+      "empty_component",
+      "dot_component",
+      "traversal",
+      "illegal_char",
+      "control_char",
+      "leading_space",
+      "trailing_dot_or_space",
+      "reserved_name",
+      "component_too_long",
+      "path_too_long"
+    ],
+    "origin": [
+      "rebase",
+      "deleted",
+      "class_change",
+      "first_sync",
+      "stale_put",
+      "stale_replace"
+    ],
+    "resync_required": [
+      "pruned",
+      "ahead"
+    ]
+  },
+  "reject": [
+    "invalid_submission",
+    "invalid_op",
+    "invalid_path",
+    "too_large",
+    "rate_limited",
+    "unknown_file",
+    "file_exists",
+    "file_deleted",
+    "path_taken",
+    "stale_delete",
+    "invalid_base",
+    "read_only_path",
+    "class_change",
+    "group_required",
+    "class_mismatch",
+    "bulk_delete_guard",
+    "rebase_required",
+    "whole_document_required",
+    "blob_missing",
+    "internal"
+  ],
+  "subprotocol": "stele.v1"
+}

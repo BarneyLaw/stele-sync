@@ -79,3 +79,19 @@ test('namespace contracts join regeneration, drift tracking and the plugin contr
   assert.match(tasks, /namespaceContracts.flatMap/);
   assert.match(tasks, /namespace-acceptance/);
 });
+
+test('development Postgres identity agrees across Compose, integration probe and client URL', () => {
+  const compose = readFileSync(new URL('../compose.yaml', import.meta.url), 'utf8');
+  const tasks = readFileSync(new URL('./tasks.mjs', import.meta.url), 'utf8');
+  const dev = readFileSync(new URL('./dev.mjs', import.meta.url), 'utf8');
+  const setting = name => compose.match(new RegExp(`^      ${name}: (\\S+)$`, 'm'))[1];
+  const probe = tasks.match(/compose\('exec', '-T', 'postgres', 'psql', '-U', '([^']+)', '-d', '([^']+)'/);
+  assert.ok(probe, 'integration task must probe Postgres');
+  assert.equal(probe[1], setting('POSTGRES_USER'));
+  assert.equal(probe[2], setting('POSTGRES_DB'));
+  const client = dev.match(/DATABASE_URL: `postgres:\/\/([^:]+):([^@]+)@[^\n]+\/([^?]+)\?sslmode=disable`/);
+  assert.ok(client, 'integration environment must supply a Postgres URL');
+  assert.equal(client[1], setting('POSTGRES_USER'));
+  assert.equal(client[2], setting('POSTGRES_PASSWORD'));
+  assert.equal(client[3], setting('POSTGRES_DB'));
+});

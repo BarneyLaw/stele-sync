@@ -2,6 +2,8 @@
 
 Status: accepted
 
+Refined by [024: one transaction change](024-transaction-changes.md), including own-change recognition during catch-up.
+
 Date: 2026-09-20
 
 Source: [Architecture decision log](../../architecture/obsync-single%20Architecture%20Specification.md#10-decision-log-and-open-questions).

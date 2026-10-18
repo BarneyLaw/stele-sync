@@ -19,7 +19,7 @@ export function integrationEnv() {
     GARAGE_BUCKET: 'obsync', GARAGE_REGION: 'garage',
     GARAGE_ACCESS_KEY: key, GARAGE_SECRET_KEY: secret,
     STELE_PULL_REQUIRE_S3: '1',
-    DATABASE_URL: `postgres://obsync:obsync-local-only@127.0.0.1:${process.env.POSTGRES_DEV_PORT || '55432'}/obsync?sslmode=disable`,
+    DATABASE_URL: `postgres://stele:stele-local-only@127.0.0.1:${process.env.POSTGRES_DEV_PORT || '55432'}/stele?sslmode=disable`,
   };
 }
 

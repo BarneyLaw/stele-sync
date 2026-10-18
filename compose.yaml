@@ -3,15 +3,15 @@ services:
   postgres:
     image: postgres:17.9-alpine
     environment:
-      POSTGRES_DB: obsync
-      POSTGRES_USER: obsync
-      POSTGRES_PASSWORD: obsync-local-only
+      POSTGRES_DB: stele
+      POSTGRES_USER: stele
+      POSTGRES_PASSWORD: stele-local-only
     ports:
       - "127.0.0.1:${POSTGRES_DEV_PORT:-55432}:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U obsync -d obsync"]
+      test: ["CMD-SHELL", "pg_isready -U stele -d stele"]
       interval: 2s
       timeout: 5s
       retries: 30

@@ -46,11 +46,27 @@ type Ops struct {
 // ParseOps decodes a client edit and rejects unknown control fields, duplicate
 // operation keys, noncanonical ordering and any replace field, even false.
 func ParseOps(raw []byte, l Limits) (Ops, error) {
+	return parseOps(raw, l, false)
+}
+
+// ParseCommitted decodes trusted committed operations, including replacements.
+// It retains strict shape, ordering and opaque-byte checks. MaxStateBytes bounds
+// committed results, which may exceed the client operation budget after apply.
+// Never use this parser on client submissions.
+func ParseCommitted(raw []byte, l Limits) (Ops, error) {
+	return parseOps(raw, l, true)
+}
+
+func parseOps(raw []byte, l Limits, trusted bool) (Ops, error) {
 	l, err := l.normalized()
 	if err != nil {
 		return Ops{}, err
 	}
-	compact, err := strictJSON(raw, l, l.MaxOpBytes)
+	budget := l.MaxOpBytes
+	if trusted {
+		budget = l.MaxStateBytes
+	}
+	compact, err := strictJSON(raw, l, budget)
 	if err != nil {
 		return Ops{}, err
 	}
@@ -58,10 +74,20 @@ func ParseOps(raw []byte, l Limits) (Ops, error) {
 	if err != nil {
 		return Ops{}, ErrNonCanonical
 	}
-	if err := onlyFields(obj, "elements", "entries", "meta"); err != nil {
+	fields := []string{"elements", "entries", "meta"}
+	if trusted {
+		fields = append(fields, "replace")
+	}
+	if err := onlyFields(obj, fields...); err != nil {
 		return Ops{}, err
 	}
 	o := Ops{}
+	if raw, ok := obj["replace"]; ok {
+		if !bytes.Equal(raw, []byte("true")) && !bytes.Equal(raw, []byte("false")) {
+			return Ops{}, ErrNonCanonical
+		}
+		o.Replace = bytes.Equal(raw, []byte("true"))
+	}
 	for _, name := range []string{"elements", "entries"} {
 		v, ok := obj[name]
 		if !ok {
@@ -143,7 +169,7 @@ func ParseOps(raw []byte, l Limits) (Ops, error) {
 			}
 		}
 	}
-	return checkedOps(o, l, false)
+	return checkedOps(o, l, trusted)
 }
 func onlyFields(obj map[string]json.RawMessage, names ...string) error {
 	for key := range obj {
@@ -384,4 +410,24 @@ func (o Ops) encode() []byte {
 		out = appendMember(out, "replace", []byte("true"))
 	}
 	return append(out, '}')
+}
+
+// MarshalOps validates and encodes client operations using explicit limits.
+// It never accepts the trusted replacement flag.
+func (l Limits) MarshalOps(o Ops) ([]byte, error) { return l.marshalOps(o, false) }
+
+// MarshalCommitted validates and encodes committed operations using the state
+// budget, including ordinary effective sets larger than the client op budget.
+func (l Limits) MarshalCommitted(o Ops) ([]byte, error) { return l.marshalOps(o, true) }
+
+func (l Limits) marshalOps(o Ops, trusted bool) ([]byte, error) {
+	l, err := l.normalized()
+	if err != nil {
+		return nil, err
+	}
+	checked, err := checkedOps(o, l, trusted)
+	if err != nil {
+		return nil, err
+	}
+	return checked.encode(), nil
 }

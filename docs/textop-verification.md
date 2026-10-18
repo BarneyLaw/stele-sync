@@ -1,10 +1,20 @@
-# M1 textop verification — 2026-09-27
+# M1 textop verification
+
+Current performance status (2026-10-18): **passed all four existing M1 local
+latency gates**, with an unchanged 50 ms p99 limit. The slowest measured p99 was
+20.874 ms for the 5,000-operation Unicode history. The
+[Linux rerun](#2026-10-18-linux-rerun) records the command, environment, latency
+percentiles and throughput measurements. The earlier Windows failure did not
+reproduce; its cause remains unconfirmed. Full S16 system-load acceptance remains
+pending M7/M14.
+
+## 2026-09-27 Windows verification
 
 Environment: Windows/amd64, Intel Core i7-9700K @ 3.60 GHz, Go 1.26.6,
 Node 24.12.0, GOMAXPROCS=8, rapid 1.2.0, ot 0.0.15. These are local
 observations, not hosted GitHub Actions results or a complete S16 system test.
 
-## Correctness and harness checks
+### Correctness and harness checks
 
 | Check executed | Result |
 | --- | --- |
@@ -62,7 +72,7 @@ without the oracle files; the oracle snapshot passed the Go race suite and Node
 generator tests. The literal case-table tests perform their own convergence,
 length and immutability checks without depending on the oracle consumer.
 
-## Performance: gate failed locally
+### Historical performance: gate failed locally
 
 The dedicated non-race gate measured 1,000 complete workloads after ten warmups.
 It includes setup correctness checks against independently constructed text.
@@ -88,10 +98,10 @@ One-iteration allocation smoke benchmarks after setup correction also passed:
 | 5,000 append history operations | 3,848,000 | 3,280,016 | 55,000 |
 | 5,000 Unicode history operations | 27,319,600 | 41,600,144 | 225,001 |
 
-The performance thresholds were not relaxed. These results warrant follow-up
-measurement/optimization; the testing implementation does not assert S16 passed.
+The performance thresholds were not relaxed. These failures prompted the
+passing Linux rerun below; neither run establishes full S16 system-load acceptance.
 
-## Defects and test-premise corrections
+### Defects and test-premise corrections
 
 The parser regression tests first demonstrated that every valid array was
 rejected: the closing-delimiter check compared with `[` instead of `]`. Only
@@ -106,3 +116,40 @@ Its independent setup check caught the discrepancy before timing. The corrected
 workload inserts the marker at the end; historical append ties put it after the
 new head, and Unicode replacements leave that endpoint intact. No transform
 algorithm change was made to force the benchmark to pass.
+
+## 2026-10-18 Linux rerun
+
+Re-ran the unchanged `node tools/tasks.mjs textop-perf` on main `21f30d8` before
+M4 implementation: Linux/amd64, Intel Xeon W-11855M @ 3.20 GHz, Go 1.27.2,
+GOMAXPROCS=12, 1,000 samples per workload after ten warmups, no race instrumentation.
+All four 50 ms p99 gates passed. No thresholds or textop production code changed.
+
+| Workload | p50 | p95 | p99 | Gate |
+| --- | ---: | ---: | ---: | --- |
+| 5,000 append operations | 2.561 ms | 3.658 ms | 4.114 ms | Passed |
+| 5,000 Unicode operations | 14.959 ms | 18.182 ms | 20.874 ms | Passed |
+| 8 MiB identity apply | 14.546 ms | 17.640 ms | 19.388 ms | Passed |
+| 8 MiB apply, 64 replacements | 14.684 ms | 17.533 ms | 19.209 ms | Passed |
+
+Five repetitions of each Go microbenchmark also passed:
+
+| Workload | Range | Allocated bytes/op | Allocations/op |
+| --- | --- | ---: | ---: |
+| Apply 50,000 bytes | 91.8–94.5 µs, 529–545 MB/s | 106,497–106,498 | 1 |
+| Apply 5,000,000 bytes | 8.86–9.19 ms, 544–564 MB/s | about 10,002,432 | 1 |
+| Apply 8 MiB identity | 14.68–16.34 ms, 513–571 MB/s | about 16,777,216 | 1 |
+| Apply 8 MiB replacements | 14.59–15.91 ms, 527–575 MB/s | about 16,777,216 | 1 |
+| Transform 5,000 append ops | 2.424–2.513 ms | about 3,280,016 | 55,000 |
+| Transform 5,000 Unicode ops | 15.084–16.016 ms | about 41,600,074 | 225,000 |
+
+The earlier Windows latency failure did not reproduce. These measurements cannot
+isolate whether hardware, Go/runtime changes, OS scheduling or GC caused that
+historical tail. The Unicode gap still allocates roughly 41.6 MB and 225,000
+objects per complete rebase, so allocation/GC remains a concrete profiling target
+if the failure returns. Apply allocates a 16 MiB UTF-16 result for 8 MiB of ASCII.
+A historical cause is not claimed without profiles from the failing environment.
+
+The one-hour 10× system-load requirement and simulator portions of S16 require
+M7/M14 and are still unimplemented. The microbenchmarks report throughput; they
+have no separate fixed MB/s acceptance threshold. Passing this rerun establishes
+only the existing M1 local latency gates.

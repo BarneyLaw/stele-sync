@@ -2,6 +2,8 @@
 
 Status: accepted
 
+Refined by [025: bounded payloads and referenced state](025-bounded-payloads.md) and [027: subprotocol versioning](027-stele-naming.md).
+
 Date: 2026-09-20
 
 Source: [Architecture decision log](../../architecture/obsync-single%20Architecture%20Specification.md#10-decision-log-and-open-questions).
