@@ -34,9 +34,22 @@ func DecodeClient(frame []byte, c Config) (ClientMsg, error) {
 		if f.code != "" {
 			return nil, &RejectError{id, f.code, f.detail}
 		}
+		// Annotation canonicalization adds explicit control fields. Admit its
+		// encoded form too, so accepted near-limit frames remain retryable.
+		if _, ok := body.(AnnotEdit); ok {
+			w, e := bodyWire(body, c)
+			if e != nil {
+				return nil, &RejectError{id, InvalidOp, Detail{Field: "ops", Reason: "ErrNonCanonical"}}
+			}
+			w["t"] = "submit"
+			w["client_op_id"] = id
+			if _, e = marshalFrame(w, c.MaxFrame); e != nil {
+				return nil, &RejectError{id, TooLarge, Detail{Field: "frame", Limit: int64(c.MaxFrame)}}
+			}
+		}
 		return Submit{id, body}, nil
 	case "pull_changes", "list_files":
-		req := Req(r.integer("req", 1, 1<<32-1))
+		req := Req(r.uint32("req", true))
 		if f.code != "" {
 			return nil, &CloseError{CloseProtocol, "protocol"}
 		}
@@ -67,7 +80,7 @@ func DecodeClient(frame []byte, c Config) (ClientMsg, error) {
 		m = Hello{token}
 	case "pong":
 		r.only("t", "n")
-		m = Pong{uint32(r.integer("n", 0, 1<<32-1))}
+		m = Pong{r.uint32("n", false)}
 	default:
 		return nil, &CloseError{CloseProtocol, "protocol"}
 	}
@@ -103,7 +116,7 @@ func readBody(r object, c Config) Body {
 		return PutBlob{r.file("file_id"), r.version(), r.child("blob").blob()}
 	case KindCreate:
 		only("file_id", "path", "class", "content", "on_taken", "copy_of")
-		v := Create{File: r.file("file_id"), Path: r.path("path"), Class: r.class("class"), OnTaken: readOnTaken(r)}
+		v := Create{File: r.file("file_id"), Path: r.path(), Class: r.class(), OnTaken: readOnTaken(r)}
 		v.Content = readContent(r.child("content"), v.Class, c)
 		if r.has("copy_of") {
 			b := r.child("copy_of")
@@ -113,13 +126,13 @@ func readBody(r object, c Config) Body {
 		return v
 	case KindRename:
 		only("file_id", "path", "on_taken")
-		return Rename{r.file("file_id"), r.path("path"), readOnTaken(r)}
+		return Rename{r.file("file_id"), r.path(), readOnTaken(r)}
 	case KindRenameGroup:
 		only("pdf", "sidecar", "on_taken")
 		read := func(k string) Target {
 			v := r.child(k)
 			v.only("file_id", "path")
-			return Target{v.file("file_id"), v.path("path")}
+			return Target{v.file("file_id"), v.path()}
 		}
 		v := RenameGroup{read("pdf"), read("sidecar"), readOnTaken(r)}
 		if v.PDF.File == v.Sidecar.File {

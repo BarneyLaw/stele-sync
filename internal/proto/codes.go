@@ -3,6 +3,7 @@ package proto
 import (
 	"errors"
 	"fmt"
+
 	"github.com/BarneyLaw/stele-sync/internal/core/classify"
 	"github.com/BarneyLaw/stele-sync/internal/core/ids"
 )

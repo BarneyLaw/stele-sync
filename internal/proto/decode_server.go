@@ -8,6 +8,7 @@ import (
 	"time"
 
 	json "encoding/json/v2"
+
 	"github.com/BarneyLaw/stele-sync/internal/core/annot"
 	"github.com/BarneyLaw/stele-sync/internal/core/classify"
 	"github.com/BarneyLaw/stele-sync/internal/core/ids"
@@ -30,7 +31,7 @@ func DecodeServer(frame []byte, c Config) (ServerMsg, error) {
 	case "change":
 		m = Live{readChange(r, c)}
 	case "changes":
-		v := Changes{Req: Req(r.integer("req", 1, 1<<32-1)), More: r.boolean("more"), Entries: []Change{}}
+		v := Changes{Req: Req(r.uint32("req", true)), More: r.boolean("more"), Entries: []Change{}}
 		for _, raw := range r.array("entries", c.PageEntries) {
 			ch := readChange(newObject(raw, false, "entries.", f), c)
 			if len(v.Entries) > 0 && ch.Seq != v.Entries[len(v.Entries)-1].Seq+1 {
@@ -43,7 +44,7 @@ func DecodeServer(frame []byte, c Config) (ServerMsg, error) {
 		}
 		m = v
 	case "files":
-		v := Files{Req: Req(r.integer("req", 1, 1<<32-1)), HeadSeq: ids.Seq(r.integer("head_seq", 0, ids.MaxSafe)), More: r.boolean("more"), Files: []FileInfo{}}
+		v := Files{Req: Req(r.uint32("req", true)), HeadSeq: ids.Seq(r.integer("head_seq", 0, ids.MaxSafe)), More: r.boolean("more"), Files: []FileInfo{}}
 		for _, raw := range r.array("files", c.PageEntries) {
 			fi := readFile(newObject(raw, false, "files.", f))
 			if len(v.Files) > 0 && fi.File.String() <= v.Files[len(v.Files)-1].File.String() {
@@ -63,18 +64,23 @@ func DecodeServer(frame []byte, c Config) (ServerMsg, error) {
 		}
 		m = Reject{id, code, readDetail(r)}
 	case "error":
-		req := Req(r.integer("req", 1, 1<<32-1))
+		req := Req(r.uint32("req", true))
 		code := QueryCode(r.str("code"))
 		if !slices.Contains(QueryCodes(), code) {
 			r.fail("code", InvalidSubmission, Detail{})
 		}
 		m = Error{req, code, readDetail(r)}
 	case "ping":
-		m = Ping{uint32(r.integer("n", 0, 1<<32-1))}
+		m = Ping{r.uint32("n", false)}
 	default:
 		r.fail("t", InvalidSubmission, Detail{})
 	}
 	if f.code != "" {
+		return nil, ErrInvalidMessage
+	}
+	// Require a canonical representation that still fits. In particular, a
+	// committed annotation parser may fill absent control fields.
+	if _, e := marshalServer(m, c); e != nil {
 		return nil, ErrInvalidMessage
 	}
 	return m, nil
@@ -138,8 +144,8 @@ func readMember(r object, c Config) Member {
 	class := classify.Class(0)
 	switch v.Kind {
 	case KindCreate:
-		v.Path = r.path("path")
-		v.Class = r.class("class")
+		v.Path = r.path()
+		v.Class = r.class()
 		v.Owner = readOwner(r)
 		class = v.Class
 		if r.has("origin") {
@@ -147,7 +153,7 @@ func readMember(r object, c Config) Member {
 			v.Origin = &Origin{o.file("copy_of"), readCopyReason(o, true)}
 		}
 	case KindRename:
-		v.Path = r.path("path")
+		v.Path = r.path()
 	case KindDelete:
 	case KindTextEdit:
 		class = classify.Text
@@ -155,6 +161,8 @@ func readMember(r object, c Config) Member {
 		class = classify.Sidecar
 	case KindPutBlob:
 		class = classify.Opaque
+	case KindAnnotReplace, KindRenameGroup:
+		r.fail("kind", InvalidSubmission, Detail{})
 	default:
 		r.fail("kind", InvalidSubmission, Detail{})
 	}
@@ -226,7 +234,7 @@ func readMember(r object, c Config) Member {
 	return v
 }
 func readFile(r object) FileInfo {
-	v := FileInfo{File: r.file("file_id"), Path: r.path("path"), Class: r.class("class"), Owner: readOwner(r), Version: ids.Version(r.integer("version", 1, ids.MaxSafe)), Size: r.integer("size", 0, ids.MaxSafe)}
+	v := FileInfo{File: r.file("file_id"), Path: r.path(), Class: r.class(), Owner: readOwner(r), Version: ids.Version(r.integer("version", 1, ids.MaxSafe)), Size: r.integer("size", 0, ids.MaxSafe)}
 	count := 0
 	for _, k := range []string{"blob", "len", "hash"} {
 		if r.has(k) {
@@ -269,7 +277,7 @@ func readDetail(parent object) Detail {
 		d.Component = &n
 	}
 	if r.has("class") {
-		d.Class = r.class("class")
+		d.Class = r.class()
 	}
 	if r.has("demotion") {
 		s := r.str("demotion")

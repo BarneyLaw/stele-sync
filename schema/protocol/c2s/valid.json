@@ -115,7 +115,6 @@
       },
       "file_id": "019a1b2c-0000-7000-8000-000000000abc",
       "kind": "create",
-      "on_taken": "number",
       "path": "notes/a.md",
       "t": "submit"
     }
@@ -130,7 +129,6 @@
       },
       "file_id": "019a1b2c-0000-7000-8000-000000000abc",
       "kind": "create",
-      "on_taken": "number",
       "path": "a.pdf.annot.json",
       "t": "submit"
     }
@@ -170,7 +168,6 @@
       },
       "file_id": "019a1b2c-0000-7000-8000-000000000abc",
       "kind": "create",
-      "on_taken": "number",
       "path": "a.md",
       "t": "submit"
     }
@@ -181,7 +178,6 @@
       "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
       "file_id": "019a1b2c-0000-7000-8000-000000000abc",
       "kind": "rename",
-      "on_taken": "number",
       "path": "b.md",
       "t": "submit"
     }

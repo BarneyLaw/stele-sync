@@ -77,7 +77,7 @@ func actorWire(v rules.Actor) string {
 // EncodeClient encodes and validates a reference-client submission before send.
 // Complete encoded size is authoritative even when string quoting expands data.
 func EncodeClient(m ClientMsg, c Config) ([]byte, error) {
-	w := wire{}
+	var w wire
 	var e error
 	switch v := value(m).(type) {
 	case Hello:
@@ -92,7 +92,7 @@ func EncodeClient(m ClientMsg, c Config) ([]byte, error) {
 	case Pong:
 		w = wire{"t": "pong", "n": v.N}
 	case Submit:
-		w, e = bodyWire(v.Body)
+		w, e = bodyWire(v.Body, c)
 		if e != nil {
 			return nil, e
 		}
@@ -110,8 +110,8 @@ func EncodeClient(m ClientMsg, c Config) ([]byte, error) {
 	}
 	return raw, nil
 }
-func bodyWire(body Body) (wire, error) {
-	w := wire{}
+func bodyWire(body Body, c Config) (wire, error) {
+	var w wire
 	var e error
 	content := func(v Content) { w["content"], e = contentWire(v) }
 	switch v := value(body).(type) {
@@ -123,7 +123,7 @@ func bodyWire(body Body) (wire, error) {
 	case AnnotEdit:
 		w = wire{"kind": KindAnnotEdit, "file_id": v.File, "base_version": v.Base}
 		var raw []byte
-		raw, e = v.Ops.MarshalJSON()
+		raw, e = c.Annot.MarshalOps(v.Ops)
 		w["ops"] = string(raw)
 	case AnnotReplace:
 		w = wire{"kind": KindAnnotReplace, "file_id": v.File, "base_version": v.Base}
@@ -131,28 +131,40 @@ func bodyWire(body Body) (wire, error) {
 	case PutBlob:
 		w = wire{"kind": KindPutBlob, "file_id": v.File, "base_version": v.Base, "blob": blobWire(v.Blob)}
 	case Create:
-		w = wire{"kind": KindCreate, "file_id": v.File, "path": v.Path.String(), "class": classWire(v.Class), "on_taken": takenWire(v.OnTaken)}
+		w = wire{"kind": KindCreate, "file_id": v.File, "path": v.Path.String(), "class": classWire(v.Class)}
+		if v.OnTaken != rules.Number {
+			w["on_taken"] = takenWire(v.OnTaken)
+		}
 		content(v.Content)
 		if v.CopyOf != nil {
 			w["copy_of"] = wire{"file_id": v.CopyOf.File, "reason": v.CopyOf.Reason}
 		}
 	case Rename:
-		w = wire{"kind": KindRename, "file_id": v.File, "path": v.Path.String(), "on_taken": takenWire(v.OnTaken)}
+		w = wire{"kind": KindRename, "file_id": v.File, "path": v.Path.String()}
+		if v.OnTaken != rules.Number {
+			w["on_taken"] = takenWire(v.OnTaken)
+		}
 	case RenameGroup:
-		w = wire{"kind": KindRenameGroup, "pdf": wire{"file_id": v.PDF.File, "path": v.PDF.Path.String()}, "sidecar": wire{"file_id": v.Sidecar.File, "path": v.Sidecar.Path.String()}, "on_taken": takenWire(v.OnTaken)}
+		w = wire{"kind": KindRenameGroup, "pdf": wire{"file_id": v.PDF.File, "path": v.PDF.Path.String()}, "sidecar": wire{"file_id": v.Sidecar.File, "path": v.Sidecar.Path.String()}}
+		if v.OnTaken != rules.Number {
+			w["on_taken"] = takenWire(v.OnTaken)
+		}
 	case Delete:
-		w = wire{"kind": KindDelete, "file_id": v.File, "base_version": v.Base, "confirmed": v.Confirmed}
+		w = wire{"kind": KindDelete, "file_id": v.File, "base_version": v.Base}
+		if v.Confirmed {
+			w["confirmed"] = true
+		}
 	default:
 		return nil, ErrInvalidMessage
 	}
 	return w, e
 }
-func marshalFrame(v any, max int) ([]byte, error) {
+func marshalFrame(v any, maximum int) ([]byte, error) {
 	raw, e := json.Marshal(v, json.Deterministic(true))
 	if e != nil {
 		return nil, fmt.Errorf("%w: cannot encode wire value", ErrInvalidMessage)
 	}
-	if len(raw) > max {
+	if len(raw) > maximum {
 		return nil, ErrFrameTooLarge
 	}
 	return raw, nil

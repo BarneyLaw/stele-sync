@@ -66,3 +66,27 @@ func TestCommittedStrictness(t *testing.T) {
 		t.Fatal(e)
 	}
 }
+
+func TestConfiguredOperationEncoding(t *testing.T) {
+	l := annot.DefaultLimits()
+	l.MaxOpBytes = 8
+	ops := annot.Ops{MetaPut: map[string]json.RawMessage{"x": []byte(`1.0`)}}
+	if _, e := l.MarshalOps(ops); !errors.Is(e, annot.ErrLimit) {
+		t.Fatal(e)
+	}
+	raw, e := l.MarshalCommitted(ops)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if _, e = annot.ParseCommitted(raw, l); e != nil {
+		t.Fatal(e)
+	}
+	ops.Replace = true
+	if _, e = l.MarshalOps(ops); !errors.Is(e, annot.ErrNonCanonical) {
+		t.Fatal(e)
+	}
+	l.MaxBytes = 0
+	if _, e = l.MarshalCommitted(ops); !errors.Is(e, annot.ErrInvalidLimits) {
+		t.Fatal(e)
+	}
+}

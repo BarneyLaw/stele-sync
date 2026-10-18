@@ -411,3 +411,23 @@ func (o Ops) encode() []byte {
 	}
 	return append(out, '}')
 }
+
+// MarshalOps validates and encodes client operations using explicit limits.
+// It never accepts the trusted replacement flag.
+func (l Limits) MarshalOps(o Ops) ([]byte, error) { return l.marshalOps(o, false) }
+
+// MarshalCommitted validates and encodes committed operations using the state
+// budget, including ordinary effective sets larger than the client op budget.
+func (l Limits) MarshalCommitted(o Ops) ([]byte, error) { return l.marshalOps(o, true) }
+
+func (l Limits) marshalOps(o Ops, trusted bool) ([]byte, error) {
+	l, err := l.normalized()
+	if err != nil {
+		return nil, err
+	}
+	checked, err := checkedOps(o, l, trusted)
+	if err != nil {
+		return nil, err
+	}
+	return checked.encode(), nil
+}

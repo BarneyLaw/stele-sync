@@ -11,6 +11,7 @@ import (
 
 	"github.com/BarneyLaw/stele-sync/internal/core/annot"
 	"github.com/BarneyLaw/stele-sync/internal/core/ids"
+	"github.com/BarneyLaw/stele-sync/internal/core/textop"
 )
 
 func TestInlineAndPage(t *testing.T) {
@@ -18,7 +19,7 @@ func TestInlineAndPage(t *testing.T) {
 	ch := servers[3].msg.(Live).Change
 	m := ch.Members[0]
 	c := DefaultConfig()
-	p, e := payloadWire(m.Payload)
+	p, e := payloadWire(m.Payload, c)
 	if e != nil {
 		t.Fatal(e)
 	}
@@ -287,6 +288,37 @@ func TestTextWireDoesNotExpandHTML(t *testing.T) {
 		t.Fatal(e)
 	}
 	if _, e = EncodeClient(m, c); e != nil {
+		t.Fatal(e)
+	}
+}
+
+func TestInlineTransformedComponentOverflow(t *testing.T) {
+	// Transform can split deletes into more components than client ingress allows,
+	// even when the resulting encoded bytes fit the inline threshold.
+	c := DefaultConfig()
+	l := c.Text
+	l.MaxComponents *= 2
+	b, e := textop.NewBuilder(l)
+	if e != nil {
+		t.Fatal(e)
+	}
+	for range c.Text.MaxComponents/2 + 1 {
+		b.Retain(1).Insert("x")
+	}
+	op, e := b.Op()
+	if e != nil {
+		t.Fatal(e)
+	}
+	_, servers := samples(t)
+	ch := servers[3].msg.(Live).Change
+	n := op.TargetLen()
+	ch.Members[0].Payload = TextPayload{op}
+	ch.Members[0].Len = &n
+	ch.Members[0] = Inline(ch.Members[0], c)
+	if _, ok := ch.Members[0].Payload.(Omitted); !ok {
+		t.Fatal("unparseable transformed output stayed inline")
+	}
+	if _, e := EncodeServer(Live{ch}, c); e != nil {
 		t.Fatal(e)
 	}
 }

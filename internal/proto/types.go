@@ -1,13 +1,14 @@
 package proto
 
 import (
+	"time"
+
 	"github.com/BarneyLaw/stele-sync/internal/core/annot"
 	"github.com/BarneyLaw/stele-sync/internal/core/classify"
 	"github.com/BarneyLaw/stele-sync/internal/core/ids"
 	"github.com/BarneyLaw/stele-sync/internal/core/rules"
 	"github.com/BarneyLaw/stele-sync/internal/core/textop"
 	"github.com/BarneyLaw/stele-sync/internal/core/vpath"
-	"time"
 )
 
 // Req correlates a query and answer; zero is invalid.

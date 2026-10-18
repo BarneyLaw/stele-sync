@@ -5,9 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"flag"
+	"go/ast"
+	"go/parser"
+	"go/token"
 	"os"
 	"path/filepath"
 	"reflect"
+	"slices"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -143,6 +148,8 @@ func samples(t testing.TB) ([]clientSample, []serverSample) {
 			detail = Detail{Class: classify.Opaque, Demotion: classify.NotFreedraw}
 		case BulkDeleteGuard:
 			detail.Limit = 25
+		case UnknownFile, FileExists, FileDeleted, PathTaken, StaleDelete, InvalidBase, ReadOnlyPath, ClassChange, GroupRequired, RebaseRequired, WholeDocumentRequired, BlobMissing, Internal:
+			// These codes carry no detail.
 		}
 		servers = append(servers, serverSample{"reject_" + string(code), Reject{id, code, detail}})
 	}
@@ -170,14 +177,14 @@ func golden(t *testing.T, path string, v any) {
 	b = append(b, '\n')
 	p := filepath.Join("../../schema/protocol", path)
 	if *updateProtocol {
-		if e = os.MkdirAll(filepath.Dir(p), 0755); e != nil {
+		if e = os.MkdirAll(filepath.Dir(p), 0750); e != nil {
 			t.Fatal(e)
 		}
-		if e = os.WriteFile(p, b, 0644); e != nil {
+		if e = os.WriteFile(p, b, 0600); e != nil {
 			t.Fatal(e)
 		}
 	}
-	want, e := os.ReadFile(p)
+	want, e := os.ReadFile(p) // #nosec G304 -- path is a fixed test fixture destination.
 	if e != nil {
 		t.Fatal(e)
 	}
@@ -227,7 +234,7 @@ type invalidFixture struct{ Name, Frame, Tier, Code, Field, Reason string }
 func TestInvalidFixtures(t *testing.T) {
 	for _, direction := range []string{"c2s", "s2c"} {
 		t.Run(direction, func(t *testing.T) {
-			raw, e := os.ReadFile("../../schema/protocol/" + direction + "/invalid.json")
+			raw, e := os.ReadFile("../../schema/protocol/" + direction + "/invalid.json") // #nosec G304 -- direction is a closed literal list.
 			if e != nil {
 				t.Fatal(e)
 			}
@@ -272,5 +279,82 @@ func TestInvalidFixtures(t *testing.T) {
 				})
 			}
 		})
+	}
+}
+
+// Catalogue coverage discovers sealed implementers from their marker methods;
+// adding a new type without a fixture must fail even if a switch still compiles.
+func TestCatalogueComplete(t *testing.T) {
+	clients, servers := samples(t)
+	seen := map[string]map[string]bool{"clientMsg": {}, "serverMsg": {}, "body": {}}
+	for _, s := range clients {
+		seen["clientMsg"][reflect.TypeOf(s.msg).Name()] = true
+		if submit, ok := s.msg.(Submit); ok {
+			seen["body"][reflect.TypeOf(submit.Body).Name()] = true
+		}
+	}
+	for _, s := range servers {
+		seen["serverMsg"][reflect.TypeOf(s.msg).Name()] = true
+	}
+	source, e := parser.ParseFile(token.NewFileSet(), "types.go", nil, 0)
+	if e != nil {
+		t.Fatal(e)
+	}
+	for _, d := range source.Decls {
+		fn, ok := d.(*ast.FuncDecl)
+		if !ok || fn.Recv == nil {
+			continue
+		}
+		group, ok := seen[fn.Name.Name]
+		if !ok {
+			continue
+		}
+		receiver, ok := fn.Recv.List[0].Type.(*ast.Ident)
+		if !ok {
+			t.Fatal("unexpected sealed receiver")
+		}
+		if !group[receiver.Name] {
+			t.Errorf("missing %s fixture: %s", fn.Name.Name, receiver.Name)
+		}
+	}
+	catalogue, e := parser.ParseFile(token.NewFileSet(), "codes.go", nil, 0)
+	if e != nil {
+		t.Fatal(e)
+	}
+	for _, d := range catalogue.Decls {
+		decl, ok := d.(*ast.GenDecl)
+		if !ok || decl.Tok != token.CONST {
+			continue
+		}
+		for _, spec := range decl.Specs {
+			v := spec.(*ast.ValueSpec)
+			typ, ok := v.Type.(*ast.Ident)
+			if !ok {
+				continue
+			}
+			for _, value := range v.Values {
+				lit, ok := value.(*ast.BasicLit)
+				if !ok {
+					continue
+				}
+				if typ.Name == "Code" {
+					s, e := strconv.Unquote(lit.Value)
+					if e != nil {
+						t.Fatal(e)
+					}
+					if !slices.Contains(Codes(), Code(s)) {
+						t.Error("missing rejection code", s)
+					}
+				} else if typ.Name == "QueryCode" {
+					s, e := strconv.Unquote(lit.Value)
+					if e != nil {
+						t.Fatal(e)
+					}
+					if !slices.Contains(QueryCodes(), QueryCode(s)) {
+						t.Error("missing query code", s)
+					}
+				}
+			}
+		}
 	}
 }

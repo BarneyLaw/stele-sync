@@ -17,7 +17,7 @@ func ParseToken(s string) (Token, error) {
 		return Token{}, errors.New("proto: bad token")
 	}
 	for _, r := range s[6:] {
-		if !(r >= 'A' && r <= 'Z' || r >= 'a' && r <= 'z' || r >= '0' && r <= '9' || r == '-' || r == '_') {
+		if (r < 'A' || r > 'Z') && (r < 'a' || r > 'z') && (r < '0' || r > '9') && r != '-' && r != '_' {
 			return Token{}, errors.New("proto: bad token")
 		}
 	}

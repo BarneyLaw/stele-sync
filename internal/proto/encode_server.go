@@ -3,26 +3,29 @@ package proto
 import (
 	"encoding/hex"
 	"encoding/json/jsontext"
+	"errors"
 	"fmt"
+
+	"github.com/BarneyLaw/stele-sync/internal/core/textop"
 
 	"github.com/BarneyLaw/stele-sync/internal/core/classify"
 )
 
-// EncodeServer validates locally constructed messages and bounds complete frames.
-func EncodeServer(m ServerMsg, c Config) ([]byte, error) {
-	w := wire{}
+// marshalServer is the single canonical wire representation used by both directions.
+func marshalServer(m ServerMsg, c Config) ([]byte, error) {
+	var w wire
 	var e error
 	switch v := value(m).(type) {
 	case Welcome:
 		w = wire{"t": "welcome", "device_id": v.Device, "head_seq": v.HeadSeq, "limits": advertisedWire(v.Limits)}
 	case Live:
-		w, e = changeWire(v.Change)
+		w, e = changeWire(v.Change, c)
 		w["t"] = "change"
 	case Changes:
 		entries := make([]wire, 0, len(v.Entries))
 		for _, ch := range v.Entries {
 			var cw wire
-			cw, e = changeWire(ch)
+			cw, e = changeWire(ch, c)
 			if e != nil {
 				return nil, e
 			}
@@ -57,20 +60,30 @@ func EncodeServer(m ServerMsg, c Config) ([]byte, error) {
 	if e != nil {
 		return nil, e
 	}
+	return raw, nil
+}
+
+// EncodeServer validates a locally constructed frame before it can be sent.
+func EncodeServer(m ServerMsg, c Config) ([]byte, error) {
+	raw, e := marshalServer(m, c)
+	if e != nil {
+		return nil, e
+	}
 	if _, e = DecodeServer(raw, c); e != nil {
 		return nil, e
 	}
 	return raw, nil
 }
-func changeWire(ch Change) (wire, error) {
+func changeWire(ch Change, c Config) (wire, error) {
 	w := wire{"seq": ch.Seq, "at": ch.At.Format(commitTime), "actor": actorWire(ch.Actor), "device_id": ch.Device, "client_op_id": ch.ID}
 	// Reject accidental truncation or timezone rewriting of committed timestamps.
-	if ch.At.Location().String() != "UTC" || ch.At.Nanosecond()%1000000 != 0 {
+	_, offset := ch.At.Zone()
+	if offset != 0 || ch.At.Nanosecond()%1000000 != 0 {
 		return w, ErrInvalidMessage
 	}
 	members := make([]wire, 0, len(ch.Members))
 	for _, m := range ch.Members {
-		mw, e := memberWire(m)
+		mw, e := memberWire(m, c)
 		if e != nil {
 			return w, e
 		}
@@ -79,7 +92,7 @@ func changeWire(ch Change) (wire, error) {
 	w["members"] = members
 	return w, nil
 }
-func memberWire(m Member) (wire, error) {
+func memberWire(m Member, c Config) (wire, error) {
 	w := wire{"file_id": m.File, "version": m.Version, "kind": m.Kind}
 	if !m.Path.IsZero() {
 		w["path"] = m.Path.String()
@@ -99,7 +112,7 @@ func memberWire(m Member) (wire, error) {
 	if m.Hash != nil {
 		w["hash"] = hex.EncodeToString(m.Hash[:])
 	}
-	p, e := payloadWire(m.Payload)
+	p, e := payloadWire(m.Payload, c)
 	if e != nil {
 		return w, e
 	}
@@ -108,7 +121,7 @@ func memberWire(m Member) (wire, error) {
 	}
 	return w, nil
 }
-func payloadWire(payload Payload) (wire, error) {
+func payloadWire(payload Payload, c Config) (wire, error) {
 	switch v := value(payload).(type) {
 	case nil:
 		if payload != nil {
@@ -119,7 +132,7 @@ func payloadWire(payload Payload) (wire, error) {
 		b, e := v.Op.MarshalJSON()
 		return wire{"op": jsontext.Value(b)}, e
 	case AnnotPayload:
-		b, e := v.Ops.MarshalJSON()
+		b, e := c.Annot.MarshalCommitted(v.Ops)
 		return wire{"ops": string(b)}, e
 	case BlobPayload:
 		return wire{"blob": blobWire(v.Ref)}, nil
@@ -179,12 +192,22 @@ func advertisedWire(v Advertised) wire {
 func Inline(m Member, c Config) Member {
 	switch value(m.Payload).(type) {
 	case TextPayload, AnnotPayload:
-		p, e := payloadWire(m.Payload)
+		p, e := payloadWire(m.Payload, c)
 		if e != nil {
 			return m
 		}
-		if _, e = marshalFrame(p, c.MaxInline); e == ErrFrameTooLarge {
+		encoded, err := marshalFrame(p, c.MaxInline)
+		if errors.Is(err, ErrFrameTooLarge) {
 			m.Payload = Omitted{}
+		} else if err == nil {
+			// Transforms may increase component count without exceeding the
+			// byte threshold. Inline output must also fit the reader's parser.
+			if _, ok := value(m.Payload).(TextPayload); ok {
+				r := newObject(encoded, false, "", &fault{})
+				if _, err := c.Text.Parse(r.fields["op"]); errors.Is(err, textop.ErrLimit) {
+					m.Payload = Omitted{}
+				}
+			}
 		}
 	}
 	return m
@@ -238,7 +261,7 @@ func (p *Page) Add(ch Change) (bool, error) {
 	if _, e := EncodeServer(Live{copyCh}, p.c); e != nil {
 		return false, e
 	}
-	w, e := changeWire(copyCh)
+	w, e := changeWire(copyCh, p.c)
 	if e != nil {
 		return false, e
 	}

@@ -45,7 +45,7 @@ func parse(s string) ([16]byte, error) {
 			}
 			continue
 		}
-		if !((s[i] >= '0' && s[i] <= '9') || (s[i] >= 'a' && s[i] <= 'f')) {
+		if (s[i] < '0' || s[i] > '9') && (s[i] < 'a' || s[i] > 'f') {
 			return out, ErrInvalidID
 		}
 		compact[j] = s[i]

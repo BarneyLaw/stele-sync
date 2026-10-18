@@ -75,10 +75,10 @@ func (r object) str(k string) string {
 	}
 	return s
 }
-func (r object) integer(k string, min, max int64) int64 {
+func (r object) integer(k string, minimum, maximum int64) int64 {
 	v := r.raw(k)
 	n, e := strconv.ParseInt(string(v), 10, 64)
-	if e != nil || n < min || n > max {
+	if e != nil || n < minimum || n > maximum {
 		r.fail(k, InvalidSubmission, Detail{})
 		return 0
 	}
@@ -103,7 +103,8 @@ func (r object) file(k string) ids.FileID {
 	return v
 }
 func (r object) version() ids.Version { return ids.Version(r.integer("base_version", 1, ids.MaxSafe)) }
-func (r object) path(k string) vpath.Path {
+func (r object) path() vpath.Path {
+	const k = "path"
 	v, e := vpath.Parse(r.str(k))
 	if e != nil {
 		var pe *vpath.PathError
@@ -131,7 +132,8 @@ func (r object) hash(k string) [32]byte {
 	copy(h[:], b)
 	return h
 }
-func (r object) class(k string) classify.Class {
+func (r object) class() classify.Class {
+	const k = "class"
 	s := r.str(k)
 	if s != "A" && s != "B" && s != "C" {
 		r.fail(k, InvalidSubmission, Detail{})
@@ -139,14 +141,14 @@ func (r object) class(k string) classify.Class {
 	}
 	return classify.Class(s[0])
 }
-func (r object) array(k string, max int) []jsontext.Value {
+func (r object) array(k string, maximum int) []jsontext.Value {
 	v := r.raw(k)
 	var out []jsontext.Value
 	if len(v) == 0 || v[0] != '[' || json.Unmarshal(v, &out) != nil {
 		r.fail(k, InvalidSubmission, Detail{})
 		return nil
 	}
-	if len(out) > max {
+	if len(out) > maximum {
 		r.fail(k, InvalidSubmission, Detail{})
 		return nil
 	}
@@ -160,8 +162,8 @@ func fmtCode(c CloseCode) string { return strconv.FormatUint(uint64(c), 10) }
 
 // Check depth without allocating a stack or interpreting strings. The strict
 // JSON pass below then verifies every token, including ignored unknown fields.
-func framing(frame []byte, max int) error {
-	if len(frame) > max {
+func framing(frame []byte, maximum int) error {
+	if len(frame) > maximum {
 		return &CloseError{CloseTooLarge, "frame_too_large"}
 	}
 	depth := 0
@@ -169,11 +171,12 @@ func framing(frame []byte, max int) error {
 	escaped := false
 	for _, b := range frame {
 		if quoted {
-			if escaped {
+			switch {
+			case escaped:
 				escaped = false
-			} else if b == '\\' {
+			case b == '\\':
 				escaped = true
-			} else if b == '"' {
+			case b == '"':
 				quoted = false
 			}
 			continue
@@ -195,4 +198,17 @@ func framing(frame []byte, max int) error {
 		return &CloseError{CloseProtocol, "protocol"}
 	}
 	return nil
+}
+
+func (r object) uint32(k string, positive bool) uint32 {
+	minimum := int64(0)
+	if positive {
+		minimum = 1
+	}
+	n := r.integer(k, minimum, 1<<32-1)
+	if n < 0 || n > 1<<32-1 {
+		r.fail(k, InvalidSubmission, Detail{})
+		return 0
+	}
+	return uint32(n)
 }
