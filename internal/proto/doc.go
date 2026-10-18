@@ -1,2 +1,5 @@
-// Package proto will parse bounded wire messages into validated core values in M4. It must not depend on runtime storage or sessions.
+// Package proto defines the stele.v1 wire contract. Client frames are strict;
+// server frames allow unknown members. Decoding is bounded and never consults
+// state. Correlation is trusted only after the entire JSON frame passes syntax,
+// Unicode and duplicate-name checks. Annotation bytes travel inside strings.
 package proto
