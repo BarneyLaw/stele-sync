@@ -1,8 +1,29 @@
-# obsync-single: Implementation Guide
+# stele-sync: Implementation Guide
 
-2026-09-20 · @Someone
+2026-09-20 · @Someone · naming updated 2026-10-18
 
-Build obsync-single as fifteen milestones, pure core first and wiring last, where each milestone ends with tests that prove it works before anything depends on it.
+Build stele-sync (phase 2 of stele, formerly obsync-single) as fifteen milestones, pure core first and wiring last, where each milestone ends with tests that prove it works before anything depends on it.
+
+## Naming
+
+The project name is final: **stele**. Phase 1 ships as `stele-pull`; phase 2 is `stele-sync`. Recorded in ADR 027 (written with M4, see `../internal/proto/M4 proposal proto.md`, section 13).
+
+| Renamed now (not yet deployed or frozen) | Was |
+| --- | --- |
+| `cmd/stele-server` | `cmd/obsync-server` |
+| `cmd/stelectl` | `cmd/obsyncctl` |
+| WebSocket subprotocol `stele.v1` | `obsync.v1` |
+| Device token prefix `stele_` | `obs_` |
+| Phase 2 metric prefix `stele_` | `obsync_` |
+| NOTIFY channel `stele_changes` | `obsync_changes` |
+| Garage bucket `stele-sync` | `obsync-sync` |
+| Phase 2 plugin id `stele-sync` | undecided |
+| Postgres database and role `stele` | `obsync` |
+| HTTP headers `Stele-*` | none |
+
+Deployed phase 1 resources keep their names until a deliberate migration, because renaming them means moving live data or recreating cluster objects: Garage bucket `obsync`, Kubernetes namespace `obsync` (phase 2 deploys into it), the `garage-obsync` and `obsync-worker` Argo CD applications, and the phase 1 plugin's `obsync:pull-scope` rule key. Phase 1's own binaries and plugin id are already `stele-pull` and `stele-pull-worker`.
+
+Milestone text below uses the new names. Repository paths and links that point at existing phase 1 history (`obsync-man-worker`, `legacy/`) are left as they are.
 
 ## Build order
 
@@ -20,7 +41,7 @@ flowchart TD
   M4 --> M6[M6 blob]
   M5 --> M7[M7 engine]
   M7 --> M8[M8 hub and sessions]
-  M8 --> M9[M9 auth, obsyncctl]
+  M8 --> M9[M9 auth, stelectl]
   M7 --> M10[M10 compaction, GC]
   M6 --> M10
   M7 --> M11[M11 Canvas bridge]
@@ -40,19 +61,19 @@ The plugin (M13) depends only on the protocol and the shared fixtures, so it can
 | M1 | `core/textop` | Human | 2 |
 | M2 | `core/annot` | Human | 1 |
 | M3 | `core/vpath`, `classify`, `rules` | Human | 1 |
-| M4 | `proto` | Human | 1 |
+| M4 | `proto` | Human | 2 |
 | M5 | `storage/pg` | Human | 2 |
 | M6 | `blob` | Human | 1 |
 | M7 | `engine` plus simulation harness | Human | 3 |
 | M8 | `session`, hub | Human | 2 |
-| M9 | `auth`, `obsyncctl` | Human | 1 |
+| M9 | `auth`, `stelectl` | Human | 1 |
 | M10 | `compact`, `gc` | Human | 1 |
 | M11 | `canvasbridge` | Human | 1 |
-| M12 | `cmd/obsync-server`, deployment | Human, AI drafts manifests | 1 |
+| M12 | `cmd/stele-server`, deployment | Human, AI drafts manifests | 1 |
 | M13 | Plugin | AI-assisted, human-reviewed | 4 (parallel) |
 | M14 | Verification, drills, release | Human | 2 |
 
-That is about 20 part-time weeks on the critical path, consistent with the earlier two-to-four-month estimate for a hardened phase 2 plus the character-level sync added since. Treat it as a planning number, not a commitment.
+That is about 21 part-time weeks on the critical path, consistent with the earlier two-to-four-month estimate for a hardened phase 2 plus the character-level sync added since. Treat it as a planning number, not a commitment.
 
 ### How each milestone is written
 
@@ -254,62 +275,13 @@ in the verification record; unit tests do not substitute for them.
 
 ## M4: proto
 
-**M3 integration requirement.** Create/rename carry on_taken (number by default, or reject); conflict creates carry copy_of. Acks and changes include the final path and class. Decode strict vpath reasons and component indexes, and add invalid_path and class_mismatch alongside whole_document_required.
+**Superseded by `../internal/proto/M4 proposal proto.md` (accepted 2026-10-18).** That document is the M4 contract: strict client frames with three error tiers, one change record per committed transaction delivered identically live and during catch-up, bounded frames with large state fetched by reference over HTTPS, identifier types in `internal/core/ids`, the `stele.v1` subprotocol, and fixtures split by direction. It absorbs the M2 and M3 integration requirements previously listed here (`whole_document_required`, `AnnotReplace`, `on_taken`, `copy_of`, `invalid_path`, `class_mismatch`, final path and class in changes). Its section 11 lists the requirements M4 places on M5, M6, M7, M8, M9, M11, M12, M13 and M14; the milestone text below still describes the earlier design until each of those milestones is planned.
 
-**Goal.** Typed messages for every frame in the architecture doc's catalogue, a decoder that turns untrusted bytes into validated values or a precise error, and golden frames both languages agree on.
-
-**Interface.**
-
-```go
-package proto
-
-type Msg interface{ msgType() string }   // sealed: only this package implements it
-
-type Hello struct { Token string; DeviceID uuid.UUID; Proto int; LastSeq int64 }
-type Submit struct {
-    ClientOpID uuid.UUID
-    FileID     uuid.UUID
-    BaseVersion int64
-    Body       SubmitBody                    // sealed: TextEdit, AnnotEdit, AnnotReplace, PutBlob, Create, Rename, RenameGroup, Delete
-    Confirmed  bool
-}
-// ... one struct per catalogue entry
-
-type Limits struct { MaxFrame, MaxInsert, MaxOpsPerEdit, MaxPath int }
-
-func Decode(frame []byte, l Limits) (Msg, error) // *DecodeError carries the reject code
-func Encode(m Msg) ([]byte, error)
-
-type Code string                                  // reject codes, the full closed set
-const ( InvalidOp Code = "invalid_op"; StaleDelete Code = "stale_delete"; /* ... */ )
-```
-
-**Design notes.**
-
-- **Two-pass decode.** Check `len(frame) <= MaxFrame` first, then read only `t`, then decode into that type's struct. Unknown `t` is an error; unknown fields inside a known type are ignored.
-- **Parse, don't validate.** `Decode` calls `textop.Parse`, `annot` op parsing and `vpath.Parse`, so a decoded `Submit` carries a canonical `textop.Op` and a legal `vpath.Path`. Nothing downstream re-checks.
-- **Payload-only.** `proto` checks shape and limits, not state. Whether `base_version` is stale is the engine's decision.
-- **Class B.** AnnotEdit calls annot.ParseOps, which rejects the trusted Replace flag. AnnotReplace carries a full parsed document. Add whole_document_required; the engine performs the base == head check before constructing ReplaceOps. Preserve raw operation bytes through framing (an outer json.Marshal can HTML-escape custom Marshaler output).
-- **Numbers.** Versions and sequence numbers are `int64` in Go and fit safely in JavaScript numbers below 2^53; the decoder rejects anything larger rather than letting JavaScript round it.
-- Protocol version constants and the reject-code list are exported to `schema/protocol/codes.json` so the plugin imports the same set.
-
-**Fixtures.** `schema/protocol/valid/*.json` holds one or more frames per message type; `schema/protocol/invalid/*.json` holds malformed frames, each with the expected code. The plugin's decoder must accept and reject exactly the same files.
-
-**Proof.**
-
-| Test | Asserts |
-| --- | --- |
-| `TestPropRoundTrip` (rapid generators per type) | `Decode(Encode(m)) == m` |
-| `TestGoldenValid` / `TestGoldenInvalid` | Every fixture, both languages |
-| `TestLimits` | Oversize frame, insert, op count and path each rejected with `too_large` before any allocation proportional to input |
-| `TestExhaustive` | A reflection check that every catalogue type has an encoder, a decoder case and at least one valid fixture |
-| `FuzzDecode` | No panic; allocation stays bounded (checked with `testing.AllocsPerRun` on large inputs) |
-
-**Exit criteria.** Fuzzing 10 minutes clean; golden fixtures green in Go; the TypeScript side of the fixtures exists as failing tests the plugin work (M13) must turn green.
+**Exit criteria (summary).** Properties pass at 100,000 cases; each fuzz target runs 10 minutes clean; coverage above 90% in `ids` and `proto`; fixtures pass in Go and TypeScript and regenerate without a diff; step 0 measurements recorded in `docs/m4-verification.md`; ADRs 023 to 027 merged.
 
 ## M5: storage/pg
 
-**M3 integration requirement.** Store vpath.Key in files.path_key and KeyScheme on the vault row. Refuse startup on a mismatch; an explicit obsyncctl rekey recomputes and reports collisions. FreeName lookup is inside the locked transaction; the unique index remains the final guard.
+**M3 integration requirement.** Store vpath.Key in files.path_key and KeyScheme on the vault row. Refuse startup on a mismatch; an explicit stelectl rekey recomputes and reports collisions. FreeName lookup is inside the locked transaction; the unique index remains the final guard.
 
 **Goal.** The schema from the architecture doc as goose migrations, and a Postgres implementation of the engine's storage port that makes the write path atomic, ordered and idempotent.
 
@@ -344,7 +316,7 @@ type Tx interface {
 - `pg_notify` inside the transaction is delivered only if it commits. The hub (M8) uses it as a wake-up, never as the data; the data is always re-read from `changes`.
 - Queries through `sqlc`; each query file names the milestone and the use. Hot-path `EXPLAIN` outputs go in the PR.
 - Class B heads and snapshots store annot.EncodeState bytes. Class B op payloads store the exact effective encoding. Use bytea/text, not jsonb, so order keys, tombstones and opaque JSON bytes survive restart unchanged.
-- Migrations embedded with `embed.FS` and run by `obsyncctl migrate`; the server checks `goose` version on start and refuses to run against an unexpected one.
+- Migrations embedded with `embed.FS` and run by `stelectl migrate`; the server checks `goose` version on start and refuses to run against an unexpected one.
 
 **Proof** (all against a real Postgres via testcontainers-go, `-race` on).
 
@@ -485,12 +457,12 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) // /v1/ws
 
 **Design notes.**
 
-- **Library:** `github.com/coder/websocket`. `Accept` with `OriginPatterns` from config, subprotocol `obsync.v1`, `SetReadLimit(MaxFrame)`, compression off (simpler, and avoids compression side-channel concerns).
+- **Library:** `github.com/coder/websocket`. `Accept` with `OriginPatterns` from config, subprotocol `stele.v1`, `SetReadLimit(MaxFrame)`, compression off (simpler, and avoids compression side-channel concerns).
 - **Per session, exactly two goroutines**: a reader (decode, rate-limit, dispatch to engine) and a writer (drains a bounded outbound queue, sends pings). The reader never writes to the socket; it enqueues. When either exits, the session's context is cancelled and the other exits too.
 - **Handshake:** a 5 s deadline for `hello`; nothing else is decoded before it. Auth failure closes 4401. A second session for the same device closes the first with 4409.
-- **Hub loop.** One goroutine. It wakes on `LISTEN obsync_changes` (a dedicated connection) or a 1 s fallback tick, calls `ChangesAfter(published, 500)` in a loop, appends to a ring of the last 10,000 changes, and for each change enqueues `ack` to the originating device's session and `remote` to all others. `NOTIFY` is only a doorbell, so a missed notification costs at most one tick of latency, never a lost change.
+- **Hub loop.** One goroutine. It wakes on `LISTEN stele_changes` (a dedicated connection) or a 1 s fallback tick, calls `ChangesAfter(published, 500)` in a loop, appends to a ring of the last 10,000 changes, and for each change enqueues `ack` to the originating device's session and `remote` to all others. `NOTIFY` is only a doorbell, so a missed notification costs at most one tick of latency, never a lost change.
 - **Catch-up then live.** A new session answers `pull_changes` from the database itself (not the hub goroutine, so a big catch-up never stalls fan-out). When its cursor is within the ring, it calls `Join`; the hub atomically enqueues ring entries after the cursor and marks the session live. If the cursor fell out of the ring in the meantime, `Join` returns false and the session pulls again.
-- **Backpressure.** Enqueue is non-blocking. A full queue (1,024 frames or 8 MiB) closes the session with 4429 and increments `obsync_slow_consumer_closes_total`. The hub never waits on a session.
+- **Backpressure.** Enqueue is non-blocking. A full queue (1,024 frames or 8 MiB) closes the session with 4429 and increments `stele_slow_consumer_closes_total`. The hub never waits on a session.
 - **Inbound limits:** token bucket per device (50/s, burst 200); in-flight counts per file and per device checked before calling the engine.
 - **Heartbeat:** ping every 20 s; no pong in 10 s cancels the session.
 - **Panics** in a session goroutine are recovered, logged with the event `session.panic`, and close only that session with 1011.
@@ -514,7 +486,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) // /v1/ws
 
 **Exit criteria.** The reference client from M7 syncs through real sockets against a real Postgres, and the simulator's invariants hold in an end-to-end test with 5 socket clients for 10 minutes.
 
-## M9: auth and obsyncctl
+## M9: auth and stelectl
 
 **Goal.** Devices are enrolled with a one-time code and revoked instantly, and every administrative action is a CLI command that talks to Postgres directly, so operating the system never requires editing rows by hand.
 
@@ -530,18 +502,18 @@ func Revoke(ctx context.Context, st Store, id DeviceID) error                   
 ```
 
 ```
-obsyncctl migrate
-obsyncctl device add <name> | list | revoke <name|id>
-obsyncctl file history <path> | show <path> --version N | restore <path> --version N
-obsyncctl file undelete <path>
-obsyncctl feed tail                     # live view of the change feed, for debugging
-obsyncctl check                         # recompute every head hash from snapshot + ops; report mismatches
+stelectl migrate
+stelectl device add <name> | list | revoke <name|id>
+stelectl file history <path> | show <path> --version N | restore <path> --version N
+stelectl file undelete <path>
+stelectl feed tail                     # live view of the change feed, for debugging
+stelectl check                         # recompute every head hash from snapshot + ops; report mismatches
 ```
 
 **Design notes.**
 
 - Codes: 8 characters from an unambiguous alphabet (no 0/O, 1/l), stored hashed, 10 minute TTL, deleted on use. `/v1/enroll` is rate-limited per source address, since it is the only unauthenticated write endpoint.
-- Tokens: 32 bytes from `crypto/rand`, base64url, prefixed `obs_` so a leaked one is greppable in logs and secret scanners. Stored as SHA-256; compared with `subtle.ConstantTimeCompare` after lookup by hash.
+- Tokens: 32 bytes from `crypto/rand`, base64url, prefixed `stele_` so a leaked one is greppable in logs and secret scanners. Stored as SHA-256; compared with `subtle.ConstantTimeCompare` after lookup by hash.
 - Revocation publishes a notification; the hub closes that device's session within one second.
 - `file restore` does not rewrite history. It submits a new edit (through the engine, as the system device) that makes the head equal the old version, so devices receive it as a normal change.
 - `check` is the offline version of the convergence audit and doubles as a corruption detector for snapshots.
@@ -557,7 +529,7 @@ obsyncctl check                         # recompute every head hash from snapsho
 | `TestCheckDetectsCorruption` | A tampered snapshot is reported |
 | CLI golden tests | Each command's output on a seeded database matches a golden file |
 
-**Exit criteria.** A device can be enrolled, used, revoked and re-enrolled using only `obsyncctl` and the plugin; a deleted file can be restored.
+**Exit criteria.** A device can be enrolled, used, revoked and re-enrolled using only `stelectl` and the plugin; a deleted file can be restored.
 
 ## M10: compaction and GC
 
@@ -601,7 +573,7 @@ func Collect(ctx context.Context, st Store, objs objects.Store, now time.Time, d
 | `TestGCConcurrentUpload` | An upload in progress (in `tmp/`, younger than 24 h) is never collected |
 | Garage integration | Compaction and GC against real Garage |
 
-**Exit criteria.** In the simulator with compaction enabled, all M7 invariants still hold; `obsyncctl check` reports zero mismatches after a 24 h local soak.
+**Exit criteria.** In the simulator with compaction enabled, all M7 invariants still hold; `stelectl check` reports zero mismatches after a 24 h local soak.
 
 ## M11: Canvas bridge
 
@@ -624,7 +596,7 @@ func (b *Bridge) Run(ctx context.Context) error   // poll every 5 min; one cours
 **Design notes.**
 
 - **Read-only against phase 1.** The bridge holds a read-only key on bucket `obsync`. It reads `manifests/<course>/latest` and the referenced manifest, using phase 1's `manifest` package unchanged, and remembers per course the last imported `run_id` in a small `canvas_imports` table.
-- **Blob transfer by hash.** A phase 1 blob is already SHA-256 addressed. Copy it into `obsync-sync` through `blob.Service.Put` (which re-verifies the hash) only if not already present.
+- **Blob transfer by hash.** A phase 1 blob is already SHA-256 addressed. Copy it into `stele-sync` through `blob.Service.Put` (which re-verifies the hash) only if not already present.
 - **Mapping** (phase 1 entry state to action): `stored` new path: create; `stored` changed hash: put blob, notice `canvas.changed`; path gone or `deleted`: delete the PDF only, notice `canvas.removed`; `skipped`, `locked`, `failed`: nothing in the vault, but `locked` can surface a notice `canvas.upcoming` if you want it later.
 - **Resurrection** (phase 1's re-upload case, new Canvas id, same path): treated as a change, not delete plus create, so sidecars stay paired.
 - **Ownership:** all bridge submissions use the `canvas` system device and `owner = 'canvas'`. The engine rejects device writes to canvas-owned Class C files with `read_only_path`. A user renaming a Canvas file is also refused; the path is the lecturer's.
@@ -645,7 +617,7 @@ func (b *Bridge) Run(ctx context.Context) error   // poll every 5 min; one cours
 
 ## M12: server assembly and deployment
 
-**Goal.** `cmd/obsync-server` wires the proven components into one process that starts safely, shuts down cleanly, exposes health and metrics, and runs in the K3s cluster through Argo CD.
+**Goal.** `cmd/stele-server` wires the proven components into one process that starts safely, shuts down cleanly, exposes health and metrics, and runs in the K3s cluster through Argo CD.
 
 **Wiring (`main.go`, nothing else in it).**
 
@@ -666,14 +638,14 @@ The advisory-lock connection is watched: if it drops, the process cancels its ro
 
 **Two listeners.** Public (`:8443` behind ingress): `/v1/ws`, `/v1/blobs/*`, `/v1/enroll`. Internal (`:9090`, never exposed): `/livez`, `/readyz`, `/metrics`, `/debug/pprof`.
 
-**Deployment files** (`deploy/apps/obsync-server/`, kustomize, bootstrapped into homelab-cicd-config as in phase 1):
+**Deployment files** (`deploy/apps/stele-server/`, kustomize, bootstrapped into homelab-cicd-config as in phase 1):
 
 | File | Contents |
 | --- | --- |
 | `deployment.yaml` | `replicas: 1`, `strategy: Recreate`, `terminationGracePeriodSeconds: 30`, probes on the internal port, non-root, read-only root filesystem, resources from the architecture doc |
-| `migrate-job.yaml` | Argo CD PreSync hook running `obsyncctl migrate` |
+| `migrate-job.yaml` | Argo CD PreSync hook running `stelectl migrate` |
 | `cluster.yaml` | CloudNativePG `Cluster`, 1 instance, WAL archive and scheduled base backup to the backup Garage |
-| `garage-bucket` notes | Bucket `obsync-sync` and its key created on the existing Garage (documented commands, as in phase 1's deploy README) |
+| `garage-bucket` notes | Bucket `stele-sync` and its key created on the existing Garage (documented commands, as in phase 1's deploy README) |
 | `ingress.yaml` | Tailnet-only host, TLS |
 | `servicemonitor.yaml`, `prometheusrule.yaml` | Scrape config and the alerts listed in the architecture doc |
 | `gc-cronjob.yaml` | Daily, `Forbid` |
@@ -702,7 +674,7 @@ The advisory-lock connection is watched: if it drops, the process cancels its ro
 **Build order inside the milestone** (each step green before the next):
 
 1. **`core/` passes every shared fixture**: textop, annot, protocol, classify, client scenarios. No Obsidian code yet. The Go fixtures written in M1 to M7 define done.
-2. **`transport/`**: WebSocket client (`obsync.v1`), hello-first auth, reconnect with full jitter, heartbeat reply, ordered inbound queue, blob upload and Range download through `requestUrl` with `appendBinary`.
+2. **`transport/`**: WebSocket client (`stele.v1`), hello-first auth, reconnect with full jitter, heartbeat reply, ordered inbound queue, blob upload and Range download through `requestUrl` with `appendBinary`.
 3. **`vault/` shadow store**: IndexedDB; shadow text, `base_version`, pending buffer and `last_seq`, updated transactionally after each applied server message.
 4. **`vault/` editor bridge**: a CodeMirror 6 extension registered with `registerEditorExtension`. It converts local transactions to text ops, skips any transaction carrying the plugin's `remote` annotation, and applies remote ops as a single dispatched transaction with that annotation so cursor and selection map correctly.
 5. **`vault/` file watcher**: `create`, `modify`, `delete`, `rename` vault events. For a file not open in an editor, a `modify` is diffed against the shadow to produce an op. The plugin's own writes are recognized by comparing the new content's hash with the content it just wrote, so they are never echoed.
@@ -721,7 +693,7 @@ The advisory-lock connection is watched: if it drops, the process cancels its ro
 | Test | Asserts |
 | --- | --- |
 | Contract suites | Every fixture in `schema/` passes in Vitest |
-| `transport` against the real server | CI starts `obsync-server` with Postgres; a Node harness runs the plugin's `core` and `transport` against it and syncs with the Go reference client |
+| `transport` against the real server | CI starts `stele-server` with Postgres; a Node harness runs the plugin's `core` and `transport` against it and syncs with the Go reference client |
 | Property tests (fast-check) | Client state machine: any interleaving of local edits and server messages converges with a model server |
 | Echo test | Applying a remote op produces zero outgoing submissions |
 | Crash recovery | Kill the harness mid-edit; on restart the diff against the shadow regenerates exactly the lost pending edit |
@@ -731,7 +703,7 @@ The advisory-lock connection is watched: if it drops, the process cancels its ro
 
 ## M14: verification and release
 
-**M3 integration requirement.** Add obsync_class_mismatch_total (expected zero), obsync_names_assigned_total{marker}, obsync_bulk_delete_guard_total{outcome}, and obsync_invalid_path_total{reason}. Re-run the recorded platform and application probes on supported devices.
+**M3 integration requirement.** Add stele_class_mismatch_total (expected zero), stele_names_assigned_total{marker}, stele_bulk_delete_guard_total{outcome}, and stele_invalid_path_total{reason}. Re-run the recorded platform and application probes on supported devices.
 
 **Goal.** Every success criterion S1 to S15 in the architecture doc has recorded evidence from the deployed system, and v1.0.0 is tagged only when all of them pass.
 
@@ -749,7 +721,7 @@ The advisory-lock connection is watched: if it drops, the process cancels its ro
 | S1 OT correctness | M1 properties at 1,000,000 cases; oracle suite | CI log |
 | S2 chaos convergence | `tools/sim` 10,000 seeds | Nightly log |
 | S3 crash durability | `tools/chaos`, 100 kills over a 50,000-op workload | Report: 0 lost, 0 duplicated |
-| S4 real-device soak | 7 days, desktop plus Android plus loadgen at low rate | Dashboard screenshot of `obsync_convergence_mismatch_total` = 0 |
+| S4 real-device soak | 7 days, desktop plus Android plus loadgen at low rate | Dashboard screenshot of `stele_convergence_mismatch_total` = 0 |
 | S5 latency | Latency probe, 10,000 samples | Percentile report |
 | S6, S7 offline | Scripted with two reference clients and a virtual 24 h gap, then repeated by hand on devices | Test log plus manual notes |
 | S8 namespace | Scripted race suite | Test log |
@@ -767,7 +739,7 @@ The advisory-lock connection is watched: if it drops, the process cancels its ro
 - [ ] Open questions in the architecture doc resolved or explicitly deferred with an ADR.
 - [ ] Runbooks complete: deploy, rollback, revoke, restore version, restore backup, rotate TLS.
 - [ ] Alerts tested by triggering each at least once.
-- [ ] Final project name applied; plugin id stable.
+- [ ] Stele names applied as in the Naming section; plugin id `stele-sync` stable.
 - [ ] README states what is proven, how, and what is out of scope, with links to the evidence. That is the portfolio artifact.
 - [ ] Tag `v1.0.0`; protocol version 1 frozen.
 
