@@ -1,0 +1,217 @@
+[
+  {
+    "name": "hello",
+    "frame": {
+      "t": "hello",
+      "token": "stele_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    }
+  },
+  {
+    "name": "pull_changes",
+    "frame": {
+      "after_seq": 0,
+      "req": 1,
+      "t": "pull_changes"
+    }
+  },
+  {
+    "name": "list_files",
+    "frame": {
+      "req": 1,
+      "t": "list_files"
+    }
+  },
+  {
+    "name": "list_files_after",
+    "frame": {
+      "after_file_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "req": 2,
+      "t": "list_files"
+    }
+  },
+  {
+    "name": "pong",
+    "frame": {
+      "n": 0,
+      "t": "pong"
+    }
+  },
+  {
+    "name": "text_edit",
+    "frame": {
+      "base_version": 1,
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "file_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "kind": "text_edit",
+      "op": [
+        2,
+        "hi",
+        -1
+      ],
+      "t": "submit"
+    }
+  },
+  {
+    "name": "annot_edit",
+    "frame": {
+      "base_version": 1,
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "file_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "kind": "annot_edit",
+      "ops": "{\"elements\":[],\"entries\":[],\"meta\":{\"put\":{\"raw\":{\"n\":1.0,\"s\":\"\\u0061\u003c\u003e\u0026\"}},\"del\":[]}}",
+      "t": "submit"
+    }
+  },
+  {
+    "name": "annot_replace_inline",
+    "frame": {
+      "base_version": 1,
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "content": {
+        "sidecar": "{\"a\":1.0,\"s\":\"\\u0061\u003c\u003e\u0026\"}"
+      },
+      "file_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "kind": "annot_replace",
+      "t": "submit"
+    }
+  },
+  {
+    "name": "annot_replace_blob",
+    "frame": {
+      "base_version": 1,
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "content": {
+        "blob": {
+          "sha256": "0102030000000000000000000000000000000000000000000000000000000000",
+          "size": 123
+        }
+      },
+      "file_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "kind": "annot_replace",
+      "t": "submit"
+    }
+  },
+  {
+    "name": "put_blob",
+    "frame": {
+      "base_version": 1,
+      "blob": {
+        "sha256": "0102030000000000000000000000000000000000000000000000000000000000",
+        "size": 123
+      },
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "file_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "kind": "put_blob",
+      "t": "submit"
+    }
+  },
+  {
+    "name": "create_a",
+    "frame": {
+      "class": "A",
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "content": {
+        "text": "hello 😀\r\n\u003c\u003e\u0026"
+      },
+      "file_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "kind": "create",
+      "on_taken": "number",
+      "path": "notes/a.md",
+      "t": "submit"
+    }
+  },
+  {
+    "name": "create_b",
+    "frame": {
+      "class": "B",
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "content": {
+        "sidecar": "{\"strokes\":[],\"raw\":1.0}"
+      },
+      "file_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "kind": "create",
+      "on_taken": "number",
+      "path": "a.pdf.annot.json",
+      "t": "submit"
+    }
+  },
+  {
+    "name": "create_c",
+    "frame": {
+      "class": "C",
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "content": {
+        "blob": {
+          "sha256": "0102030000000000000000000000000000000000000000000000000000000000",
+          "size": 123
+        }
+      },
+      "file_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "kind": "create",
+      "on_taken": "reject",
+      "path": "a.pdf",
+      "t": "submit"
+    }
+  },
+  {
+    "name": "create_copy",
+    "frame": {
+      "class": "A",
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "content": {
+        "blob": {
+          "sha256": "0102030000000000000000000000000000000000000000000000000000000000",
+          "size": 123
+        }
+      },
+      "copy_of": {
+        "file_id": "019a1b2c-0000-7000-8000-000000000abd",
+        "reason": "rebase"
+      },
+      "file_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "kind": "create",
+      "on_taken": "number",
+      "path": "a.md",
+      "t": "submit"
+    }
+  },
+  {
+    "name": "rename",
+    "frame": {
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "file_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "kind": "rename",
+      "on_taken": "number",
+      "path": "b.md",
+      "t": "submit"
+    }
+  },
+  {
+    "name": "rename_group",
+    "frame": {
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "kind": "rename_group",
+      "on_taken": "reject",
+      "pdf": {
+        "file_id": "019a1b2c-0000-7000-8000-000000000abc",
+        "path": "b.pdf"
+      },
+      "sidecar": {
+        "file_id": "019a1b2c-0000-7000-8000-000000000abd",
+        "path": "b.pdf.annot.json"
+      },
+      "t": "submit"
+    }
+  },
+  {
+    "name": "delete",
+    "frame": {
+      "base_version": 1,
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "confirmed": true,
+      "file_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "kind": "delete",
+      "t": "submit"
+    }
+  }
+]

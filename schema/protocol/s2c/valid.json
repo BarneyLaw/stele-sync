@@ -1,0 +1,624 @@
+[
+  {
+    "name": "welcome",
+    "frame": {
+      "device_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "head_seq": 0,
+      "limits": {
+        "classify": {
+          "max_sidecar": 16777216,
+          "max_text": 8388608,
+          "text_exts": [
+            "md",
+            "txt",
+            "mdx"
+          ]
+        },
+        "guard": {
+          "buckets": 30,
+          "max_count": 25,
+          "min_for_ratio": 5,
+          "ratio": 0.1,
+          "window_ms": 300000
+        },
+        "inflight_per_device": 64,
+        "max_frame": 1048576,
+        "max_server_frame": 2097152,
+        "page_entries": 500,
+        "rate": {
+          "burst": 200,
+          "per_sec": 50
+        },
+        "split_bytes": 524288
+      },
+      "t": "welcome"
+    }
+  },
+  {
+    "name": "ping",
+    "frame": {
+      "n": 0,
+      "t": "ping"
+    }
+  },
+  {
+    "name": "changes_empty",
+    "frame": {
+      "entries": [],
+      "more": false,
+      "req": 1,
+      "t": "changes"
+    }
+  },
+  {
+    "name": "change_text",
+    "frame": {
+      "actor": "device",
+      "at": "2026-10-18T09:30:00.123Z",
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "device_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "members": [
+        {
+          "file_id": "019a1b2c-0000-7000-8000-000000000abc",
+          "kind": "text_edit",
+          "len": 4,
+          "op": [
+            2,
+            "hi",
+            -1
+          ],
+          "version": 2
+        }
+      ],
+      "seq": 1,
+      "t": "change"
+    }
+  },
+  {
+    "name": "change_annot",
+    "frame": {
+      "actor": "device",
+      "at": "2026-10-18T09:30:00.123Z",
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "device_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "members": [
+        {
+          "file_id": "019a1b2c-0000-7000-8000-000000000abc",
+          "hash": "0908070000000000000000000000000000000000000000000000000000000000",
+          "kind": "annot_edit",
+          "ops": "{\"elements\":[],\"entries\":[],\"meta\":{\"put\":{\"raw\":{\"n\":1.0,\"s\":\"\\u0061\u003c\u003e\u0026\"}},\"del\":[]}}",
+          "version": 2
+        }
+      ],
+      "seq": 1,
+      "t": "change"
+    }
+  },
+  {
+    "name": "changes",
+    "frame": {
+      "entries": [
+        {
+          "actor": "device",
+          "at": "2026-10-18T09:30:00.123Z",
+          "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+          "device_id": "019a1b2c-0000-7000-8000-000000000abc",
+          "members": [
+            {
+              "file_id": "019a1b2c-0000-7000-8000-000000000abc",
+              "kind": "text_edit",
+              "len": 4,
+              "op": [
+                2,
+                "hi",
+                -1
+              ],
+              "version": 2
+            }
+          ],
+          "seq": 1
+        }
+      ],
+      "more": true,
+      "req": 1,
+      "t": "changes"
+    }
+  },
+  {
+    "name": "create_a",
+    "frame": {
+      "actor": "device",
+      "at": "2026-10-18T09:30:00.123Z",
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "device_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "members": [
+        {
+          "class": "A",
+          "file_id": "019a1b2c-0000-7000-8000-000000000abc",
+          "kind": "create",
+          "len": 4,
+          "op": [
+            2,
+            "hi",
+            -1
+          ],
+          "origin": {
+            "copy_of": "019a1b2c-0000-7000-8000-000000000abd",
+            "reason": "first_sync"
+          },
+          "owner": "user",
+          "path": "a.md",
+          "version": 1
+        }
+      ],
+      "seq": 1,
+      "t": "change"
+    }
+  },
+  {
+    "name": "create_b",
+    "frame": {
+      "actor": "device",
+      "at": "2026-10-18T09:30:00.123Z",
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "device_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "members": [
+        {
+          "class": "B",
+          "file_id": "019a1b2c-0000-7000-8000-000000000abc",
+          "hash": "0908070000000000000000000000000000000000000000000000000000000000",
+          "kind": "create",
+          "ops": "{\"elements\":[],\"entries\":[],\"meta\":{\"put\":{\"appendedPages\":[{\"n\":1.0}]},\"del\":[]},\"replace\":true}",
+          "owner": "user",
+          "path": "a.pdf.annot.json",
+          "version": 1
+        }
+      ],
+      "seq": 1,
+      "t": "change"
+    }
+  },
+  {
+    "name": "create_c",
+    "frame": {
+      "actor": "device",
+      "at": "2026-10-18T09:30:00.123Z",
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "device_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "members": [
+        {
+          "blob": {
+            "sha256": "0102030000000000000000000000000000000000000000000000000000000000",
+            "size": 123
+          },
+          "class": "C",
+          "file_id": "019a1b2c-0000-7000-8000-000000000abc",
+          "kind": "create",
+          "origin": {
+            "copy_of": "019a1b2c-0000-7000-8000-000000000abd",
+            "reason": "stale_put"
+          },
+          "owner": "canvas",
+          "path": "a.pdf",
+          "version": 1
+        }
+      ],
+      "seq": 1,
+      "t": "change"
+    }
+  },
+  {
+    "name": "omitted_text",
+    "frame": {
+      "actor": "device",
+      "at": "2026-10-18T09:30:00.123Z",
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "device_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "members": [
+        {
+          "file_id": "019a1b2c-0000-7000-8000-000000000abc",
+          "kind": "text_edit",
+          "len": 4,
+          "omitted": true,
+          "version": 2
+        }
+      ],
+      "seq": 1,
+      "t": "change"
+    }
+  },
+  {
+    "name": "omitted_annot",
+    "frame": {
+      "actor": "device",
+      "at": "2026-10-18T09:30:00.123Z",
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "device_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "members": [
+        {
+          "file_id": "019a1b2c-0000-7000-8000-000000000abc",
+          "hash": "0908070000000000000000000000000000000000000000000000000000000000",
+          "kind": "annot_edit",
+          "omitted": true,
+          "version": 2
+        }
+      ],
+      "seq": 1,
+      "t": "change"
+    }
+  },
+  {
+    "name": "put_blob",
+    "frame": {
+      "actor": "bridge",
+      "at": "2026-10-18T09:30:00.123Z",
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "device_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "members": [
+        {
+          "blob": {
+            "sha256": "0102030000000000000000000000000000000000000000000000000000000000",
+            "size": 123
+          },
+          "file_id": "019a1b2c-0000-7000-8000-000000000abc",
+          "kind": "put_blob",
+          "version": 2
+        }
+      ],
+      "seq": 1,
+      "t": "change"
+    }
+  },
+  {
+    "name": "rename",
+    "frame": {
+      "actor": "device",
+      "at": "2026-10-18T09:30:00.123Z",
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "device_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "members": [
+        {
+          "file_id": "019a1b2c-0000-7000-8000-000000000abc",
+          "kind": "rename",
+          "path": "new.md",
+          "version": 2
+        }
+      ],
+      "seq": 1,
+      "t": "change"
+    }
+  },
+  {
+    "name": "delete",
+    "frame": {
+      "actor": "admin",
+      "at": "2026-10-18T09:30:00.123Z",
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "device_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "members": [
+        {
+          "file_id": "019a1b2c-0000-7000-8000-000000000abc",
+          "kind": "delete",
+          "version": 2
+        }
+      ],
+      "seq": 1,
+      "t": "change"
+    }
+  },
+  {
+    "name": "rename_group",
+    "frame": {
+      "actor": "device",
+      "at": "2026-10-18T09:30:00.123Z",
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "device_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "members": [
+        {
+          "file_id": "019a1b2c-0000-7000-8000-000000000abc",
+          "kind": "rename",
+          "path": "b.pdf",
+          "version": 2
+        },
+        {
+          "file_id": "019a1b2c-0000-7000-8000-000000000abd",
+          "kind": "rename",
+          "path": "b.pdf.annot.json",
+          "version": 3
+        }
+      ],
+      "seq": 1,
+      "t": "change"
+    }
+  },
+  {
+    "name": "files",
+    "frame": {
+      "files": [
+        {
+          "class": "A",
+          "file_id": "019a1b2c-0000-7000-8000-000000000abc",
+          "len": 4,
+          "owner": "user",
+          "path": "a.md",
+          "size": 4,
+          "version": 1
+        },
+        {
+          "blob": {
+            "sha256": "0102030000000000000000000000000000000000000000000000000000000000",
+            "size": 123
+          },
+          "class": "C",
+          "file_id": "019a1b2c-0000-7000-8000-000000000abd",
+          "owner": "canvas",
+          "path": "a.pdf",
+          "size": 123,
+          "version": 1
+        }
+      ],
+      "head_seq": 1,
+      "more": true,
+      "req": 1,
+      "t": "files"
+    }
+  },
+  {
+    "name": "files_b",
+    "frame": {
+      "files": [
+        {
+          "class": "B",
+          "file_id": "019a1b2c-0000-7000-8000-000000000abc",
+          "hash": "0908070000000000000000000000000000000000000000000000000000000000",
+          "owner": "user",
+          "path": "a.pdf.annot.json",
+          "size": 10,
+          "version": 1
+        }
+      ],
+      "head_seq": 1,
+      "more": false,
+      "req": 1,
+      "t": "files"
+    }
+  },
+  {
+    "name": "files_empty",
+    "frame": {
+      "files": [],
+      "head_seq": 0,
+      "more": false,
+      "req": 1,
+      "t": "files"
+    }
+  },
+  {
+    "name": "reject_invalid_submission",
+    "frame": {
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "code": "invalid_submission",
+      "detail": {
+        "field": "base_version"
+      },
+      "t": "reject"
+    }
+  },
+  {
+    "name": "reject_invalid_op",
+    "frame": {
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "code": "invalid_op",
+      "detail": {
+        "field": "ops",
+        "reason": "ErrNonCanonical"
+      },
+      "t": "reject"
+    }
+  },
+  {
+    "name": "reject_invalid_path",
+    "frame": {
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "code": "invalid_path",
+      "detail": {
+        "component": -1,
+        "field": "path",
+        "reason": "absolute"
+      },
+      "t": "reject"
+    }
+  },
+  {
+    "name": "reject_too_large",
+    "frame": {
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "code": "too_large",
+      "detail": {
+        "field": "op",
+        "limit": 1000
+      },
+      "t": "reject"
+    }
+  },
+  {
+    "name": "reject_rate_limited",
+    "frame": {
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "code": "rate_limited",
+      "detail": {
+        "retry_after_ms": 100,
+        "scope": "device"
+      },
+      "t": "reject"
+    }
+  },
+  {
+    "name": "reject_unknown_file",
+    "frame": {
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "code": "unknown_file",
+      "t": "reject"
+    }
+  },
+  {
+    "name": "reject_file_exists",
+    "frame": {
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "code": "file_exists",
+      "t": "reject"
+    }
+  },
+  {
+    "name": "reject_file_deleted",
+    "frame": {
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "code": "file_deleted",
+      "t": "reject"
+    }
+  },
+  {
+    "name": "reject_path_taken",
+    "frame": {
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "code": "path_taken",
+      "t": "reject"
+    }
+  },
+  {
+    "name": "reject_stale_delete",
+    "frame": {
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "code": "stale_delete",
+      "t": "reject"
+    }
+  },
+  {
+    "name": "reject_invalid_base",
+    "frame": {
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "code": "invalid_base",
+      "t": "reject"
+    }
+  },
+  {
+    "name": "reject_read_only_path",
+    "frame": {
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "code": "read_only_path",
+      "t": "reject"
+    }
+  },
+  {
+    "name": "reject_class_change",
+    "frame": {
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "code": "class_change",
+      "t": "reject"
+    }
+  },
+  {
+    "name": "reject_group_required",
+    "frame": {
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "code": "group_required",
+      "t": "reject"
+    }
+  },
+  {
+    "name": "reject_class_mismatch",
+    "frame": {
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "code": "class_mismatch",
+      "detail": {
+        "class": "C",
+        "demotion": "not_freedraw"
+      },
+      "t": "reject"
+    }
+  },
+  {
+    "name": "reject_bulk_delete_guard",
+    "frame": {
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "code": "bulk_delete_guard",
+      "detail": {
+        "limit": 25
+      },
+      "t": "reject"
+    }
+  },
+  {
+    "name": "reject_rebase_required",
+    "frame": {
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "code": "rebase_required",
+      "t": "reject"
+    }
+  },
+  {
+    "name": "reject_whole_document_required",
+    "frame": {
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "code": "whole_document_required",
+      "t": "reject"
+    }
+  },
+  {
+    "name": "reject_blob_missing",
+    "frame": {
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "code": "blob_missing",
+      "t": "reject"
+    }
+  },
+  {
+    "name": "reject_internal",
+    "frame": {
+      "client_op_id": "019a1b2c-0000-7000-8000-000000000abc",
+      "code": "internal",
+      "t": "reject"
+    }
+  },
+  {
+    "name": "error_resync_required",
+    "frame": {
+      "code": "resync_required",
+      "detail": {
+        "reason": "ahead"
+      },
+      "req": 1,
+      "t": "error"
+    }
+  },
+  {
+    "name": "error_invalid_request",
+    "frame": {
+      "code": "invalid_request",
+      "detail": {
+        "field": "after_seq"
+      },
+      "req": 1,
+      "t": "error"
+    }
+  },
+  {
+    "name": "error_rate_limited",
+    "frame": {
+      "code": "rate_limited",
+      "detail": {
+        "retry_after_ms": 100
+      },
+      "req": 1,
+      "t": "error"
+    }
+  },
+  {
+    "name": "error_internal",
+    "frame": {
+      "code": "internal",
+      "req": 1,
+      "t": "error"
+    }
+  }
+]

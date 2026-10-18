@@ -1,0 +1,12 @@
+{
+  "envelope_reserve": 16384,
+  "max_annot_op": 1032192,
+  "max_depth": 64,
+  "max_frame": 1048576,
+  "max_inline": 524288,
+  "max_inline_content": 1032192,
+  "max_members": 2,
+  "max_server_frame": 2097152,
+  "max_text_op": 1032192,
+  "page_entries": 500
+}

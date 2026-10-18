@@ -1,0 +1,55 @@
+{
+  "Source": "hand-written",
+  "Cases": [
+    {
+      "Name": "null",
+      "Frame": "null",
+      "Reason": "object"
+    },
+    {
+      "Name": "unknown_type",
+      "Frame": "{\"t\":\"notice\"}",
+      "Reason": "type"
+    },
+    {
+      "Name": "unsafe_nonce",
+      "Frame": "{\"t\":\"ping\",\"n\":9007199254740992}",
+      "Reason": "n"
+    },
+    {
+      "Name": "missing_nonce",
+      "Frame": "{\"t\":\"ping\"}",
+      "Reason": "n"
+    },
+    {
+      "Name": "negative_nonce",
+      "Frame": "{\"t\":\"ping\",\"n\":-1}",
+      "Reason": "n"
+    },
+    {
+      "Name": "lone_surrogate",
+      "Frame": "{\"t\":\"ping\",\"n\":0,\"future\":\"\\ud800\"}",
+      "Reason": "unicode"
+    },
+    {
+      "Name": "unknown_code",
+      "Frame": "{\"t\":\"error\",\"req\":1,\"code\":\"unknown\"}",
+      "Reason": "code"
+    },
+    {
+      "Name": "null_entries",
+      "Frame": "{\"t\":\"changes\",\"req\":1,\"entries\":null,\"more\":false}",
+      "Reason": "entries"
+    },
+    {
+      "Name": "empty_more",
+      "Frame": "{\"t\":\"changes\",\"req\":1,\"entries\":[],\"more\":true}",
+      "Reason": "entries"
+    },
+    {
+      "Name": "bad_uuid",
+      "Frame": "{\"t\":\"reject\",\"client_op_id\":\"019A1B2C-0000-7000-8000-000000000ABC\",\"code\":\"internal\"}",
+      "Reason": "client_op_id"
+    }
+  ]
+}

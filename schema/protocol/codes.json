@@ -1,0 +1,62 @@
+{
+  "subprotocol": "stele.v1",
+  "reject": [
+    "invalid_submission",
+    "invalid_op",
+    "invalid_path",
+    "too_large",
+    "rate_limited",
+    "unknown_file",
+    "file_exists",
+    "file_deleted",
+    "path_taken",
+    "stale_delete",
+    "invalid_base",
+    "read_only_path",
+    "class_change",
+    "group_required",
+    "class_mismatch",
+    "bulk_delete_guard",
+    "rebase_required",
+    "whole_document_required",
+    "blob_missing",
+    "internal"
+  ],
+  "query": [
+    "resync_required",
+    "invalid_request",
+    "rate_limited",
+    "internal"
+  ],
+  "close": {
+    "1000": [
+      "normal"
+    ],
+    "1001": [
+      "shutting_down"
+    ],
+    "1009": [
+      "frame_too_large"
+    ],
+    "1011": [
+      "internal"
+    ],
+    "4400": [
+      "protocol"
+    ],
+    "4401": [
+      "hello_timeout",
+      "bad_token",
+      "revoked"
+    ],
+    "4409": [
+      "replaced"
+    ],
+    "4426": [
+      "unsupported_protocol"
+    ],
+    "4429": [
+      "slow_consumer"
+    ]
+  }
+}

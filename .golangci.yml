@@ -44,8 +44,12 @@ linters:
               desc: core returns values; the shell logs
         proto:
           list-mode: strict
-          files: ["**/internal/proto/**"]
+          files: ["**/internal/proto/**", "!$test"]
           allow: ["$gostd", "github.com/BarneyLaw/stele-sync/internal/core/"]
+        proto-tests:
+          list-mode: strict
+          files: ["**/internal/proto/**/*_test.go"]
+          allow: ["$gostd", "pgregory.net/rapid$", "github.com/BarneyLaw/stele-sync/internal/core/"]
         engine:
           list-mode: strict
           files: ["**/internal/engine/**"]
