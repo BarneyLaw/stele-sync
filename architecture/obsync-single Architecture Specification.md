@@ -1,8 +1,8 @@
-# obsync-single: Architecture Specification
+# stele-sync: Architecture Specification
 
 2026-09-20 · @Someone
 
-obsync-single keeps one person's Obsidian vault identical across their devices through a single Go authority that orders every edit, with Postgres as the live source of truth and Garage as durable snapshot and blob storage.
+stele-sync keeps one person's Obsidian vault identical across their devices through a single Go authority that orders every edit, with Postgres as the live source of truth and Garage as durable snapshot and blob storage.
 
 ## 1. Scope, goals and invariants
 
@@ -29,7 +29,7 @@ Multi-user editing of one document, peer-to-peer sync, end-to-end encryption, pp
 
 Every component, test and review is judged against these. A change that weakens one needs an ADR.
 
-1. **No acknowledged edit is lost.** An `ack` is sent only after the edit is durably committed in Postgres.
+1. **No acknowledged edit is lost.** A matching `change` is delivered only after the edit is durably committed in Postgres.
 2. **No acknowledged content is destroyed implicitly.** Content disappears only through an explicit delete from a device that had already seen that content. Everything else produces a conflict copy.
 3. **Convergence.** Once all devices are online and idle, every device holds byte-identical content for every synced file, equal to the server head.
 4. **Exactly-once application.** A retried submission is applied at most once. Retries are always safe.
@@ -47,8 +47,8 @@ flowchart LR
   P2["Obsidian plugin<br/>Android"] -- "WSS: ops" --> S
   P1 -- "HTTPS: blobs" --> S
   P2 -- "HTTPS: blobs" --> S
-  S["obsync-server<br/>Go, 1 replica"] --> PG[("Postgres<br/>live authority")]
-  S --> G[("Garage bucket<br/>obsync-sync")]
+  S["stele-server<br/>Go, 1 replica"] --> PG[("Postgres<br/>live authority")]
+  S --> G[("Garage bucket<br/>stele-sync")]
   W["obsync-worker<br/>phase 1 CronJob"] --> G1[("Garage bucket<br/>obsync")]
   S -- "reads manifests" --> G1
   PG -- "WAL archive" --> B[("Backup Garage<br/>nebula")]
@@ -61,9 +61,9 @@ Ops travel on the WebSocket; bulk bytes travel on plain HTTPS. The Canvas bridge
 | Component | Owns | Never does |
 | --- | --- | --- |
 | **Obsidian plugin** (TypeScript) | Local vault I/O through the Vault and Editor APIs, per-file sync state machine, shadow copies, offline queue, exclusion rules, UI (status, conflicts, Canvas notices, settings, bulk-delete confirmation) | Hold storage credentials, decide ordering, talk to Garage |
-| **obsync-server** (Go) | Authentication, sessions, validation, OT transform and apply, version and sequence assignment, persistence, broadcast, compaction, blob service, Canvas bridge, metrics | Trust client clocks, block on a slow client, accept unbounded input |
+| **stele-server** (Go) | Authentication, sessions, validation, OT transform and apply, version and sequence assignment, persistence, broadcast, compaction, blob service, Canvas bridge, metrics | Trust client clocks, block on a slow client, accept unbounded input |
 | **Postgres** | File registry, per-file head version and content, op log, vault change feed, devices, blob registry, idempotency records | Store large binaries |
-| **Garage, bucket `obsync-sync`** | Write-once snapshots of Class A/B content, content-addressed Class C blobs | Hold any mutable key |
+| **Garage, bucket `stele-sync`** | Write-once snapshots of Class A/B content, content-addressed Class C blobs | Hold any mutable key |
 | **obsync-worker** (phase 1, unchanged) | Mirroring Canvas into bucket `obsync` | Know phase 2 exists |
 
 ### Where phase 1 fits
@@ -130,9 +130,12 @@ unique (path_key) where deleted_at is null
 ops (file_id uuid, version bigint, device_id uuid, payload bytea, bytes int,
      created_at timestamptz, primary key (file_id, version))
 
-changes (seq bigint pk, file_id uuid, kind text, version bigint, device_id uuid, at timestamptz)
+changes (seq bigint pk, actor text, device_id uuid, client_op_id uuid, at timestamptz)
+change_members (seq bigint references changes, ordinal smallint, file_id uuid,
+                kind text, version bigint, path text, class char(1),
+                primary key (seq, ordinal)) -- one member, or two for rename_group
 
-submissions (device_id uuid, client_op_id uuid, file_id uuid, result jsonb,
+submissions (device_id uuid, client_op_id uuid, seq bigint references changes,
              primary key (device_id, client_op_id))   -- idempotency record
 
 snapshots (file_id uuid, version bigint, object_key text, sha256 bytea, primary key (file_id, version))
@@ -144,7 +147,7 @@ Two details carry most of the correctness:
 - **`path_key` uniqueness.** Windows and macOS file systems are case-insensitive. Two live files whose paths differ only in case would clobber each other on those devices, so the database refuses them.
 - **The `vault.head_seq` row lock.** Every committing transaction does `UPDATE vault SET head_seq = head_seq + 1 RETURNING head_seq` and writes that value into `changes.seq`. The row lock serializes commits, so sequence order equals commit order. A plain `bigserial` does not give you that: two transactions can commit out of order, and a reader that sees seq 11 before seq 10 commits would skip 10 forever. At single-user write rates this serialization costs nothing.
 
-### Garage: bucket `obsync-sync`
+### Garage: bucket `stele-sync`
 
 ```
 blobs/sha256/ab/cd/<hash>            Class C content, write-once
@@ -155,7 +158,7 @@ No key is ever overwritten. That keeps the phase 1 property that a crash mid-wri
 
 ### Client state (per device)
 
-For each synced file: `file_id`, path, class, `base_version`, the shadow (server content at `base_version`), in-flight submission, pending local changes. Plus the vault cursor `last_seq`. Shadows are persisted (IndexedDB), because after a crash the plugin rebuilds pending edits by diffing the file on disk against its shadow.
+For each synced file: `file_id`, path, class, `base_version`, the shadow (server content at `base_version`), in-flight submission, pending local changes. Plus the vault cursor `last_seq`. Shadows, buffer changes and each in-flight submission with its client_op_id are persisted transactionally in IndexedDB before sending. Catch-up recognizes own changes by device_id and client_op_id before rebasing pending work. Only unsent local edits are rebuilt by diffing; a retry never mints a new id.
 
 ## 4. Sync model
 
@@ -173,9 +176,9 @@ An operation is valid against a document only if retains plus deletes equal the 
 2. `op' = transform(op, historical)` for each historical op in order. The incoming op wins insert ties.
 3. Validate `op'` against head content, apply it, set version `h+1`.
 4. Commit op, head, change row and idempotency record in one transaction.
-5. After commit, the hub reads the new change from the feed and sends `ack` to the submitter and `remote` to every other session, in vault sequence order (section 5.3).
+5. After commit, the hub reads the new change from the feed and sends the identical `change` record to every session, including the submitter, in vault sequence order (section 5.3).
 
-**Client algorithm.** Each file runs the three-state machine from ot.js: `Synchronized`, `AwaitingAck(inflight)`, `AwaitingAckWithBuffer(inflight, buffer)`. At most one submission per file is in flight. Local edits compose into the buffer. An incoming remote op is transformed against inflight and buffer before it touches the editor. On `ack`, the buffer is sent.
+**Client algorithm.** Each file runs the three-state machine from ot.js: `Synchronized`, `AwaitingAck(inflight)`, `AwaitingAckWithBuffer(inflight, buffer)`. At most one submission per file is in flight. Local edits compose into the buffer. An incoming remote op is transformed against inflight and buffer before it touches the editor. On a matching own change, the buffer is sent.
 
 **Where client ops come from.** Edits in an open editor are read from CodeMirror 6 transactions and converted to text operations exactly. Edits that happen outside the editor (another plugin, an external editor, a file restored from backup) are found by diffing the file against its shadow (differential synchronization) and converted to an operation.
 
@@ -224,7 +227,7 @@ The client uploads bytes with `PUT /v1/blobs/{sha256}`, then submits `put_blob {
 
 The server assigns every name the user did not type. Create/rename carry
 `on_taken` (`number` by default, otherwise `reject`); conflict creates carry
-`copy_of {file_id, reason}`. The ack and change carry the final path and class.
+`copy_of {file_id, reason}`. The change carries the final path and creation class.
 
 | Operation | Accepted when | Otherwise |
 | --- | --- | --- |
@@ -270,19 +273,20 @@ Ops are retained 30 days and snapshots compact them (section 6). Any version ins
 
 ## 5. Protocol
 
-Small control and edit messages go over one WebSocket per device; blob bytes go over ordinary HTTPS requests. Mixing a 50 MB upload into the op stream would stall every keystroke behind it (head-of-line blocking).
+The authoritative M4 contract is [the accepted proposal](../internal/proto/M4%20proposal%20proto.md), sections 7.1–7.8. The executable catalogue and directional fixtures live in `schema/protocol/` (ADRs 023–027).
 
 ### 5.1 Endpoints
 
 | Endpoint | Purpose |
 | --- | --- |
-| `GET /v1/ws` | WebSocket upgrade (RFC 6455), subprotocol `obsync.v1` |
-| `PUT /v1/blobs/{sha256}` | Upload; server hashes the stream and refuses a mismatch. Idempotent. |
-| `GET /v1/blobs/{sha256}` | Download with `Range` support, so mobile can fetch in chunks with `appendBinary` |
-| `POST /v1/enroll` | Exchange a one-time enrollment code for a device token |
-| `GET /livez`, `GET /readyz`, `GET /metrics` | Health and Prometheus; bound to the internal port only |
+| `GET /v1/ws` | WebSocket upgrade; negotiate `stele.v1` |
+| `PUT /v1/blobs/{sha256}` | Hash-verified idempotent content upload |
+| `GET /v1/blobs/{sha256}` | Ranged content download |
+| `GET /v1/files/{file_id}/state` | A: UTF-8 text; B: annot.EncodeState bytes. Headers `Stele-Version`, `Stele-Class`, and `Stele-Len` or `Stele-Hash` |
+| `POST /v1/enroll` | Exchange an enrollment code for a `stele_` device token |
+| `GET /livez`, `GET /readyz`, `GET /metrics` | Internal listener only |
 
-HTTP requests authenticate with `Authorization: Bearer <device token>`. The browser WebSocket API cannot set that header, so the WebSocket authenticates in its first frame instead (5.2).
+HTTPS authenticates with `Authorization: Bearer <token>`. The browser WebSocket authenticates through hello. Large creates and replacements use blob references; omitted committed payloads use the state endpoint. Blob/state I/O happens outside database transactions.
 
 ### 5.2 Session lifecycle
 
@@ -290,83 +294,63 @@ HTTP requests authenticate with `Authorization: Bearer <device token>`. The brow
 sequenceDiagram
   participant C as Plugin
   participant S as Server
-  C->>S: HTTP upgrade (Origin checked)
-  C->>S: hello {token, device_id, proto: 1, last_seq}
-  S->>C: welcome {head_seq, limits, server_time}
-  C->>S: pull_changes {after_seq}
-  S->>C: changes {entries with seq and payload, more}
-  Note over C,S: repeat until caught up, then the hub switches the session to live
-  C->>S: submit {client_op_id, file_id, base_version, op}
-  S->>C: ack {seq, client_op_id, version}
-  S-->>C: remote {seq, file_id, version, op}
+  C->>S: Upgrade, Sec-WebSocket-Protocol stele.v1
+  C->>S: hello {token}
+  S->>C: welcome {device_id, head_seq, limits}
+  C->>S: pull_changes {req, after_seq}
+  S->>C: changes {req, entries, more}
+  Note over C,S: Catch up until more=false, then join live atomically
+  C->>S: submit {client_op_id, kind, kind-specific fields}
+  S->>C: change {seq, at, actor, device_id, client_op_id, members}
 ```
 
-If `hello` does not arrive within 5 s, or the token is invalid or revoked, the server closes with 4401 and does no other work. A second session for the same device replaces the first (close 4409), so one device never has two writers.
+No shared subprotocol: accept the upgrade and immediately close 4426 `unsupported_protocol`, visible to browser clients. Hello is required within five seconds; bad token, timeout or revocation closes 4401. Replaced device sessions close 4409. Ping every 20 seconds; no pong in ten seconds cancels the session.
 
-### 5.3 Message catalogue
+### 5.3 Directional catalogue and errors
 
-Every frame is a JSON text frame `{"t": "<type>", ...}`. Unknown `t` closes the session with 4400; unknown fields inside a known type are ignored (forward compatibility).
-
-| Direction | Type | Purpose |
-| --- | --- | --- |
-| C to S | `hello` | Authenticate and state protocol version and cursor |
-| C to S | `pull_changes` | Page through the vault change feed after a cursor |
-| C to S | `list_files` | Page through every live file with its head version (full resync only) |
-| C to S | `fetch_head` | Head content (or blob hash) of one file |
-| C to S | `submit` | One text op, element op set, blob put, or namespace op, with `client_op_id` |
-| C to S | `pong` | Heartbeat reply |
-| S to C | `welcome` | Session accepted, limits for this server |
-| S to C | `changes` | Page of feed entries with payloads, or `resync_required` if the cursor predates retention |
-| S to C | `files` / `head` | Answers to `list_files` and `fetch_head` |
-| S to C | `ack` / `reject` | Outcome of a submission; `ack` carries `seq`, `reject` carries a stable `code` |
-| S to C | `remote` | A change made by another device, with `seq` |
-| S to C | `notice` | Human-facing events: Canvas file changed or removed, conflict copy created, device revoked |
-| S to C | `ping` | Heartbeat every 20 s; no `pong` within 10 s closes the session |
-
-**Ordering guarantee.** Every `ack`, `remote` and `changes` entry a session receives is in strictly increasing `seq` order with no gaps. The client applies them in order and persists `last_seq` only after applying. This is what makes the cursor safe across crashes.
-
-The server gets this ordering from a **transactional outbox**. The submitting transaction writes its `changes` row and calls `pg_notify`, which Postgres delivers only at commit. A single hub goroutine wakes on the notification, reads new `changes` rows in `seq` order, and fans them out, as `ack` to the originating device and `remote` to the rest. Because the vault counter is a row in the same transaction, a rollback also rolls back the increment, so the sequence has no gaps. The hub keeps a ring of the last 10,000 changes so a session finishing catch-up can join the live stream without a race.
-
-Reject codes are part of the contract: `invalid_op`, `stale_delete`, `path_taken`, `file_deleted`, `read_only_path`, `bulk_delete_guard`, `blob_missing`, `too_large`, `rate_limited`, `rebase_required`, `whole_document_required`, `invalid_path` (reason, component), `class_mismatch` (class, demotion), `internal`. Clients branch on codes, never on message text.
-
-### 5.4 Limits (defaults, configurable)
-
-| Limit | Value |
+| Direction | Types |
 | --- | --- |
-| WebSocket frame | 1 MiB (larger initial content goes through the blob path) |
-| In-flight submissions per file | 1 |
-| In-flight submissions per device | 64 |
-| Inbound rate per device | 50 frames/s, burst 200 |
-| Outbound queue per session | 1,024 frames or 8 MiB; overflow closes with 4429 and the client resyncs from its cursor |
-| Change-feed page | 500 entries |
-| Enrolled devices | 16 |
-| Blob upload | 512 MiB, body read with a hard limit |
+| Client | `hello`, `pull_changes`, `list_files`, `submit`, `pong` |
+| Server | `welcome`, `changes`, `change`, `files`, `reject`, `error`, `ping` |
+| Submit kinds | `text_edit`, `annot_edit`, `annot_replace`, `put_blob`, `create`, `rename`, `rename_group`, `delete` |
 
-Closing a slow consumer is safe and cheap because the cursor makes every session resumable. Buffering for it would let one phone on a bad train connection grow server memory without bound.
+Queries carry a nonzero uint32 `req` echoed by responses. Each submission carries a UUIDv7 `client_op_id`. Client frames reject unknown members; server decoders ignore unknown members. Both directions reject malformed JSON, invalid Unicode, missing/null required values and invalid known values. Integers have no fractional/exponent spelling and stay within 2^53−1 (nonzero versions; sequences may be zero only as cursors). UUIDs and hashes have canonical lowercase spellings. Annotation ops and inline sidecar bytes are JSON **strings**, preserving their contents byte for byte; text ops remain arrays.
 
-### 5.5 Client reconnect
+Tier 1: untrustworthy framing or missing correlation closes 4400. Tier 2: an attributable invalid submission returns `reject {client_op_id, code, detail}`. Tier 3: an attributable invalid query returns `error {req, code, detail}`. Unknown/missing fields and unsafe integers are `invalid_submission`; operation parser failures are `invalid_op`, or `too_large` for limits. Path failures include reason and component. The full closed code catalogue is `schema/protocol/codes.json`; session maps engine decisions exactly once.
 
-Exponential backoff with full jitter: base 500 ms, cap 30 s, reset after 60 s of healthy connection. Full jitter matters even for one user: after a server restart, all devices would otherwise reconnect in lockstep.
+### 5.4 One transaction, one change
 
-### 5.6 Versioning
+`changes` contains one row per transaction with seq, actor (`device`, `bridge`, `admin`), system or enrolled device_id, client_op_id and UTC millisecond commit time. Its members contain one file change, or two distinct rename members for a PDF/sidecar group. Live and catch-up carry the same record. There are no separate ack, remote, head or notice frame types.
 
-`proto` in `hello` is an integer. The server supports the current and previous version. Breaking changes bump it and ship server first.
+The originating client recognizes an own record by device_id and persisted client_op_id. This also acknowledges a commit encountered during catch-up after a crash. Sequence order is gap-free across both delivery modes. Full resync takes head_seq from the first file-listing page and skips later members at or below the listed/adopted file version.
+
+A content member carries a resulting UTF-16 `len` for A, canonical `hash` for B, or a blob reference for C. Create also carries final path, class, owner and optional conflict origin. A/B payloads may be replaced with `omitted:true`, retaining the divergence check. Adopt a fetched state only at or above the omitted version; skip covered later members and rebase pending edits. Canvas notices derive from bridge changes; conflict notices derive from create origins, so both survive offline periods.
+
+### 5.5 Bounds and shared configuration
+
+Client frames: 1 MiB. Server frames: 2 MiB. Envelope reserve: 16 KiB. Raw text/annotation operation and inline-content limits: 1,032,192 bytes. Inline/split threshold: 512 KiB of encoded payload fields. Pages stop at 500 entries or their encoded byte cap, whichever comes first. Framing nesting is capped at 64 containers before parsing. Quoting can expand inline JSON strings, so both raw-payload and complete encoded-frame limits apply; clients measure frames and split/upload when needed.
+
+Welcome advertises frame, split and page limits, 64 in-flight submissions/device, rate 50/s burst 200, classification extensions and size ceilings, and the bulk-delete guard configuration. One submission/file remains in flight. Outbound queues hold at most 1,024 frames or 8 MiB; overflow closes 4429. Enrolled devices default to 16 and blobs to 512 MiB.
+
+### 5.6 Reconnect and versioning
+
+Reconnect uses full-jitter exponential backoff from 500 ms to 30 s, reset after 60 s healthy. A cursor older than retention receives `resync_required` with reason `pruned`; one above head_seq after restore receives reason `ahead`. Both require a full file listing. The subprotocol versions the contract; breaking changes bump it and ship server first. Hello carries only the token.
 
 ## 6. Durability and failure modes
 
-The durability contract is simple: an `ack` means committed in Postgres with `synchronous_commit = on`, and nothing that was acked can be lost or applied twice. Everything below exists to make that true under crashes and retries.
+The durability contract is simple: a matching own `change` means committed in Postgres with `synchronous_commit = on`, and nothing that was acked can be lost or applied twice. Everything below exists to make that true under crashes and retries.
 
 ### 6.1 Write path
 
 One submission is one Postgres transaction, and the transaction contains no network calls to anything else.
 
-1. `SELECT result FROM submissions WHERE device_id = $1 AND client_op_id = $2`. If found, resend that result and stop (idempotent retry).
+1. `SELECT seq FROM submissions WHERE device_id = $1 AND client_op_id = $2`. If found, use the stored seq to acknowledge through the ordered feed without replaying a sequence already delivered to that session (idempotent retry).
 2. `SELECT ... FROM files WHERE id = $1 FOR UPDATE` to lock the file row.
 3. Transform and validate in memory against the locked head.
 4. `INSERT ops`, `UPDATE files` (content, version), `UPDATE vault ... RETURNING head_seq`, `INSERT changes`, `INSERT submissions`.
-5. `pg_notify('obsync_changes', seq)`, then `COMMIT`. The hub delivers `ack` and `remote` from the committed feed; the actor never writes to a socket directly.
+5. `pg_notify('stele_changes', seq)`, then `COMMIT`. The hub delivers identical change records from the committed feed; the actor never writes to a socket directly.
 
-The server crashing after commit but before `ack` is the case idempotency exists for: the client retries with the same `client_op_id` and receives the stored result, not a second application.
+After a crash between commit and acknowledgement, catch-up recognizes the matching persisted in-flight id as an own change. If still needed, retry uses that same id. These two paths jointly prevent duplicate content; idempotency alone does not protect catch-up.
 
 ### 6.2 In-memory state is a cache
 
@@ -400,7 +384,7 @@ Order: `PUT snapshots/<file_id>/<version>` (write-once key, safe to retry), then
 | --- | --- | --- | --- |
 | Network drops mid-submission | Read error or missed pong | Client reconnects with backoff, resends in-flight op with same `client_op_id` | Applied once |
 | Server crashes before commit | Transaction never commits | Client resends after reconnect | Applied once |
-| Server crashes after commit, before ack | Idempotency record exists | Stored result returned | Applied once |
+| Server crashes after commit, before ack | Idempotency record exists | Matching own change recognized during catch-up or retry | Applied once |
 | Plugin crashes with unsent edits | On start, file differs from shadow | Diff regenerates pending op | No loss |
 | Postgres unavailable | Pool errors, `/readyz` fails | Submissions rejected `internal`; clients queue locally | No loss; sync pauses |
 | Garage unavailable | S3 errors | Text and sidecars keep syncing; blob uploads and compaction retry later | No loss; binaries delayed |
@@ -408,7 +392,7 @@ Order: `PUT snapshots/<file_id>/<version>` (write-once key, safe to retry), then
 | Slow or stalled client | Outbound queue full | Close 4429; client resyncs | That device lags; others unaffected |
 | Two server pods | Advisory lock | Second pod exits | No fork |
 | Device vault path misconfigured (empty) | First-sync rule, bulk-delete guard | Pull-only; mass delete refused | No loss |
-| Stolen device | Manual | `obsyncctl device revoke`; sessions closed within 1 s | Future access blocked |
+| Stolen device | Manual | `stelectl device revoke`; sessions closed within 1 s | Future access blocked |
 
 ## 7. Security and abuse model
 
@@ -420,7 +404,7 @@ The server is reachable only over the tailnet, behind TLS terminated at the clus
 
 ### 7.2 Device identity
 
-- `obsyncctl device add <name>` prints a one-time enrollment code valid for 10 minutes.
+- `stelectl device add <name>` prints a one-time enrollment code valid for 10 minutes.
 - The plugin posts it to `/v1/enroll` and receives a 256-bit random device token. The server stores only its SHA-256 hash and compares in constant time.
 - Tokens are opaque, not JWTs: revocation is a row update that takes effect on the next frame, with no signing keys to manage or rotate.
 - The token lives in the plugin's data file on the device. Anyone with filesystem access to an unlocked device has it; revocation is the answer to that, and it is accepted as residual risk.
@@ -454,10 +438,10 @@ Everything deploys through Argo CD into the K3s cluster in namespace `obsync`, n
 
 | Workload | Kind | Notes |
 | --- | --- | --- |
-| `obsync-server` | Deployment, 1 replica, `Recreate` | Advisory-lock fenced. Requests 100m CPU / 128 Mi, limit 512 Mi. Readiness gates traffic. |
+| `stele-server` | Deployment, 1 replica, `Recreate` | Advisory-lock fenced. Requests 100m CPU / 128 Mi, limit 512 Mi. Readiness gates traffic. |
 | Postgres | CloudNativePG `Cluster`, 1 instance to start | WAL archiving and base backups to the separate backup Garage on nebula. A second instance is an optional upgrade, not a phase 2 requirement. |
-| Garage | Existing phase 1 StatefulSet | New bucket `obsync-sync` and a new key with read/write on it only |
-| `obsync-gc` | CronJob, daily, `concurrencyPolicy: Forbid` | Plus its own advisory lock |
+| Garage | Existing phase 1 StatefulSet | New bucket `stele-sync` and a new key with read/write on it only |
+| `stele-gc` | CronJob, daily, `concurrencyPolicy: Forbid` | Plus its own advisory lock |
 | Ingress | Tailnet-only, TLS | No public route |
 
 ### 8.2 Service level objectives
@@ -466,7 +450,7 @@ Objectives are set for what a single user actually feels, measured over a rollin
 
 | SLI | Objective |
 | --- | --- |
-| Submissions answered with `ack` (excluding client-caused rejects) | 99.5% |
+| Submissions answered with a matching change (excluding client-caused rejects) | 99.5% |
 | Propagation, server receive to broadcast sent, text ops | p95 under 250 ms |
 | Propagation, keystroke on device A to render on device B, tailnet | p95 under 2 s, p99 under 5 s |
 | Acked submissions lost | 0 (not a percentage; any occurrence is a sev-1 bug) |
@@ -476,22 +460,25 @@ When the budget is spent, feature work stops until reliability work brings it ba
 
 ### 8.3 Observability
 
-**Metrics** (Prometheus, scraped via ServiceMonitor). Names follow Prometheus conventions with the `obsync_` prefix and base units.
+**Metrics** (Prometheus, scraped via ServiceMonitor). Names follow Prometheus conventions with the `stele_` prefix and base units.
 
 | Metric | Type | Answers |
 | --- | --- | --- |
-| `obsync_sessions` | gauge | Who is connected |
-| `obsync_submissions_total{class,outcome,code}` | counter | Traffic and errors (RED) |
-| `obsync_submit_duration_seconds{class}` | histogram | Server-side latency |
-| `obsync_transform_depth` | histogram | How far behind clients submit; early warning for window pressure |
-| `obsync_outbound_queue_frames` | histogram | Saturation per session |
-| `obsync_slow_consumer_closes_total` | counter | Clients being shed |
-| `obsync_conflict_copies_total{reason}` | counter | User-visible merge failures |
-| `obsync_annot_dropped_puts_total` | counter | Stale annotation puts suppressed by retained tombstones |
-| `obsync_annot_whole_document_conflicts_total` | counter | Added-page conflicts; trigger for stable page-anchor work (ADR 015) |
-| `obsync_compaction_lag_bytes` | gauge | Uncompacted op volume |
-| `obsync_blob_bytes_total{direction}` | counter | Transfer volume |
-| `obsync_convergence_mismatch_total` | counter | Must stay 0 |
+| `stele_sessions` | gauge | Who is connected |
+| `stele_submissions_total{class,outcome,code}` | counter | Traffic and errors (RED) |
+| `stele_submit_duration_seconds{class}` | histogram | Server-side latency |
+| `stele_transform_depth` | histogram | How far behind clients submit; early warning for window pressure |
+| `stele_outbound_queue_frames` | histogram | Saturation per session |
+| `stele_slow_consumer_closes_total` | counter | Clients being shed |
+| `stele_conflict_copies_total{reason}` | counter | User-visible merge failures |
+| `stele_annot_dropped_puts_total` | counter | Stale annotation puts suppressed by retained tombstones |
+| `stele_annot_whole_document_conflicts_total` | counter | Added-page conflicts; trigger for stable page-anchor work (ADR 015) |
+| `stele_compaction_lag_bytes` | gauge | Uncompacted op volume |
+| `stele_blob_bytes_total{direction}` | counter | Transfer volume |
+| `stele_convergence_mismatch_total` | counter | Must stay 0 |
+| `stele_frames_rejected_total{tier,code}` | counter | Bounded protocol failure labels |
+| `stele_omitted_members_total{class}` | counter | State-fetch frequency |
+| `stele_divergence_detected_total{class}` | counter | Client-reported divergence; expected zero |
 
 **Logs.** One JSON line per meaningful event through `log/slog`, with a stable dotted event name in `msg` (`session.opened`, `submit.applied`, `submit.rejected`, `conflict.created`, `compaction.done`), carrying `device`, `file_id` and `version`. This continues the phase 1 audit-log convention. File content and tokens never appear in logs.
 
@@ -507,7 +494,7 @@ When the budget is spent, feature work stops until reliability work brings it ba
 | RTO (time to be syncing again) | 1 hour, via documented restore runbook |
 | Restore drill | Once before release, then each semester |
 
-Blobs and snapshots are not covered by WAL archiving, so the `obsync-sync` bucket is also mirrored to the backup Garage nightly. Every device holds a full copy of the synced vault, which is a useful last resort but never part of the plan.
+Blobs and snapshots are not covered by WAL archiving, so the `stele-sync` bucket is also mirrored to the backup Garage nightly. Every device holds a full copy of the synced vault, which is a useful last resort but never part of the plan.
 
 ## 9. Success criteria
 
@@ -534,6 +521,16 @@ Phase 2 is done when every row below passes on the deployed system, with the evi
 
 ## 10. Decision log and open questions
 
+M4 adds [023](../docs/adr/023-strict-wire-contract.md) (strict frames and tiers),
+[024](../docs/adr/024-transaction-changes.md) (transaction change records),
+[025](../docs/adr/025-bounded-payloads.md) (bounded payloads and state references),
+[026](../docs/adr/026-core-identifiers.md) (shared identifiers), and
+[027](../docs/adr/027-stele-naming.md) (naming and subprotocol versioning).
+
+Phase 2 uses database/role `stele`, bucket `stele-sync`, metrics `stele_*`, and
+plugin id `stele-sync`. Phase 1 keeps bucket and namespace `obsync`, Argo CD apps
+`garage-obsync`/`obsync-worker`, and `obsync:pull-scope` until deliberate migration.
+
 Each row becomes an ADR file in `docs/adr/` (Nygard format: context, decision, consequences) before the code that depends on it is merged.
 
 | ADR | Decision | Rejected alternative | Reason |
@@ -556,7 +553,7 @@ Each row becomes an ADR file in `docs/adr/` (Nygard format: context, decision, c
 
 ### Open questions
 
-- [ ] **Project name.** "obsync" collides with existing Obsidian tools. Decide before the plugin id is published, because the id becomes a folder name on every device.
+- [x] **Project name.** Stele: `stele-pull` for phase 1 and `stele-sync` for phase 2 (ADR 027). Deployed phase 1 names remain unchanged until a deliberate migration.
 - [x] **Freedraw sidecar schema.** 0.13.3 captures and actual-plugin checks are recorded in `schema/annot/samples/` and `docs/annot-verification.md`.
 - [ ] **Obsidian origins.** Measure the actual WebSocket `Origin` on desktop, Android and iOS, then pin the allowlist.
 - [ ] **At-rest encryption.** Choose between encrypted Longhorn volumes and node-level disk encryption.

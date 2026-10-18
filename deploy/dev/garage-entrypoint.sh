@@ -21,7 +21,7 @@ if /garage layout show 2>/dev/null | /bin/busybox grep -qiE 'no nodes|current cl
   /garage layout assign -z dev -c 1G "$node"
   /garage layout apply --version 1
 fi
-for bucket in obsync obsync-sync; do
+for bucket in obsync stele-sync; do
   /garage bucket info "$bucket" >/dev/null 2>&1 || /garage bucket create "$bucket"
   # Suppress key creation output: it includes the generated secret.
   /garage key info "$bucket-dev" >/dev/null 2>&1 || /garage key create "$bucket-dev" >/dev/null

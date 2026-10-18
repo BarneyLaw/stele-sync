@@ -275,11 +275,13 @@ in the verification record; unit tests do not substitute for them.
 
 ## M4: proto
 
-**Superseded by `../internal/proto/M4 proposal proto.md` (accepted 2026-10-18).** That document is the M4 contract: strict client frames with three error tiers, one change record per committed transaction delivered identically live and during catch-up, bounded frames with large state fetched by reference over HTTPS, identifier types in `internal/core/ids`, the `stele.v1` subprotocol, and fixtures split by direction. It absorbs the M2 and M3 integration requirements previously listed here (`whole_document_required`, `AnnotReplace`, `on_taken`, `copy_of`, `invalid_path`, `class_mismatch`, final path and class in changes). Its section 11 lists the requirements M4 places on M5, M6, M7, M8, M9, M11, M12, M13 and M14; the milestone text below still describes the earlier design until each of those milestones is planned.
+**Superseded by `../internal/proto/M4 proposal proto.md` (accepted 2026-10-18).** That document is the M4 contract: strict client frames with three error tiers, one change record per committed transaction delivered identically live and during catch-up, bounded frames with large state fetched by reference over HTTPS, identifier types in `internal/core/ids`, the `stele.v1` subprotocol, and fixtures split by direction. It absorbs the M2 and M3 integration requirements previously listed here (`whole_document_required`, `AnnotReplace`, `on_taken`, `copy_of`, `invalid_path`, `class_mismatch`, final path and class in changes). Its section 11 lists the requirements M4 places on M5, M6, M7, M8, M9, M11, M12, M13 and M14; the milestone text below carries those integration requirements; detailed storage and runtime designs remain for their own milestones.
 
 **Exit criteria (summary).** Properties pass at 100,000 cases; each fuzz target runs 10 minutes clean; coverage above 90% in `ids` and `proto`; fixtures pass in Go and TypeScript and regenerate without a diff; step 0 measurements recorded in `docs/m4-verification.md`; ADRs 023 to 027 merged.
 
 ## M5: storage/pg
+
+**M4 integration requirement.** Use core/ids without importing proto. Store one changes row per transaction (seq, actor, device_id, client_op_id, at) plus ordered change_members. Rebuild payloads from committed bytes, and use stele_changes NOTIFY. A rename group increments the vault sequence once.
 
 **M3 integration requirement.** Store vpath.Key in files.path_key and KeyScheme on the vault row. Refuse startup on a mismatch; an explicit stelectl rekey recomputes and reports collisions. FreeName lookup is inside the locked transaction; the unique index remains the final guard.
 
@@ -335,6 +337,8 @@ type Tx interface {
 
 ## M6: blob service
 
+**M4 integration requirement.** Create/replace blob references may contain A or B complete content as well as C. Read and classify those bytes outside the database transaction; transient content blobs are left for GC.
+
 **Goal.** Content-addressed upload and ranged download of Class C bytes through the server, where a blob that does not hash to its name can never become visible.
 
 **Interface.**
@@ -378,6 +382,8 @@ func (s *Service) Committed(ctx context.Context, sha [32]byte) (bool, error)
 
 ## M7: engine and simulation harness
 
+**M4 integration requirement.** Consume typed submit bodies and exhaustively map rejecting rules decisions in session. Preserve the originating client_op_id on server-made conflict copies. The reference client persists in-flight bytes/ids before sending, recognizes own catch-up changes, splits edits and adopts omitted state by version. Add crash-between-commit-and-ack simulation and a planted version that loses own-change recognition.
+
 **M3 integration requirement.** Use every Decide function, Reconcile, FreeName and DeleteGuard. Validate complete committed content before the transaction and compare the client claim; read blobs outside it. Check text size/NUL inserts after edits. Derive Age from the server base commit time. Keep one guard per device. Simulator/reference clients must handle server-assigned names, group occupancy and Settle.
 
 **Goal.** The authority: given a decoded submission, decide, transform, validate and commit it exactly once, one file at a time. Plus a Go reference client and a deterministic simulator that proves convergence and durability before any socket exists.
@@ -396,7 +402,7 @@ func (e *Engine) Run(ctx context.Context) error   // owns actor lifecycle; retur
 
 type Outcome struct {
     Committed bool
-    Seq       Seq        // when committed; the hub delivers the ack
+    Seq       Seq        // when committed; the hub delivers the matching change
     Version   Version
     Reject    proto.Code // when not committed
 }
@@ -408,8 +414,8 @@ type Outcome struct {
 - **Pipeline inside the actor**, in this order: idempotency lookup, load head (cache or `Tx.Head`), decide with `core/rules`, fetch ops since base (reject `rebase_required` if outside the window or pruned), transform with `core/textop` or apply with `core/annot`, validate the result against size limits, then write op, head, change and submission record in one `InTx`. The in-memory head is updated only after commit returns success.
 - **Ambiguous commit.** If `COMMIT` returns a network error, the actor does not know the outcome. It drops its cached head, returns `internal`, and the client's retry resolves it through the idempotency record. Never guess.
 - **Rejects are not recorded.** A reject has no effect, so re-evaluating a retried submission is safe; at most one effect is still guaranteed.
-- **The engine never talks to sockets.** Acks and broadcasts come from the hub reading the committed feed (ADR 012). `Outcome` is for metrics, tests and immediate rejects.
-- **Conflict copies** are ordinary `create` changes authored by the system in the same transaction as the decision that triggered them, followed by a `notice`.
+- **The engine never talks to sockets.** Identical change records come from the hub reading the committed feed (ADRs 012 and 024). `Outcome` is for metrics, tests and immediate rejects.
+- **Conflict copies** are ordinary `create` members in one change carrying the submitter's device_id/client_op_id and an origin reason; the client derives a notice from that record.
 - **Class B pipeline.** DecodeState, enforce the retention window, then Apply. Quarantined heads require AnnotReplace with base == head; stale replacement creates a conflict sidecar. Creates use Apply(Empty(), ReplaceOps(Empty(), doc), v1). Persist/broadcast only Effective and count Dropped. The reference client/simulator must include deferred PDF sessions and state-form shadows.
 
 ### The reference client (`internal/client`)
@@ -439,6 +445,8 @@ A Go implementation of the client side: the per-file three-state machine (`Synch
 
 ## M8: hub and sessions
 
+**M4 integration requirement.** Negotiate stele.v1 and close 4426 when unsupported. Map CloseError/RejectError/QueryError to their distinct actions. Send Welcome with authoritative Advertised settings, use Inline/Page, and serve GET /v1/files/{file_id}/state with Stele-Version/Class/Len/Hash headers. Send identical change records to every device; derive notices from the feed.
+
 **Goal.** Devices connect over WebSocket, authenticate, catch up, submit, and receive every change in gap-free sequence order, while a slow or hostile connection can never hurt another.
 
 **Interface.**
@@ -460,7 +468,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) // /v1/ws
 - **Library:** `github.com/coder/websocket`. `Accept` with `OriginPatterns` from config, subprotocol `stele.v1`, `SetReadLimit(MaxFrame)`, compression off (simpler, and avoids compression side-channel concerns).
 - **Per session, exactly two goroutines**: a reader (decode, rate-limit, dispatch to engine) and a writer (drains a bounded outbound queue, sends pings). The reader never writes to the socket; it enqueues. When either exits, the session's context is cancelled and the other exits too.
 - **Handshake:** a 5 s deadline for `hello`; nothing else is decoded before it. Auth failure closes 4401. A second session for the same device closes the first with 4409.
-- **Hub loop.** One goroutine. It wakes on `LISTEN stele_changes` (a dedicated connection) or a 1 s fallback tick, calls `ChangesAfter(published, 500)` in a loop, appends to a ring of the last 10,000 changes, and for each change enqueues `ack` to the originating device's session and `remote` to all others. `NOTIFY` is only a doorbell, so a missed notification costs at most one tick of latency, never a lost change.
+- **Hub loop.** One goroutine. It wakes on `LISTEN stele_changes` (a dedicated connection) or a 1 s fallback tick, calls `ChangesAfter(published, 500)` in a loop, appends to a ring of the last 10,000 changes, and for each change enqueues the same `change` to every session. `NOTIFY` is only a doorbell, so a missed notification costs at most one tick of latency, never a lost change.
 - **Catch-up then live.** A new session answers `pull_changes` from the database itself (not the hub goroutine, so a big catch-up never stalls fan-out). When its cursor is within the ring, it calls `Join`; the hub atomically enqueues ring entries after the cursor and marks the session live. If the cursor fell out of the ring in the meantime, `Join` returns false and the session pulls again.
 - **Backpressure.** Enqueue is non-blocking. A full queue (1,024 frames or 8 MiB) closes the session with 4429 and increments `stele_slow_consumer_closes_total`. The hub never waits on a session.
 - **Inbound limits:** token bucket per device (50/s, burst 200); in-flight counts per file and per device checked before calling the engine.
@@ -475,7 +483,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) // /v1/ws
 | `TestBadOrigin` / `TestBadToken` | Rejected before any other frame is processed |
 | `TestTakeover` | Second connection for a device closes the first with 4409 |
 | `TestOrderAcrossFiles` | Two devices hammer different files; every session receives strictly increasing, gap-free seq |
-| `TestAckOrdering` | A device's ack for seq n never arrives before a remote with seq below n |
+| `TestOwnChangeOrdering` | An own change for seq n never arrives before another change with seq below n |
 | `TestJoinRace` | Commits keep arriving while a session catches up and joins; no gap, no duplicate |
 | `TestSlowConsumer` | A client that stops reading is closed 4429; a second client's latency is unaffected |
 | `TestHeartbeat` | Silent peer closed after 30 s of virtual time |
@@ -487,6 +495,8 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) // /v1/ws
 **Exit criteria.** The reference client from M7 syncs through real sockets against a real Postgres, and the simulator's invariants hold in an end-to-end test with 5 socket clients for 10 minutes.
 
 ## M9: auth and stelectl
+
+**M4 integration requirement.** Consume proto.Token hashes; tokens are stele_ plus 43 base64url characters. Revocation closes 4401 with reason revoked. No notice frame is emitted.
 
 **Goal.** Devices are enrolled with a one-time code and revoked instantly, and every administrative action is a CLI command that talks to Postgres directly, so operating the system never requires editing rows by hand.
 
@@ -577,6 +587,8 @@ func Collect(ctx context.Context, st Store, objs objects.Store, now time.Time, d
 
 ## M11: Canvas bridge
 
+**M4 integration requirement.** Bridge submissions use actor bridge and durable changes, never ephemeral notices. The client derives Canvas UI notifications from that feed.
+
 **M3 integration requirement.** Use Sanitize and Bridge authority for C under CanvasRoot; create with on_taken=number, and keep Bridge deletes exempt from the guard. User A/B files require separate/system authority, including sidecars in rename groups. A strict Sanitize failure takes the existing fallback path.
 
 **Goal.** Phase 1's output appears in every vault under `Canvas/`, updates within one worker cycle, and a Canvas-side change never damages anything the user created.
@@ -597,7 +609,7 @@ func (b *Bridge) Run(ctx context.Context) error   // poll every 5 min; one cours
 
 - **Read-only against phase 1.** The bridge holds a read-only key on bucket `obsync`. It reads `manifests/<course>/latest` and the referenced manifest, using phase 1's `manifest` package unchanged, and remembers per course the last imported `run_id` in a small `canvas_imports` table.
 - **Blob transfer by hash.** A phase 1 blob is already SHA-256 addressed. Copy it into `stele-sync` through `blob.Service.Put` (which re-verifies the hash) only if not already present.
-- **Mapping** (phase 1 entry state to action): `stored` new path: create; `stored` changed hash: put blob, notice `canvas.changed`; path gone or `deleted`: delete the PDF only, notice `canvas.removed`; `skipped`, `locked`, `failed`: nothing in the vault, but `locked` can surface a notice `canvas.upcoming` if you want it later.
+- **Mapping** (phase 1 entry state to action): `stored` new path: create; `stored` changed hash: put blob, derive a Canvas-change notice; path gone or `deleted`: delete the PDF only, derive a Canvas-removal notice; `skipped`, `locked`, `failed`: nothing in the vault, but `locked` can surface a notice `canvas.upcoming` if you want it later.
 - **Resurrection** (phase 1's re-upload case, new Canvas id, same path): treated as a change, not delete plus create, so sidecars stay paired.
 - **Ownership:** all bridge submissions use the `canvas` system device and `owner = 'canvas'`. The engine rejects device writes to canvas-owned Class C files with `read_only_path`. A user renaming a Canvas file is also refused; the path is the lecturer's.
 - **Failure isolation:** one course failing does not stop the others (the phase 1 rule), and a bridge failure never affects sync. The bridge is a client of the engine, not part of it.
@@ -616,6 +628,8 @@ func (b *Bridge) Run(ctx context.Context) error   // poll every 5 min; one cours
 **Exit criteria.** A real phase 1 run against one course appears in a test vault through the plugin, and a simulated re-upload shows a Canvas notice.
 
 ## M12: server assembly and deployment
+
+**M4 integration requirement.** Assemble cmd/stele-server with database/role stele, bucket stele-sync and NOTIFY stele_changes. Keep deployed phase 1 infrastructure names as listed in Naming.
 
 **Goal.** `cmd/stele-server` wires the proven components into one process that starts safely, shuts down cleanly, exposes health and metrics, and runs in the K3s cluster through Argo CD.
 
@@ -636,7 +650,7 @@ func run(ctx context.Context, cfg config.Config) error {
 
 The advisory-lock connection is watched: if it drops, the process cancels its root context and exits non-zero, because it can no longer prove it is the only authority.
 
-**Two listeners.** Public (`:8443` behind ingress): `/v1/ws`, `/v1/blobs/*`, `/v1/enroll`. Internal (`:9090`, never exposed): `/livez`, `/readyz`, `/metrics`, `/debug/pprof`.
+**Two listeners.** Public (`:8443` behind ingress): `/v1/ws`, `/v1/blobs/*`, `/v1/files/*/state`, `/v1/enroll`. Internal (`:9090`, never exposed): `/livez`, `/readyz`, `/metrics`, `/debug/pprof`.
 
 **Deployment files** (`deploy/apps/stele-server/`, kustomize, bootstrapped into homelab-cicd-config as in phase 1):
 
@@ -667,6 +681,8 @@ The advisory-lock connection is watched: if it drops, the process cancels its ro
 
 ## M13: Obsidian plugin
 
+**M4 integration requirement.** Use the M4 protocol port and UUIDv7 generator. Persist each in-flight submission and id in the same IndexedDB transaction as its buffer change. Adopt welcome limits; fetch omitted/initial A/B state over HTTPS and skip already-adopted versions. Read original bytes before text decoding so invalid UTF-8 becomes C. Close 4426 prompts an update.
+
 **M3 integration requirement.** Consume the M3 pure TypeScript contracts. Map local paths to NFC wire paths without losing original disk spelling; adapters still need platform verification. Preflight whole delete batches, apply ack-assigned paths, handle class_mismatch, preserve local class drift in a conflict copy and restore the server head. M2 FreeDraw open-session deferral is unchanged.
 
 **Goal.** A plugin that behaves exactly like the Go reference client, integrated into Obsidian's editor and vault without echo loops, data loss or blocking the UI. This is the milestone where AI drafting is allowed; the fixtures written in M1 to M7 are the leash.
@@ -675,7 +691,7 @@ The advisory-lock connection is watched: if it drops, the process cancels its ro
 
 1. **`core/` passes every shared fixture**: textop, annot, protocol, classify, client scenarios. No Obsidian code yet. The Go fixtures written in M1 to M7 define done.
 2. **`transport/`**: WebSocket client (`stele.v1`), hello-first auth, reconnect with full jitter, heartbeat reply, ordered inbound queue, blob upload and Range download through `requestUrl` with `appendBinary`.
-3. **`vault/` shadow store**: IndexedDB; shadow text, `base_version`, pending buffer and `last_seq`, updated transactionally after each applied server message.
+3. **`vault/` shadow store**: IndexedDB; shadow text, `base_version`, persisted in-flight submission with client_op_id, pending buffer and `last_seq`, updated transactionally after each applied server message.
 4. **`vault/` editor bridge**: a CodeMirror 6 extension registered with `registerEditorExtension`. It converts local transactions to text ops, skips any transaction carrying the plugin's `remote` annotation, and applies remote ops as a single dispatched transaction with that annotation so cursor and selection map correctly.
 5. **`vault/` file watcher**: `create`, `modify`, `delete`, `rename` vault events. For a file not open in an editor, a `modify` is diffed against the shadow to produce an op. The plugin's own writes are recognized by comparing the new content's hash with the content it just wrote, so they are never echoed.
 6. **First sync**: a newly enrolled device, or one with an unknown vault, runs pull-only: `list_files`, download everything within its policy, then enable uploads. Local files that differ from the server become conflict copies; local-only files are uploaded only after the user confirms in a dialog showing the list.
@@ -696,12 +712,14 @@ The advisory-lock connection is watched: if it drops, the process cancels its ro
 | `transport` against the real server | CI starts `stele-server` with Postgres; a Node harness runs the plugin's `core` and `transport` against it and syncs with the Go reference client |
 | Property tests (fast-check) | Client state machine: any interleaving of local edits and server messages converges with a model server |
 | Echo test | Applying a remote op produces zero outgoing submissions |
-| Crash recovery | Kill the harness mid-edit; on restart the diff against the shadow regenerates exactly the lost pending edit |
+| Crash recovery | Kill after commit but before delivery; catch-up recognizes the persisted own submission exactly once, while unsent edits are regenerated against the reconciled shadow |
 | Manual matrix (recorded in the PR) | Desktop and Android: type in both, draw in Freedraw, rename a PDF with its sidecar, go offline 1 h on each, delete a folder, open an empty vault folder, revoke the device |
 
 **Exit criteria.** Two real devices sync text and Freedraw strokes with no manual intervention for a week of normal use; every item of the manual matrix passes on both platforms.
 
 ## M14: verification and release
+
+**M4 integration requirement.** Add stele_frames_rejected_total{tier,code}, stele_omitted_members_total{class}, and stele_divergence_detected_total{class}. S3 must kill between commit and acknowledgement and resume through catch-up; mismatches remain zero.
 
 **M3 integration requirement.** Add stele_class_mismatch_total (expected zero), stele_names_assigned_total{marker}, stele_bulk_delete_guard_total{outcome}, and stele_invalid_path_total{reason}. Re-run the recorded platform and application probes on supported devices.
 

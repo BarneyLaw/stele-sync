@@ -28,7 +28,7 @@ docker compose up --build --detach --wait
 ```
 
 Equivalently, run node tools/dev.mjs up or make dev-up. Garage initializes its
-single-node layout, obsync and obsync-sync buckets, and a distinct generated key
+single-node layout, obsync and stele-sync buckets, and a distinct generated key
 for each bucket. Initialization is idempotent and services have health checks.
 The phase 1 garage-dev.sh and garage-dev.ps1 helpers remain available for an
 independent Garage; do not run both setups on the same ports.
@@ -82,8 +82,8 @@ M1 adds textop deterministic/property/oracle tests and three fuzz targets. See
 [the oracle guide](../tools/oracle/README.md) for acceptance and performance gates,
 coverage quotas, failure artifacts and replay commands. Simulation and nightly
 e2e still report deferral to M7 and M14. The only
-current runnable Go commands are stele-pull and stele-pull-worker; obsync-server
-and obsyncctl contain package documentation only.
+current runnable Go commands are stele-pull and stele-pull-worker; stele-server
+and stelectl contain package documentation only.
 
 M2 implements `internal/core/annot` per the supplied annotation proposal. See
 [its design record](annot-development.md), [verification](annot-verification.md),
@@ -198,3 +198,15 @@ The code and bootstrap documentation were AI-drafted; the promoted phase 1
 production logic and test assertions were preserved. Review ADR 014's explicitly
 listed compatibility exceptions before merging. Local services remain running;
 docker compose down stops them while preserving their development volumes.
+
+## M4 protocol development
+
+`make proto-acceptance` runs the 100,000-case properties, race coverage gates,
+ten-minute fuzz targets, directional contracts and fixture drift checks.
+`go run ./tools/proto-probe` reproduces the JSON library measurements.
+See [M4 verification](m4-verification.md) and ADRs 023–027.
+
+Development Postgres now initializes database/role `stele`. Existing volumes
+retain their earlier database and role until explicitly migrated or recreated;
+changing Compose environment variables does not migrate data. The phase 1 Garage
+bucket remains `obsync`; only the unused phase 2 bucket becomes `stele-sync`.
