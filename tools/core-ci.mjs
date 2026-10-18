@@ -31,8 +31,8 @@ export function planChecks(packages, mode = 'pr') {
     const tests = pkg.tests.filter(name => property.test(name)).sort();
     const core = pkg.package.startsWith('./internal/core/');
     // Milestone skeletons contain only package documentation. Any other Go file
-    // opts a core package into coverage, including a package with no tests yet.
-    const coverage = core && pkg.files.some(file => file !== 'doc.go');
+    // opts a core or protocol package into coverage, even without tests yet.
+    const coverage = (core || pkg.package === './internal/proto') && pkg.files.some(file => file !== 'doc.go');
     const textop = pkg.package === './internal/core/textop';
     const count = mode === 'pr' ? (textop ? 10000 : 1000) : (textop ? 1000000 : 100000);
     if (mode === 'pr' && (coverage || tests.length)) {

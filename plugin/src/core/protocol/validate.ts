@@ -1,4 +1,5 @@
 import { byteLength, parsePath } from '../vpath';
+import codes from '../../../../schema/protocol/codes.json';
 
 export type ObjectValue = Record<string, unknown>;
 /** Contains only a stable field name, never credentials or document bytes. */
@@ -26,8 +27,8 @@ export function path(v: unknown): void { if (!parsePath(str(v, 'path')).ok) fail
 export function blob(v: unknown, strict = false): void { const b = object(v, 'blob'); if (strict) only(b, ['sha256', 'size']); hash(b.sha256, 'sha256'); integer(b.size, 'size'); }
 export const classes = ['A', 'B', 'C'];
 export const owners = ['user', 'canvas'];
-export const copyReasons = ['rebase', 'deleted', 'class_change', 'first_sync'];
-export const originReasons = [...copyReasons, 'stale_put', 'stale_replace'];
+export const copyReasons = codes.reasons.copy_of;
+export const originReasons = codes.reasons.origin;
 const loneSurrogate = /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:^|[^\uD800-\uDBFF])[\uDC00-\uDFFF]/;
 export function unicode(v: unknown, depth = 0): void {
   if (depth > 64) fail('depth');

@@ -6,21 +6,22 @@ import (
 	"encoding/json/jsontext"
 	json "encoding/json/v2"
 	"fmt"
+	"os"
 	"runtime"
 	"strings"
 	"testing"
 )
 
 func main() {
-	fmt.Println(runtime.Version())
+	_, _ = fmt.Fprintln(os.Stdout, runtime.Version())
 	for _, s := range []string{`"\ud800"`, `"\udc00"`, `"\ud800A"`, `"\udc00\ud800"`, `"\ud800\udc00"`} {
 		_, err := jsontext.NewDecoder(strings.NewReader(s)).ReadValue()
-		fmt.Printf("string %s: %v\n", s, err)
+		_, _ = fmt.Fprintf(os.Stdout, "string %s: %v\n", s, err)
 	}
 	for _, s := range []string{"1.0", "1e3", "-0", "01", "9007199254740992", "9223372036854775808", "null"} {
 		var v int64
 		err := json.Unmarshal([]byte(s), &v)
-		fmt.Printf("integer %s: value=%d error=%v\n", s, v, err)
+		_, _ = fmt.Fprintf(os.Stdout, "integer %s: value=%d error=%v\n", s, v, err)
 	}
 	for _, s := range []string{`{"extra":1}`, `{"Value":1}`, `{"nested":{"Value":1}}`, `{"nested":{"extra":1}}`} {
 		var v struct {
@@ -29,7 +30,7 @@ func main() {
 				Value *int `json:"value"`
 			} `json:"nested"`
 		}
-		fmt.Printf("unknown %s: %v\n", s, json.Unmarshal([]byte(s), &v, json.RejectUnknownMembers(true)))
+		_, _ = fmt.Fprintf(os.Stdout, "unknown %s: %v\n", s, json.Unmarshal([]byte(s), &v, json.RejectUnknownMembers(true)))
 	}
 	inputs := map[string][]byte{
 		"1MiB string":          []byte(`"` + strings.Repeat("a", (1<<20)-2) + `"`),
@@ -44,6 +45,6 @@ func main() {
 				_, last = jsontext.NewDecoder(bytes.NewReader(raw)).ReadValue()
 			}
 		})
-		fmt.Printf("%s: input=%d B/op=%d allocs/op=%d error=%v\n", name, len(raw), result.AllocedBytesPerOp(), result.AllocsPerOp(), last)
+		_, _ = fmt.Fprintf(os.Stdout, "%s: input=%d B/op=%d allocs/op=%d error=%v\n", name, len(raw), result.AllocedBytesPerOp(), result.AllocsPerOp(), last)
 	}
 }

@@ -1,4 +1,4 @@
-.PHONY: tools lint test test-unit core-plan core-check core-fuzz test-integration fuzz-short sim fixtures fixtures-check oracle-scale oracle-replay textop-acceptance textop-perf annot-acceptance namespace-acceptance contract plugin audit ci dev-up dev-down
+.PHONY: tools lint test test-unit core-plan core-check core-fuzz test-integration fuzz-short sim fixtures fixtures-check oracle-scale oracle-replay textop-acceptance textop-perf proto-acceptance annot-acceptance namespace-acceptance contract plugin audit ci dev-up dev-down
 # Each recipe is also a command that works directly in PowerShell.
 tools:
 	node tools/tasks.mjs tools
@@ -32,6 +32,8 @@ textop-acceptance:
 	node tools/tasks.mjs textop-acceptance
 textop-perf:
 	node tools/tasks.mjs textop-perf
+proto-acceptance:
+	node tools/tasks.mjs proto-acceptance
 annot-acceptance:
 	node tools/tasks.mjs annot-acceptance
 namespace-acceptance:

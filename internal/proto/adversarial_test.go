@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/BarneyLaw/stele-sync/internal/core/classify"
 )
@@ -207,5 +208,43 @@ func TestAnnotationCanonicalFrameGrowth(t *testing.T) {
 	raw = mustJSON(t, root)
 	if _, e := DecodeServer(raw, c); e == nil {
 		t.Fatal("server canonical growth must remain bounded")
+	}
+}
+
+func TestPageOwnsEncodedMembers(t *testing.T) {
+	_, servers := samples(t)
+	ch := servers[3].msg.(Live).Change
+	p := NewPage(1, DefaultConfig())
+	if ok, e := p.Add(ch); e != nil || !ok {
+		t.Fatal(e)
+	}
+	before, e := p.Encode(false)
+	if e != nil {
+		t.Fatal(e)
+	}
+	*ch.Members[0].Len = 999
+	ch.Members[0].Kind = KindDelete
+	ch.Members = nil
+	after, e := p.Encode(false)
+	if e != nil || string(before) != string(after) {
+		t.Fatal("caller changed a buffered page", e)
+	}
+}
+
+func TestCommitTimestampIsUTCAndExact(t *testing.T) {
+	_, servers := samples(t)
+	v := servers[3].msg.(Live)
+	original := v.Change.At
+	v.Change.At = original.Add(time.Nanosecond)
+	if _, e := EncodeServer(v, DefaultConfig()); e == nil {
+		t.Fatal("silently truncated commit time")
+	}
+	v.Change.At = time.Date(2026, 10, 18, 9, 30, 0, 0, time.FixedZone("UTC", 3600))
+	if _, e := EncodeServer(v, DefaultConfig()); e == nil {
+		t.Fatal("trusted misleading timezone name")
+	}
+	v.Change.At = original.In(time.FixedZone("zero", 0))
+	if _, e := EncodeServer(v, DefaultConfig()); e != nil {
+		t.Fatal("zero-offset timestamp rejected", e)
 	}
 }

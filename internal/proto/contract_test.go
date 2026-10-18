@@ -220,12 +220,18 @@ func TestProtocolFixtures(t *testing.T) {
 	}
 	golden(t, "c2s/valid.json", c2s)
 	golden(t, "s2c/valid.json", s2c)
-	golden(t, "codes.json", struct {
-		Subprotocol string              `json:"subprotocol"`
-		Reject      []Code              `json:"reject"`
-		Query       []QueryCode         `json:"query"`
-		Close       map[string][]string `json:"close"`
-	}{Subprotocol, Codes(), QueryCodes(), map[string][]string{"1000": {"normal"}, "1001": {"shutting_down"}, "1009": {"frame_too_large"}, "1011": {"internal"}, "4400": {"protocol"}, "4401": {"hello_timeout", "bad_token", "revoked"}, "4409": {"replaced"}, "4426": {"unsupported_protocol"}, "4429": {"slow_consumer"}}})
+	golden(t, "codes.json", map[string]any{
+		"subprotocol": Subprotocol, "reject": Codes(), "query": QueryCodes(),
+		"close": map[string][]string{"1000": {"normal"}, "1001": {"shutting_down"}, "1009": {"frame_too_large"}, "1011": {"internal"}, "4400": {"protocol"}, "4401": {"hello_timeout", "bad_token", "revoked"}, "4409": {"replaced"}, "4426": {"unsupported_protocol"}, "4429": {"slow_consumer"}},
+		"reasons": map[string][]string{
+			"resync_required": {"pruned", "ahead"},
+			"invalid_op":      {"ErrInvalidUTF8", "ErrInvalidJSON", "ErrInvalidCount", "ErrNonCanonical", "ErrLengthMismatch", "ErrSplitsSurrogate", "ErrInvalidUnicode", "ErrInvalidLimits", "ErrNotSidecar", "ErrDuplicateKey", "ErrDuplicateID", "ErrMissingID", "ErrStructuralKey", "ErrWholeDocument", "ErrInvalidState"},
+			"invalid_path":    {vpath.InvalidUTF8.String(), vpath.NotNFC.String(), vpath.Empty.String(), vpath.Absolute.String(), vpath.Backslash.String(), vpath.EmptyComponent.String(), vpath.DotComponent.String(), vpath.Traversal.String(), vpath.IllegalChar.String(), vpath.ControlChar.String(), vpath.LeadingSpace.String(), vpath.TrailingDotOrSpace.String(), vpath.ReservedName.String(), vpath.ComponentTooLong.String(), vpath.PathTooLong.String()},
+			"demotion":        {classify.Kept.String(), classify.TooLarge.String(), classify.InvalidUTF8.String(), classify.ContainsNUL.String(), classify.NotFreedraw.String()},
+			"copy_of":         {string(CopyRebase), string(CopyDeleted), string(CopyClassChange), string(CopyFirstSync)},
+			"origin":          {string(CopyRebase), string(CopyDeleted), string(CopyClassChange), string(CopyFirstSync), string(CopyStalePut), string(CopyStaleReplace)},
+		},
+	})
 	golden(t, "limits.json", map[string]int{"max_frame": 1 << 20, "max_server_frame": 2 << 20, "envelope_reserve": 16 << 10, "max_inline": 512 << 10, "max_inline_content": (1 << 20) - (16 << 10), "max_text_op": (1 << 20) - (16 << 10), "max_annot_op": (1 << 20) - (16 << 10), "page_entries": 500, "max_members": 2, "max_depth": MaxDepth})
 }
 
@@ -337,7 +343,8 @@ func TestCatalogueComplete(t *testing.T) {
 				if !ok {
 					continue
 				}
-				if typ.Name == "Code" {
+				switch typ.Name {
+				case "Code":
 					s, e := strconv.Unquote(lit.Value)
 					if e != nil {
 						t.Fatal(e)
@@ -345,7 +352,7 @@ func TestCatalogueComplete(t *testing.T) {
 					if !slices.Contains(Codes(), Code(s)) {
 						t.Error("missing rejection code", s)
 					}
-				} else if typ.Name == "QueryCode" {
+				case "QueryCode":
 					s, e := strconv.Unquote(lit.Value)
 					if e != nil {
 						t.Fatal(e)

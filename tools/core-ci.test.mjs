@@ -94,3 +94,9 @@ test('M3 receives per-package coverage, 100000 nightly cases and all three fuzz 
   assert(nightly.checks.every(c => c.count === 100000));
   assert.equal(nightly.checks.length, 4);
 });
+
+test('implemented protocol participates in the coverage gate', () => {
+  const plan = planChecks([{ package: './internal/proto', files: ['doc.go', 'decode_client.go'], tests: ['FuzzDecodeClient'] }]);
+  assert.equal(plan.checks[0]?.coverage, true);
+  assert.equal(plan.fuzz[0]?.test, 'FuzzDecodeClient');
+});

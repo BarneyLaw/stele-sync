@@ -74,7 +74,7 @@ function detail(v: unknown): void {
   const d = object(v, 'detail'); for (const k of ['field', 'reason']) if (has(d, k)) str(d[k], k);
   if (has(d, 'component')) integer(d.component, 'component', -1);
   if (has(d, 'class')) choice(d.class, 'class', classes);
-  if (has(d, 'demotion')) choice(d.demotion, 'demotion', ['kept', 'too_large', 'invalid_utf8', 'contains_nul', 'not_freedraw']);
+  if (has(d, 'demotion')) choice(d.demotion, 'demotion', codes.reasons.demotion);
   if (has(d, 'limit')) integer(d.limit, 'limit');
   if (has(d, 'retry_after_ms')) integer(d.retry_after_ms, 'retry_after_ms');
   if (has(d, 'scope')) choice(d.scope, 'scope', ['rate', 'file', 'device', 'mailbox']);
