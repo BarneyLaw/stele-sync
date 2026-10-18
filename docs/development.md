@@ -33,8 +33,8 @@ for each bucket. Initialization is idempotent and services have health checks.
 The phase 1 garage-dev.sh and garage-dev.ps1 helpers remain available for an
 independent Garage; do not run both setups on the same ports.
 
-Postgres is reachable at 127.0.0.1:55432, database/user obsync, password
-obsync-local-only. Garage S3 listens on 127.0.0.1:3900 and the phase 1 website on
+Postgres is reachable at 127.0.0.1:55432, database/user stele, password
+stele-local-only. Garage S3 listens on 127.0.0.1:3900 and the phase 1 website on
 127.0.0.1:3902. POSTGRES_DEV_PORT, GARAGE_DEV_S3_PORT, and GARAGE_DEV_WEB_PORT can
 override the published ports. Set overrides in the shell when running tasks,
 so the integration client and Compose use the same values.

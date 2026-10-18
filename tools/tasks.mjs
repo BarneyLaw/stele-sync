@@ -223,7 +223,7 @@ const tasks = {
   },
   'test-integration'() {
     up();
-    const result = compose('exec', '-T', 'postgres', 'psql', '-U', 'obsync', '-d', 'obsync', '-Atc', 'SELECT 1');
+    const result = compose('exec', '-T', 'postgres', 'psql', '-U', 'stele', '-d', 'stele', '-Atc', 'SELECT 1');
     if (result.trim() !== '1') throw new Error('Postgres query did not return 1');
     run('go', ['test', '-race', '-count=1', '-v', '-run', 'S3', './internal/storage/objects', './internal/run'], { env: integrationEnv() });
     // Real repository/locking tests arrive in M5.

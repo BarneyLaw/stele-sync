@@ -111,3 +111,9 @@ nested frames separately allocate at most three objects before rejection.
 Local Compose services were not started. The Docker CLI in this environment
 does not have the Compose plugin; live Postgres/Garage integration remains for
 the storage/blob milestones. The development defaults were reviewed statically.
+
+The follow-up CI review found and corrected a stale `obsync` user/database in
+the integration task's Postgres readiness query after Compose switched to `stele`.
+A configuration-consistency regression test failed on that mismatch and passed
+after the fix; it checks the probe and client URL against Compose's identity.
+This static check does not replace the live integration gate.
