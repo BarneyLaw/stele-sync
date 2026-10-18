@@ -106,3 +106,41 @@ Its independent setup check caught the discrepancy before timing. The corrected
 workload inserts the marker at the end; historical append ties put it after the
 new head, and Unicode replacements leave that endpoint intact. No transform
 algorithm change was made to force the benchmark to pass.
+
+
+## 2026-10-18 Linux rerun
+
+Re-ran the unchanged `node tools/tasks.mjs textop-perf` on main `21f30d8` before
+M4 implementation: Linux/amd64, Intel Xeon W-11855M @ 3.20 GHz, Go 1.27.2,
+GOMAXPROCS=12, 1,000 samples per workload after ten warmups, no race instrumentation.
+All four 50 ms p99 gates passed. No thresholds or textop production code changed.
+
+| Workload | p50 | p95 | p99 | Gate |
+| --- | ---: | ---: | ---: | --- |
+| 5,000 append operations | 2.561 ms | 3.658 ms | 4.114 ms | Passed |
+| 5,000 Unicode operations | 14.959 ms | 18.182 ms | 20.874 ms | Passed |
+| 8 MiB identity apply | 14.546 ms | 17.640 ms | 19.388 ms | Passed |
+| 8 MiB apply, 64 replacements | 14.684 ms | 17.533 ms | 19.209 ms | Passed |
+
+Five repetitions of each Go microbenchmark also passed:
+
+| Workload | Range | Allocated bytes/op | Allocations/op |
+| --- | --- | ---: | ---: |
+| Apply 50,000 bytes | 91.8–94.5 µs, 529–545 MB/s | 106,497–106,498 | 1 |
+| Apply 5,000,000 bytes | 8.86–9.19 ms, 544–564 MB/s | about 10,002,432 | 1 |
+| Apply 8 MiB identity | 14.68–16.34 ms, 513–571 MB/s | about 16,777,216 | 1 |
+| Apply 8 MiB replacements | 14.59–15.91 ms, 527–575 MB/s | about 16,777,216 | 1 |
+| Transform 5,000 append ops | 2.424–2.513 ms | about 3,280,016 | 55,000 |
+| Transform 5,000 Unicode ops | 15.084–16.016 ms | about 41,600,074 | 225,000 |
+
+The earlier Windows latency failure did not reproduce. These measurements cannot
+isolate whether hardware, Go/runtime changes, OS scheduling or GC caused that
+historical tail. The Unicode gap still allocates roughly 41.6 MB and 225,000
+objects per complete rebase, so allocation/GC remains a concrete profiling target
+if the failure returns. Apply allocates a 16 MiB UTF-16 result for 8 MiB of ASCII.
+A historical cause is not claimed without profiles from the failing environment.
+
+The one-hour 10× system-load requirement and simulator portions of S16 require
+M7/M14 and are still unimplemented. The microbenchmarks report throughput; they
+have no separate fixed MB/s acceptance threshold. Passing this rerun establishes
+only the existing M1 local latency gates.
